@@ -1,6 +1,7 @@
-import { Entity, Property, ManyToOne, BigIntType, OneToOne } from '@mikro-orm/core'
+import { Entity, Property, ManyToOne, OneToOne } from '@mikro-orm/core'
+import { uint256 } from '../../custom/typeUint256'
 import { AgentVault } from '../agent'
-import { VaultCollateralToken } from '../token'
+import { CollateralType } from '../token'
 
 
 @Entity()
@@ -9,36 +10,36 @@ export class AgentVaultSettings {
   @OneToOne({ primary: true, owner: true, entity: () => AgentVault })
   agentVault: AgentVault
 
-  @ManyToOne({ entity: () => VaultCollateralToken })
-  collateralToken: VaultCollateralToken
+  @ManyToOne({ entity: () => CollateralType })
+  collateralToken: CollateralType
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   feeBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   poolFeeShareBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   mintingVaultCollateralRatioBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   mintingPoolCollateralRatioBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   buyFAssetByAgentFactorBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   poolExitCollateralRatioBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   poolTopupCollateralRatioBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   poolTopupTokenPriceFactorBIPS: bigint
 
   constructor(
     agentVault: AgentVault,
-    collateralToken: VaultCollateralToken,
+    collateralToken: CollateralType,
     feeBIPS: bigint,
     poolFeeShareBIPS: bigint,
     mintingVaultCollateralRatioBIPS: bigint,
@@ -73,46 +74,46 @@ export class AgentVaultInfo {
   @Property({ type: 'boolean' })
   publiclyAvailable: boolean
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   freeCollateralLots: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   totalVaultCollateralWei: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   freeVaultCollateralWei: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   vaultCollateralRatioBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   totalPoolCollateralNATWei: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   freePoolCollateralNATWei: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   poolCollateralRatioBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   totalAgentPoolTokensWei: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   freeAgentPoolTokensWei: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   mintedUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   reservedUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   redeemingUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   poolRedeemingUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   dustUBA: bigint
 
   @Property({ type: "number" })
@@ -121,22 +122,22 @@ export class AgentVaultInfo {
   @Property({ type: "number" })
   liquidationStartTimestamp: number
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   maxLiquidationAmountUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   liquidationPaymentFactorVaultBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   liquidationPaymentFactorPoolBIPS: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   underlyingBalanceUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   requiredUnderlyingBalanceUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   freeUnderlyingBalanceUBA: bigint
 
   constructor(

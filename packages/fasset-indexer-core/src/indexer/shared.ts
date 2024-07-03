@@ -13,7 +13,7 @@ export async function updateAgentVaultInfo(context: Context, em: EntityManager, 
 }
 
 async function agentInfoToEntity(em: EntityManager, agentInfo: AgentInfo.InfoStructOutput, vaultAddress: string): Promise<AgentVaultInfo> {
-  const agentVault = await em.findOneOrFail(AgentVault, { address: vaultAddress })
+  const agentVault = await em.findOneOrFail(AgentVault, { address: { hex: vaultAddress }})
   return new AgentVaultInfo(
     agentVault,
     Number(agentInfo.status),

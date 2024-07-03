@@ -1,7 +1,9 @@
-import { Entity, ManyToOne, PrimaryKey, Property, BigIntType, OneToOne } from "@mikro-orm/core"
+import { Entity, ManyToOne, PrimaryKey, Property, OneToOne } from "@mikro-orm/core"
+import { uint256 } from "../../custom/typeUint256"
+import { EvmAddress, UnderlyingAddress } from "../address"
 import { AgentVault } from "../agent"
 import { EvmLog, EventBound } from "../logs"
-import { ADDRESS_LENGTH, BYTES32_LENGTH } from "../../../constants"
+import { BYTES32_LENGTH } from "../../../constants"
 
 
 @Entity()
@@ -13,16 +15,16 @@ export class RedemptionRequested extends EventBound {
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
 
-  @Property({ type: 'text', length: ADDRESS_LENGTH })
-  redeemer: string
+  @ManyToOne({ entity: () => EvmAddress })
+  redeemer: EvmAddress
 
-  @Property({ type: 'text' })
-  paymentAddress: string
+  @ManyToOne({ entity: () => UnderlyingAddress })
+  paymentAddress: UnderlyingAddress
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   valueUBA: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   feeUBA: bigint
 
   @Property({ type: 'number' })
@@ -34,28 +36,28 @@ export class RedemptionRequested extends EventBound {
   @Property({ type: 'number' })
   lastUnderlyingTimestamp: number
 
-  @Property({ type: 'text', length: BYTES32_LENGTH })
+  @Property({ type: 'text', length: BYTES32_LENGTH, unique: true })
   paymentReference: string
 
-  @Property({ type: 'text', length: ADDRESS_LENGTH })
-  executor: string
+  @ManyToOne({ entity: () => EvmAddress })
+  executor: EvmAddress
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   executorFeeNatWei: bigint
 
   constructor(
     evmLog: EvmLog,
     agentVault: AgentVault,
-    redeemer: string,
+    redeemer: EvmAddress,
     requestId: number,
-    paymentAddress: string,
+    paymentAddress: UnderlyingAddress,
     valueUBA: bigint,
     feeUBA: bigint,
     firstUnderlyingBlock: number,
     lastUnderlyingBlock: number,
     lastUnderlyingTimestamp: number,
     paymentReference: string,
-    executor: string,
+    executor: EvmAddress,
     executorFeeNatWei: bigint
   ) {
     super(evmLog)
@@ -80,10 +82,10 @@ export class RedemptionPerformed extends EventBound {
   @OneToOne({ primary: true, owner: true, entity: () => RedemptionRequested })
   redemptionRequested: RedemptionRequested
 
-  @Property({ type: 'text', length: BYTES32_LENGTH })
+  @Property({ type: 'text', length: BYTES32_LENGTH, unique: true })
   transactionHash: string
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   spentUnderlyingUBA: bigint
 
   constructor(
@@ -105,10 +107,10 @@ export class RedemptionDefault extends EventBound {
   @OneToOne({ primary: true, owner: true, entity: () => RedemptionRequested })
   redemptionRequested: RedemptionRequested
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   redeemedVaultCollateralWei: bigint
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   redeemedPoolCollateralWei: bigint
 
   constructor(
@@ -145,7 +147,7 @@ export class RedemptionPaymentBlocked extends EventBound {
   @Property({ type: 'text', length: BYTES32_LENGTH })
   transactionHash: string
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   spentUnderlyingUBA: bigint
 
   constructor(
@@ -170,7 +172,7 @@ export class RedemptionPaymentFailed extends EventBound {
   @Property({ type: 'text', length: BYTES32_LENGTH })
   transactionHash: string
 
-  @Property({ type: new BigIntType('bigint') })
+  @Property({ type: new uint256() })
   spentUnderlyingUBA: bigint
 
   @Property({ type: 'text' })
