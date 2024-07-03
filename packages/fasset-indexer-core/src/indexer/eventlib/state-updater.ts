@@ -1,13 +1,14 @@
 import { EntityManager, NotFoundError } from "@mikro-orm/knex"
+import { AddressType } from "../../database/entities/address"
 import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/agent"
-import { VaultCollateralToken } from "../../database/entities/token"
 import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo } from "../shared"
 import { EventStorer } from "./event-storer"
 import { ADDRESS_LENGTH } from "../../constants"
-import type { EventArgs, FullLog } from "./event-scraper"
+import type { FullLog } from "./event-scraper"
 import type { Context } from "../../context"
 import type { EvmLog } from "../../database/entities/logs"
+import type { AgentVaultCreatedEvent } from "../../../chain/typechain/AMEvents"
 
 
 // binds chain reading to event storage
@@ -31,9 +32,8 @@ export class StateUpdater extends EventStorer {
     }
   }
 
-  protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: EventArgs): Promise<AgentVault> {
-    const [ owner,,,, vaultCollateralToken ] = args
-    await this.ensureStoredCollateralToken(em, vaultCollateralToken)
+  protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
+    const [ owner, ] = args
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentOwner(em, manager)
     const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args)
@@ -42,9 +42,9 @@ export class StateUpdater extends EventStorer {
   }
 
   private async ensureAgentManager(em: EntityManager, address: string): Promise<AgentManager> {
-    let agentManager = await em.findOne(AgentManager, { address })
+    let agentManager = await em.findOne(AgentManager, { address: { hex: address }}, { populate: ['address'] })
     if (agentManager === null) {
-      agentManager = await this.getAgentManager(em, address, true)
+      agentManager = await this.findOrCreateAgentManager(em, address, true)
       em.persist(agentManager)
     }
     return agentManager
@@ -53,29 +53,31 @@ export class StateUpdater extends EventStorer {
   private async ensureAgentOwner(em: EntityManager, manager: AgentManager): Promise<AgentOwner> {
     let agentOwner = await em.findOne(AgentOwner, { manager })
     if (agentOwner === null) {
-      const address = await this.context.agentOwnerRegistryContract.getWorkAddress(manager.address)
-      agentOwner = new AgentOwner(address, manager)
+      const address = await this.context.agentOwnerRegistryContract.getWorkAddress(manager.address.hex)
+      const evmAddress = await this.findOrCreateEvmAddress(em, address, AddressType.AGENT)
+      agentOwner = new AgentOwner(evmAddress, manager)
       em.persist(agentOwner)
     }
     return agentOwner
   }
 
-  private async getAgentManager(em: EntityManager, manager: string, full: boolean): Promise<AgentManager> {
-    let agentManager = await em.findOne(AgentManager, { address: manager })
+  private async findOrCreateAgentManager(em: EntityManager, manager: string, full: boolean): Promise<AgentManager> {
+    let agentManager = await em.findOne(AgentManager, { address: { hex: manager }})
     if (agentManager === null) {
-      agentManager = new AgentManager(manager)
+      const managerEvmAddress = await this.findOrCreateEvmAddress(em, manager, AddressType.AGENT)
+      agentManager = new AgentManager(managerEvmAddress)
     }
     if (full && agentManager.name === undefined) {
-      agentManager.name = await this.context.agentOwnerRegistryContract.getAgentName(agentManager.address)
-      agentManager.description = await this.context.agentOwnerRegistryContract.getAgentDescription(agentManager.address)
-      agentManager.iconUrl = await this.context.agentOwnerRegistryContract.getAgentIconUrl(agentManager.address)
+      agentManager.name = await this.context.agentOwnerRegistryContract.getAgentName(manager)
+      agentManager.description = await this.context.agentOwnerRegistryContract.getAgentDescription(manager)
+      agentManager.iconUrl = await this.context.agentOwnerRegistryContract.getAgentIconUrl(manager)
     }
     return agentManager
   }
 
   private async updateAgentVaultInfo(em: EntityManager, agentVault: AgentVault): Promise<void> {
     try {
-      await updateAgentVaultInfo(this.context, em, agentVault.address)
+      await updateAgentVaultInfo(this.context, em, agentVault.address.hex)
     } catch (e: any) {
       if (e?.reason === 'invalid agent vault address') {
         return await em.transactional(async (em) => {
@@ -87,22 +89,6 @@ export class StateUpdater extends EventStorer {
       }
       throw e
     }
-  }
-
-  private async ensureStoredCollateralToken(em: EntityManager, tokenAddress: string): Promise<void> {
-    let collateralTokenEntity = await em.findOne(VaultCollateralToken, { address: tokenAddress })
-    if (collateralTokenEntity !== null) return
-    const assetManager = this.context.getAssetManagerContract("FTestXRP")
-    const collateralType = await assetManager.getCollateralType(2, tokenAddress)
-    const decimals = await this.context.getERC20(tokenAddress).decimals()
-    collateralTokenEntity = new VaultCollateralToken(
-      tokenAddress,
-      Number(decimals),
-      collateralType.directPricePair,
-      collateralType.assetFtsoSymbol,
-      collateralType.tokenFtsoSymbol
-    )
-    em.persist(collateralTokenEntity)
   }
 
   private async errorKindaOk(log: FullLog, error: any): Promise<boolean> {

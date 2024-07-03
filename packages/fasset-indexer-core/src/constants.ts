@@ -6,7 +6,7 @@ export const MID_CHAIN_FETCH_SLEEP_MS = 250
 export const LOG_FETCH_SIZE = 30
 export const LOG_FETCH_SLEEP_MS = 60 * 1000 // collect logs every minute
 export const BLOCK_HEIGHT_OFFSET = 20
-export const MIN_BLOCK_NUMBER = 16152107
+export const MIN_BLOCK_NUMBER = 16146574
 
 // update state config
 export const STATE_UPDATE_SLEEP_MS = 1 * 60 * 1000 // collect state every one minute
@@ -15,7 +15,7 @@ export const STATE_UPDATE_SLEEP_MS = 1 * 60 * 1000 // collect state every one mi
 export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
-export const FIRST_UNHANDLED_EVENT_BLOCK = "lastHandledEventBlock"
+export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
 
 // event names
 // agent

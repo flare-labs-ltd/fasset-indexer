@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, Property, Unique, OneToOne } from "@mikro-orm/core"
-import { ADDRESS_LENGTH, BYTES32_LENGTH } from "../../constants"
+import { Entity, PrimaryKey, Property, Unique, OneToOne, ManyToOne } from "@mikro-orm/core"
+import { BYTES32_LENGTH } from "../../constants"
+import { EvmAddress } from "./address"
 
 @Entity()
 @Unique({ properties: ['blockNumber', 'transactionIndex', 'logIndex'] })
@@ -20,8 +21,8 @@ export class EvmLog {
   @Property({ type: "text" })
   name: string
 
-  @Property({ type: "text", length: ADDRESS_LENGTH })
-  address: string
+  @ManyToOne({ entity: () => EvmAddress })
+  address: EvmAddress
 
   @Property({ type: "text", length: BYTES32_LENGTH })
   transaction: string
@@ -31,7 +32,7 @@ export class EvmLog {
 
   constructor(
     blockNumber: number, transactionIndex: number, logIndex: number,
-    name: string, address: string, transaction: string, timestamp: number
+    name: string, address: EvmAddress, transaction: string, timestamp: number
   ) {
     this.blockNumber = blockNumber
     this.transactionIndex = transactionIndex

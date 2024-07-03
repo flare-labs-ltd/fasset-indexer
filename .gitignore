@@ -50,7 +50,7 @@ tmp.*
 secrets.json
 
 *.db
-*playground.ts
+*playground*.ts
 
 /**/node_modules
 
