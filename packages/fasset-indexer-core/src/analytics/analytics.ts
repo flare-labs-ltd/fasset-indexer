@@ -36,30 +36,30 @@ export class Analytics {
   async totalReserved(): Promise<bigint> {
     const em = this.orm.em.fork()
     const result = await em.getConnection('read').execute(`
-      SELECT SUM(cr.value_uba) as totalValueUBA
+      SELECT SUM(cr.value_uba) as total
       FROM collateral_reserved cr
     `)
-    return result[0].totalValueUBA
+    return result[0].total
   }
 
   async totalMinted(): Promise<bigint> {
     const em = this.orm.em.fork()
     const result = await em.getConnection('read').execute(`
-      SELECT SUM(cr.value_uba) as totalValueUBA
+      SELECT SUM(cr.value_uba) as total
       FROM minting_executed me
       INNER JOIN collateral_reserved cr ON me.collateral_reserved_collateral_reservation_id = cr.collateral_reservation_id
     `)
-    return result[0].totalValueUBA
+    return result[0].total
   }
 
   async totalMintingDefaulted(): Promise<bigint> {
     const em = this.orm.em.fork()
     const result = await em.getConnection('read').execute(`
-      SELECT SUM(cr.value_uba) as totalValueUBA
+      SELECT SUM(cr.value_uba) as total
       FROM minting_payment_default mpd
       INNER JOIN collateral_reserved cr ON mpd.collateral_reserved_collateral_reservation_id = cr.collateral_reservation_id
     `)
-    return result[0].totalValueUBA
+    return result[0].total
   }
 
   //////////////////////////////////////////////////////////////////
@@ -68,30 +68,30 @@ export class Analytics {
   async totalRedemptionRequested(): Promise<bigint> {
     const em = this.orm.em.fork()
     const result = await em.getConnection('read').execute(`
-      SELECT SUM(value_uba) as totalValueUBA
+      SELECT SUM(value_uba) as total
       FROM redemption_requested
     `)
-    return result[0].totalValueUBA
+    return result[0].total
   }
 
   async totalRedeemed(): Promise<bigint> {
     const em = this.orm.em.fork()
     const result = await em.getConnection('read').execute(`
-      SELECT SUM(rr.value_uba) as totalValueUBA
+      SELECT SUM(rr.value_uba) as total
       FROM redemption_requested rr
       INNER JOIN redemption_performed rp ON rp.redemption_requested_request_id = rr.request_id
     `)
-    return result[0].totalValueUBA
+    return result[0].total
   }
 
   async totalRedemptionDefaulted(): Promise<bigint> {
     const em = this.orm.em.fork()
     const result = await em.getConnection('read').execute(`
-      SELECT SUM(rr.value_uba) as totalValueUBA
+      SELECT SUM(rr.value_uba) as total
       FROM redemption_requested rr
       INNER JOIN redemption_default rd ON rd.redemption_requested_request_id = rr.request_id
     `)
-    return result[0].totalValueUBA
+    return result[0].total
   }
 
   async totalRedemptionRequesters(): Promise<number> {
@@ -189,7 +189,12 @@ export class Analytics {
 
 }
 
-/* async function main() {
-  const metrics = await Analytics.create(config.database)
-  console.log(await metrics.agentCollateralReservationCount('0x62d65025A7A1602dD14f58A6d68535046539Db72'))
-} */
+import { config } from "../config"
+async function main() {
+  const metrics = await Analytics.create(config.db)
+  console.log(await metrics.totalReserved())
+  await metrics.orm.close()
+}
+
+
+main()

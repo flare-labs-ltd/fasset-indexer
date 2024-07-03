@@ -170,7 +170,7 @@ export abstract class EventStorer {
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
     const agentSettingChanged = new AgentSettingChanged(evmLog, agentVaultEntity, name, value)
     const agentSettings = await em.findOneOrFail(AgentVaultSettings, { agentVault: agentVaultEntity })
-    this.applyAgentSettingChange(agentSettings, name, value) // also change setting value in db
+    this.applyAgentSettingChange(agentSettings, name, value)
     em.persist([agentSettingChanged, agentSettings])
   }
 
