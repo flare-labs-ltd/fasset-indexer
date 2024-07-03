@@ -1,6 +1,27 @@
-import { randomNativeAddress, randomUnderlyingAddress, randomHash } from "./utils"
+/* import { randomNativeAddress, randomUnderlyingAddress, randomHash } from "./utils"
 import { AGENT_FIXTURE } from "./agent"
+import { RedemptionRequestedEvent } from "../../chain/typechain/AMEvents"
 
+
+export class RedemptionFixtureFactory {
+
+  requestRedemption(): RedemptionRequestedEvent.OutputObject {
+    return {
+      agentVault: "0x",
+      redeemer: randomNativeAddress(),
+      requestId: 1,
+      paymentAddress: randomUnderlyingAddress(),
+      valueUBA: BigInt(1e18),
+      feeUBA: BigInt(1e16),
+      firstUnderlyingBlock: 118419,
+      lastUnderlyingBlock: 1313440,
+      lastUnderlyingTimestamp: 2312411,
+      paymentReference: randomHash(),
+      executor: randomNativeAddress(),
+      executorFeeNatWei: BigInt(1e16)
+    }
+  }
+}
 
 const REDEMPTION_REQUESTED_1 = {
   agentVault: AGENT_FIXTURE[0].agents[0].vaults[0].address,
@@ -116,4 +137,4 @@ export type RedemptionPerformedFixture = typeof REDEMPTION_PERFORMED
 export type RedemptionDefaultFixture = typeof REDEMPTION_DEFAULT
 export type RedemptionRejectedFixture = typeof REDEMPTION_REJECTED
 export type RedemptionPaymentBlockedFixture = typeof REDEMPTION_PAYMENT_BLOCKED
-export type RedemptionPaymentFailedFixture = typeof REDEMPTION_PAYMENT_FAILED
+export type RedemptionPaymentFailedFixture = typeof REDEMPTION_PAYMENT_FAILED */

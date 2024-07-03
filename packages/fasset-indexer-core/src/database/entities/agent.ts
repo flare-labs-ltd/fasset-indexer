@@ -1,15 +1,12 @@
-import { Cascade, Collection, Entity, OneToMany, ManyToOne, PrimaryKey, Property } from "@mikro-orm/core"
-import { ADDRESS_LENGTH } from "../../constants"
+import { Cascade, Collection, Entity, OneToMany, OneToOne, ManyToOne, PrimaryKey, Property } from "@mikro-orm/core"
+import { EvmAddress, UnderlyingAddress } from "./address"
 
 
 @Entity()
 export class AgentManager {
 
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
-
-  @Property({ type: 'text', length: ADDRESS_LENGTH, unique: true })
-  address: string
+  @OneToOne({ entity: () => EvmAddress, owner: true, primary: true })
+  address: EvmAddress
 
   @Property({ type: 'text', nullable: true})
   name?: string
@@ -23,7 +20,7 @@ export class AgentManager {
   @OneToMany(() => AgentOwner, vault => vault.manager, { cascade: [Cascade.ALL] })
   agents = new Collection<AgentOwner>(this)
 
-  constructor(address: string, name?: string, description?: string, iconUrl?: string) {
+  constructor(address: EvmAddress, name?: string, description?: string, iconUrl?: string) {
     this.address = address
     this.name = name
     this.description = description
@@ -37,8 +34,8 @@ export class AgentOwner {
   @PrimaryKey({ type: "number", autoincrement: true })
   id!: number
 
-  @Property({ type: 'text', length: ADDRESS_LENGTH })
-  address: string
+  @ManyToOne(() => EvmAddress)
+  address: EvmAddress
 
   @ManyToOne(() => AgentManager, { fieldName: 'agents' })
   manager: AgentManager
@@ -46,7 +43,7 @@ export class AgentOwner {
   @OneToMany(() => AgentVault, vault => vault.owner, { cascade: [Cascade.ALL] })
   vaults = new Collection<AgentVault>(this)
 
-  constructor(address: string, manager: AgentManager) {
+  constructor(address: EvmAddress, manager: AgentManager) {
     this.address = address
     this.manager = manager
   }
@@ -55,17 +52,14 @@ export class AgentOwner {
 @Entity()
 export class AgentVault {
 
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
+  @OneToOne({ entity: () => EvmAddress, owner: true, primary: true })
+  address: EvmAddress
 
-  @Property({ type: 'text', length: ADDRESS_LENGTH, unique: true })
-  address: string
+  @OneToOne({ entity: () => UnderlyingAddress, owner: true })
+  underlyingAddress: UnderlyingAddress
 
-  @Property({ type: 'text', unique: true })
-  underlyingAddress: string
-
-  @Property({ type: 'text', length: ADDRESS_LENGTH, unique: true })
-  collateralPool: string
+  @ManyToOne({ entity: () => EvmAddress, unique: true })
+  collateralPool: EvmAddress
 
   @ManyToOne(() => AgentOwner, { fieldName: 'vaults' })
   owner: AgentOwner
@@ -74,9 +68,9 @@ export class AgentVault {
   destroyed: boolean
 
   constructor(
-    address: string,
-    underlyingAddress: string,
-    collateralPool: string,
+    address: EvmAddress,
+    underlyingAddress: UnderlyingAddress,
+    collateralPool: EvmAddress,
     owner: AgentOwner,
     destroyed: boolean
   ) {

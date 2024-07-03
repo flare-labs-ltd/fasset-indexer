@@ -1,15 +1,13 @@
-import { Entity, Property, PrimaryKey } from "@mikro-orm/core"
-import { ADDRESS_LENGTH } from "../../constants"
+import { Entity, Property, OneToOne } from "@mikro-orm/core"
+import { EvmAddress } from "./address"
+import { EventBound, EvmLog } from "./logs"
 
 
 @Entity()
-export class VaultCollateralToken {
+export class CollateralType extends EventBound {
 
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
-
-  @Property({ type: 'text', length: ADDRESS_LENGTH, unique: true })
-  address: string
+  @OneToOne({ entity: () => EvmAddress, owner: true, primary: true })
+  address: EvmAddress
 
   @Property({ type: 'number' })
   decimals: number
@@ -23,13 +21,20 @@ export class VaultCollateralToken {
   @Property({ type: 'text' })
   tokenFtsoSymbol: string
 
+  @Property({ type: 'number' })
+  collateralClass: number
+
   constructor(
-    address: string,
+    evmLog: EvmLog,
+    collateralClass: number,
+    address: EvmAddress,
     decimals: number,
     directPricePair: boolean,
     assetFtsoSymbol: string,
-    tokenFtsoSymbol: string,
+    tokenFtsoSymbol: string
   ) {
+    super(evmLog)
+    this.collateralClass = collateralClass
     this.address = address
     this.decimals = decimals
     this.directPricePair = directPricePair
