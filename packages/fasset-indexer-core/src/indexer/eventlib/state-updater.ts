@@ -4,7 +4,6 @@ import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/ag
 import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo } from "../shared"
 import { EventStorer } from "./event-storer"
-import { ADDRESS_LENGTH } from "../../constants"
 import type { FullLog } from "./event-scraper"
 import type { Context } from "../../context"
 import type { EvmLog } from "../../database/entities/logs"
@@ -20,16 +19,9 @@ export class StateUpdater extends EventStorer {
 
   async onNewEvent(log: FullLog): Promise<void> {
     if (this.context.ignoreLog(log.name)) return
-    try {
-      await this.context.orm.em.fork().transactional(async (em) => {
-        await this.processLog(em, log)
-      })
-    } catch (e: any) {
-      if (await this.errorKindaOk(log, e)) {
-        return console.log(`ignoring error ${e} for log ${log.name}`)
-      }
-      throw new Error(`unknown error ${e}`)
-    }
+    await this.context.orm.em.fork().transactional(async (em) => {
+      await this.processLog(em, log)
+    })
   }
 
   protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
@@ -89,30 +81,6 @@ export class StateUpdater extends EventStorer {
       }
       throw e
     }
-  }
-
-  private async errorKindaOk(log: FullLog, error: any): Promise<boolean> {
-    if (error instanceof NotFoundError) {
-      const em = this.context.orm.em.fork()
-      const fullInfo = error.message + " " + log.args.filter(
-        (arg) => StateUpdater.consideredAddress(arg)).join(' ')
-      const matches = fullInfo.match(/'(0x[a-fA-F0-9]{40})'/)
-      if (matches === null) return false
-      for (const match of matches) {
-        if (await StateUpdater.isUntracked(em, match))
-          return true
-      }
-    }
-    return false
-  }
-
-  private static consideredAddress(arg: any): boolean {
-    return typeof arg === 'string' && arg.startsWith('0x') && arg.length === ADDRESS_LENGTH
-  }
-
-  private static async isUntracked(em: EntityManager, address: string): Promise<boolean> {
-    const untracked = await em.fork().findOne(UntrackedAgentVault, { address })
-    return untracked !== null
   }
 
 }

@@ -1,3 +1,4 @@
+import { isUntrackedAgentVault } from "../shared"
 import { EvmLog } from "../../database/entities/logs"
 import { CollateralType } from "../../database/entities/token"
 import { AddressType, EvmAddress, UnderlyingAddress } from "../../database/entities/address"
@@ -176,6 +177,8 @@ export abstract class EventStorer {
 
   protected async onAvailableAgentExited(em: EntityManager, logArgs: AvailableAgentExitAnnouncedEvent.OutputTuple): Promise<void> {
     const [ agentVault ] = logArgs
+    const isUntracked = await isUntrackedAgentVault(em, agentVault)
+    if (isUntracked) return // untracked agents don't have agent vault info property
     const agentVaultEntity = await em.findOneOrFail(AgentVaultInfo, { agentVault: { address: { hex: agentVault }}})
     agentVaultEntity.publiclyAvailable = false
     em.persist(agentVaultEntity)
@@ -183,6 +186,8 @@ export abstract class EventStorer {
 
   protected async onAgentEnteredAvailable(em: EntityManager, logArgs: AgentAvailableEvent.OutputTuple): Promise<void> {
     const [ agentVault, ] = logArgs
+    const isUntracked = await isUntrackedAgentVault(em, agentVault)
+    if (isUntracked) return // untracked agents don't have agent vault info property
     const agentVaultEntity = await em.findOneOrFail(AgentVaultInfo, { agentVault: { address: { hex: agentVault }}})
     agentVaultEntity.publiclyAvailable = true
     em.persist(agentVaultEntity)
