@@ -1,6 +1,7 @@
-import { EventIndexer } from "../indexer/eventlib/indexer"
+import { EventIndexer } from "../indexer/indexer"
 import { Context } from "../context"
 import { config } from "../config"
+
 
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
@@ -10,8 +11,8 @@ async function runIndexer(start?: number) {
     await context.orm.close()
     process.exit(0)
   })
+  console.log('starting indexer')
   await eventIndexer.run(start)
-  await context.orm.close()
 }
 
 runIndexer()

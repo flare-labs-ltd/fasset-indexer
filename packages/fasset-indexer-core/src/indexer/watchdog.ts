@@ -1,7 +1,7 @@
 import { EntityManager } from "@mikro-orm/knex"
 import { sleep } from "../utils"
 import { AgentVault } from "../database/entities/agent"
-import { updateAgentVaultInfo } from "./shared"
+import { isUntrackedAgentVault, updateAgentVaultInfo } from "./shared"
 import { Context } from "../context"
 import { MID_CHAIN_FETCH_SLEEP_MS, STATE_UPDATE_SLEEP_MS } from "../constants"
 
@@ -20,12 +20,15 @@ export class StateWatchdog {
   async watchAgentInfo(em: EntityManager): Promise<void> {
     const agents = await em.find(AgentVault, { destroyed: false }, { populate: ['address'] })
     for (const agent of agents) {
+      const agentUntracked = await isUntrackedAgentVault(em, agent.address.hex)
+      if (agentUntracked) continue
       try {
+        console.log(`updating agent info for agent vault ${agent.address.hex}`)
         await updateAgentVaultInfo(this.context, em, agent.address.hex)
-        await sleep(MID_CHAIN_FETCH_SLEEP_MS)
       } catch (e: any) {
         console.error(`error updating agent info for ${agent.address}: ${e}`)
       }
+      await sleep(MID_CHAIN_FETCH_SLEEP_MS)
     }
   }
 

@@ -1,4 +1,5 @@
-import { createOrm, getVar } from "../database/utils"
+import { createOrm } from "../database/utils"
+import { getVar } from "../indexer/shared"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"

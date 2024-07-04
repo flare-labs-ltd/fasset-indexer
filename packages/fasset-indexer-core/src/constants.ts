@@ -4,7 +4,7 @@ export const MID_CHAIN_FETCH_SLEEP_MS = 250
 
 // event scrape config
 export const LOG_FETCH_SIZE = 30
-export const LOG_FETCH_SLEEP_MS = 60 * 1000 // collect logs every minute
+export const LOG_FETCH_SLEEP_MS = 60 * 1000 // collect logs every one minute
 export const BLOCK_HEIGHT_OFFSET = 20
 export const MIN_BLOCK_NUMBER = 16146574
 
