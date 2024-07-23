@@ -1,11 +1,11 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "./database/utils"
 import { AssetManager__factory, AMEvents__factory, ERC20__factory, AgentOwnerRegistry__factory } from "../chain/typechain"
-import type { IConfig } from "./config"
 import type { AssetManager, ERC20 } from "../chain/typechain"
 import type { AMEventsInterface } from "../chain/typechain/AMEvents"
 import type { AgentOwnerRegistry } from "../chain/typechain"
 import type { ORM } from "./database/interface"
+import type { IConfig } from "./config/interface"
 
 
 export class Context {

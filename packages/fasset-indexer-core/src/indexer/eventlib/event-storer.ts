@@ -26,7 +26,7 @@ import {
   LIQUIDATION_STARTED, LIQUIDATION_PERFORMED, LIQUIDATION_ENDED, FULL_LIQUIDATION_STARTED,
   AGENT_ENTERED_AVAILABLE, AVAILABLE_AGENT_EXITED, AGENT_DESTROYED,
   COLLATERAL_TYPE_ADDED
-} from '../../constants'
+} from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
 import type { FullLog } from "./event-scraper"
 import type {

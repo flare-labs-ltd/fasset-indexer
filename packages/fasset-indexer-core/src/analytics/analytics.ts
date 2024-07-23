@@ -3,16 +3,18 @@ import { getVar } from "../indexer/shared"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
-import { FIRST_UNHANDLED_EVENT_BLOCK, MAX_DATABASE_ENTRIES_FETCH } from "../constants"
-import type { OrmOptions, ORM } from "../database/interface"
+import { FIRST_UNHANDLED_EVENT_BLOCK, MAX_DATABASE_ENTRIES_FETCH } from "../config/constants"
+import type { ORM } from "../database/interface"
+import type { IUserDatabaseConfig } from "../config/interface"
 
 
 export class Analytics {
 
   constructor(public readonly orm: ORM) {}
 
-  static async create(path: OrmOptions) {
-    const orm = await createOrm(path, "safe")
+  static async create(config: IUserDatabaseConfig): Promise<Analytics> {
+    const ormOptions = getOrmConfig(config)
+    const orm = await createOrm(ormOptions, "safe")
     return new Analytics(orm)
   }
 
@@ -190,12 +192,15 @@ export class Analytics {
 
 }
 
-import { config } from "../config"
+import { getOrmConfig } from "../config/utils"
+
 async function main() {
-  const metrics = await Analytics.create(config.db)
+  const metrics = await Analytics.create({
+    dbType: "sqlite",
+    dbName: "fasset-indexer.db"
+  })
   console.log(await metrics.totalReserved())
   await metrics.orm.close()
 }
-
 
 main()

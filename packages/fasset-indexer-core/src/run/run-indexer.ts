@@ -1,6 +1,6 @@
 import { EventIndexer } from "../indexer/indexer"
 import { Context } from "../context"
-import { config } from "../config"
+import { config } from "../config/config"
 
 
 async function runIndexer(start?: number) {

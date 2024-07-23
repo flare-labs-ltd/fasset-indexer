@@ -1,5 +1,5 @@
 import { Entity, Enum, PrimaryKey, Property } from "@mikro-orm/core"
-import { ADDRESS_LENGTH } from "../../constants"
+import { ADDRESS_LENGTH } from "../../config/constants"
 
 
 export enum AddressType { USER, AGENT, SYSTEM, SERVICE }

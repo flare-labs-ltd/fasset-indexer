@@ -3,7 +3,7 @@ import { uint256 } from '../../custom/typeUint256'
 import { EvmAddress, UnderlyingAddress } from '../address'
 import { EvmLog, EventBound } from '../logs'
 import { AgentVault } from '../agent'
-import { BYTES32_LENGTH } from '../../../constants'
+import { BYTES32_LENGTH } from '../../../config/constants'
 
 
 @Entity()

@@ -6,7 +6,7 @@ import {
   FIRST_UNHANDLED_EVENT_BLOCK, LOG_FETCH_SIZE,
   MID_CHAIN_FETCH_SLEEP_MS, MIN_BLOCK_NUMBER, LOG_FETCH_SLEEP_MS,
   BLOCK_HEIGHT_OFFSET
-} from '../constants'
+} from '../config/constants'
 import type { Context } from '../context'
 
 
@@ -20,6 +20,7 @@ export class EventIndexer {
   }
 
   async run(startBlock?: number): Promise<void> {
+    console.log('neki')
     while (true) {
       try {
         await this.runHistoric(startBlock)
