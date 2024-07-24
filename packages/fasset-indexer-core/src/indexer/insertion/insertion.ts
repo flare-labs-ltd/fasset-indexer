@@ -38,7 +38,7 @@ export class EventIndexerInsertion extends EventIndexer {
   protected override async lastBlockToHandle(): Promise<number> {
     const endBlock = await getVar(this.context.orm.em.fork(), END_INSERTION_BLOCK)
     if (endBlock === null) {
-      const endBlock = super.getFirstUnhandledBlock()
+      const endBlock = await super.getFirstUnhandledBlock()
       await setVar(this.context.orm.em.fork(), END_INSERTION_BLOCK, endBlock.toString())
       return endBlock
     }
