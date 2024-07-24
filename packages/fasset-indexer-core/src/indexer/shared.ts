@@ -21,6 +21,14 @@ export async function getVar(em: EntityManager, key: string): Promise<Var | null
   return await em.findOne(Var, { key })
 }
 
+export async function deleteVar(em: EntityManager, key: string): Promise<void> {
+  const vr = await em.findOne(Var, { key })
+  if (vr) {
+    em.remove(vr)
+    await em.flush()
+  }
+}
+
 export async function isUntrackedAgentVault(em: EntityManager, address: string): Promise<boolean> {
   const untracked = await em.fork().findOne(UntrackedAgentVault, { address })
   return untracked !== null

@@ -1,4 +1,4 @@
-import { EntityManager, NotFoundError } from "@mikro-orm/knex"
+import { EntityManager } from "@mikro-orm/knex"
 import { AddressType } from "../../database/entities/address"
 import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/agent"
 import { UntrackedAgentVault } from "../../database/entities/state/var"

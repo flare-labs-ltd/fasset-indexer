@@ -20,7 +20,6 @@ export class EventIndexer {
   }
 
   async run(startBlock?: number): Promise<void> {
-    console.log('neki')
     while (true) {
       try {
         await this.runHistoric(startBlock)
