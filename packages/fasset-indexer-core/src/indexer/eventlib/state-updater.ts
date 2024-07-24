@@ -2,7 +2,7 @@ import { EntityManager } from "@mikro-orm/knex"
 import { AddressType } from "../../database/entities/address"
 import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/agent"
 import { UntrackedAgentVault } from "../../database/entities/state/var"
-import { updateAgentVaultInfo } from "../shared"
+import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
 import type { FullLog } from "./event-scraper"
 import type { Context } from "../../context"
@@ -46,7 +46,7 @@ export class StateUpdater extends EventStorer {
     let agentOwner = await em.findOne(AgentOwner, { manager })
     if (agentOwner === null) {
       const address = await this.context.agentOwnerRegistryContract.getWorkAddress(manager.address.hex)
-      const evmAddress = await this.findOrCreateEvmAddress(em, address, AddressType.AGENT)
+      const evmAddress = await findOrCreateEvmAddress(em, address, AddressType.AGENT)
       agentOwner = new AgentOwner(evmAddress, manager)
       em.persist(agentOwner)
     }
@@ -56,7 +56,7 @@ export class StateUpdater extends EventStorer {
   private async findOrCreateAgentManager(em: EntityManager, manager: string, full: boolean): Promise<AgentManager> {
     let agentManager = await em.findOne(AgentManager, { address: { hex: manager }})
     if (agentManager === null) {
-      const managerEvmAddress = await this.findOrCreateEvmAddress(em, manager, AddressType.AGENT)
+      const managerEvmAddress = await findOrCreateEvmAddress(em, manager, AddressType.AGENT)
       agentManager = new AgentManager(managerEvmAddress)
     }
     if (full && agentManager.name === undefined) {

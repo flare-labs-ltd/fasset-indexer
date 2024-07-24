@@ -40,7 +40,8 @@ export class EventIndexer {
     }
     for (let i = startBlock; i <= endBlock; i += LOG_FETCH_SIZE + 1) {
       const endLoopBlock = Math.min(endBlock, i + LOG_FETCH_SIZE)
-      const logs = await this.eventScraper.getLogs(i, endLoopBlock)
+      const sources = await this.context.trackedSourceAddresses()
+      const logs = await this.eventScraper.getLogs(i, endLoopBlock, sources)
       await this.storeLogs(logs)
       await this.setFirstUnhandledBlock(endLoopBlock + 1)
       console.log(`Processed logs from block ${i} to block ${endLoopBlock}`)

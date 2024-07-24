@@ -24,6 +24,7 @@ export const AGENT_SETTING_CHANGED = "AgentSettingChanged"
 export const AVAILABLE_AGENT_EXITED = "AvailableAgentExited"
 export const AGENT_ENTERED_AVAILABLE = "AgentAvailable"
 export const AGENT_DESTROYED = "AgentDestroyed"
+export const SELF_CLOSE = "SelfClose"
 // minting
 export const COLLATERAL_RESERVED = "CollateralReserved"
 export const MINTING_EXECUTED = "MintingExecuted"
@@ -49,6 +50,8 @@ export const AGENT_COLLATERAL_TYPE_CHANGED = "AgentCollateralTypeChanged"
 // collateral pool
 export const COLLATERAL_POOL_ENTER = "Entered"
 export const COLLATERAL_POOL_EXIT = "Exited"
+// erc20
+export const ERC20_TRANSFER = "Transfer"
 
 // metadata
 export const ADDRESS_LENGTH = 42

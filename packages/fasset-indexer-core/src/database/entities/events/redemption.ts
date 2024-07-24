@@ -192,3 +192,22 @@ export class RedemptionPaymentFailed extends EventBound {
     this.failureReason = failureReason
   }
 }
+
+@Entity()
+export class RedemptionRequestIncomplete extends EventBound {
+
+  @PrimaryKey({ type: "number", autoincrement: true })
+  id!: number
+
+  @ManyToOne({ entity: () => EvmAddress })
+  redeemer: EvmAddress
+
+  @Property({ type: new uint256() })
+  remainingLots: bigint
+
+  constructor(evmLog: EvmLog, redeemer: EvmAddress, remainingLots: bigint) {
+    super(evmLog)
+    this.redeemer = redeemer
+    this.remainingLots = remainingLots
+  }
+}

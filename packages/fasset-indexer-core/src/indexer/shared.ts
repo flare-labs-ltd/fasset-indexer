@@ -1,6 +1,7 @@
 import { EntityManager } from "@mikro-orm/knex"
-import { AgentVaultInfo } from "../database/entities/state/agent"
+import { AddressType, EvmAddress, UnderlyingAddress } from "../database/entities/address"
 import { AgentVault } from "../database/entities/agent"
+import { AgentVaultInfo } from "../database/entities/state/agent"
 import { UntrackedAgentVault, Var } from "../database/entities/state/var"
 import type { Context } from "../context"
 import type { AgentInfo } from "../../chain/typechain/AssetManager"
@@ -27,6 +28,24 @@ export async function deleteVar(em: EntityManager, key: string): Promise<void> {
     em.remove(vr)
     await em.flush()
   }
+}
+
+export async function findOrCreateEvmAddress(em: EntityManager, address: string, type: AddressType): Promise<EvmAddress> {
+  let evmAddress = await em.findOne(EvmAddress, { hex: address})
+  if (!evmAddress) {
+    evmAddress = new EvmAddress(address, type)
+    em.persist(evmAddress)
+  }
+  return evmAddress
+}
+
+export async function findOrCreateUnderlyingAddress(em: EntityManager, address: string, type: AddressType): Promise<UnderlyingAddress> {
+  let underlyingAddress = await em.findOne(UnderlyingAddress, { text: address })
+  if (!underlyingAddress) {
+    underlyingAddress = new UnderlyingAddress(address, type)
+    em.persist(underlyingAddress)
+  }
+  return underlyingAddress
 }
 
 export async function isUntrackedAgentVault(em: EntityManager, address: string): Promise<boolean> {

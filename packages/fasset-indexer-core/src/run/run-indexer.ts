@@ -2,6 +2,7 @@ import { EventIndexer } from "../indexer/indexer"
 import { EventIndexerInsertion } from "../indexer/insertion/insertion"
 import { Context } from "../context"
 import { config } from "../config/config"
+import { addTransactionData } from "../indexer/insertion/migration"
 
 
 async function runIndexer(start?: number) {
@@ -19,6 +20,7 @@ async function runIndexer(start?: number) {
   await Promise.all([
     eventIndexerInsertion.run(start),
     eventIndexer.run(start),
+    addTransactionData(context)
   ])
 }
 

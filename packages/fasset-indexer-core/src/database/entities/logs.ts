@@ -24,23 +24,40 @@ export class EvmLog {
   @ManyToOne({ entity: () => EvmAddress })
   address: EvmAddress
 
-  @Property({ type: "text", length: BYTES32_LENGTH })
-  transaction: string
-
   @Property({ type: 'number' })
   timestamp: number
 
+  @Property({ type: "text", length: BYTES32_LENGTH })
+  transaction: string
+
+  @ManyToOne({ entity: () => EvmAddress, nullable: true })
+  transactionSource: EvmAddress
+
+  @ManyToOne({ entity: () => EvmAddress, nullable: true })
+  transactionTarget?: EvmAddress
+
   constructor(
-    blockNumber: number, transactionIndex: number, logIndex: number,
-    name: string, address: EvmAddress, transaction: string, timestamp: number
+    blockNumber: number,
+    transactionIndex: number,
+    logIndex: number,
+    name: string,
+    address: EvmAddress,
+    timestamp: number,
+    transaction: string,
+    transactionSource: EvmAddress,
+    transactionTarget: EvmAddress | null
   ) {
     this.blockNumber = blockNumber
     this.transactionIndex = transactionIndex
     this.logIndex = logIndex
     this.name = name
     this.address = address
-    this.transaction = transaction
     this.timestamp = timestamp
+    this.transaction = transaction
+    this.transactionSource = transactionSource
+    if (transactionTarget !== null) {
+      this.transactionTarget = transactionTarget
+    }
   }
 }
 

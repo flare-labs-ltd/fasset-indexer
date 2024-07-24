@@ -1,13 +1,13 @@
 import { sleep } from "../../utils"
 import { deleteVar, getVar, setVar } from "../shared"
 import { EventIndexer } from "../indexer"
-import { COLLATERAL_POOL_ENTER, COLLATERAL_POOL_EXIT, LOG_FETCH_SLEEP_MS, MIN_BLOCK_NUMBER } from "../../config/constants"
+import { COLLATERAL_POOL_ENTER, COLLATERAL_POOL_EXIT, ERC20_TRANSFER, LOG_FETCH_SLEEP_MS, MIN_BLOCK_NUMBER, SELF_CLOSE } from "../../config/constants"
 import type { FullLog } from "../eventlib/event-scraper"
 
 
 const START_INSERTION_BLOCK = "collateralPoolEventsAndTransactionSenders"
 const END_INSERTION_BLOCK = START_INSERTION_BLOCK + "_endBlock"
-const INSERTION_EVENTS: string[] = [ COLLATERAL_POOL_ENTER, COLLATERAL_POOL_EXIT ]
+const INSERTION_EVENTS: string[] = [ COLLATERAL_POOL_ENTER, COLLATERAL_POOL_EXIT, SELF_CLOSE, ERC20_TRANSFER ]
 
 export class EventIndexerInsertion extends EventIndexer {
 
