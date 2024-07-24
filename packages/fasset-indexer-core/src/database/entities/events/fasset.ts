@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, Property } from "@mikro-orm/core"
+import { Entity, ManyToOne, PrimaryKey, Property } from "@mikro-orm/core"
 import { uint256 } from "../../custom/typeUint256"
 import { EventBound, EvmLog } from "../logs"
 import { EvmAddress } from "../address"
@@ -6,6 +6,9 @@ import { EvmAddress } from "../address"
 
 @Entity()
 export class ERC20Transfer extends EventBound {
+
+  @PrimaryKey({ type: 'number', autoincrement: true })
+  id!: number
 
   @ManyToOne({ entity: () => EvmAddress })
   from: EvmAddress

@@ -42,6 +42,9 @@ export class AgentSettingChanged extends EventBound {
 @Entity()
 export class SelfClose extends EventBound {
 
+  @PrimaryKey({ type: 'number', autoincrement: true })
+  id!: number
+
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
 
