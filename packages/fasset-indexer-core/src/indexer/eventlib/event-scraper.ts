@@ -26,12 +26,10 @@ interface LogUri {
 export class EventScraper {
   constructor(public readonly context: Context) { }
 
-  async getLogs(from: number, to: number, sources: string[]): Promise<FullLog[]> {
+  async getLogs(from: number, to: number): Promise<FullLog[]> {
     const rawLogs = await this.getRawLogs(from, to)
-    return this.expandToFullLogs(rawLogs
-      .filter(log => sources.includes(log.address))
-      .sort(EventScraper.logOrder)
-    )
+    const ordered = rawLogs.sort(EventScraper.logOrder)
+    return this.expandToFullLogs(ordered)
   }
 
   async getRawLogs(fromBlock: number, toBlock: number): Promise<Log[]> {
@@ -77,6 +75,9 @@ export class EventScraper {
     let desc = this.context.assetManagerEventInterface.parseLog(rawLog)
     if (desc === null) {
       desc = this.context.collateralPoolInterface.parseLog(rawLog)
+    }
+    if (desc === null) {
+      desc = this.context.erc20Interface.parseLog(rawLog)
     }
     return desc
   }

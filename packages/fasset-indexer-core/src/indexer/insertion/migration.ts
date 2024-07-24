@@ -19,4 +19,5 @@ export async function addTransactionData(context: Context) {
       em.persist(evmLog)
     })
   }
+  console.log('finished adding transaction data')
 }

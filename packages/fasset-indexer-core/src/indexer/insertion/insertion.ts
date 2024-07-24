@@ -7,7 +7,13 @@ import type { FullLog } from "../eventlib/event-scraper"
 
 const START_INSERTION_BLOCK = "collateralPoolEventsAndTransactionSenders"
 const END_INSERTION_BLOCK = START_INSERTION_BLOCK + "_endBlock"
-const INSERTION_EVENTS: string[] = [ COLLATERAL_POOL_ENTER, COLLATERAL_POOL_EXIT, SELF_CLOSE, ERC20_TRANSFER ]
+
+const INSERTION_EVENTS: string[] = [
+  COLLATERAL_POOL_ENTER,
+  COLLATERAL_POOL_EXIT,
+  SELF_CLOSE,
+  ERC20_TRANSFER
+]
 
 export class EventIndexerInsertion extends EventIndexer {
 
@@ -19,8 +25,9 @@ export class EventIndexerInsertion extends EventIndexer {
         const lastToHandle = await this.lastBlockToHandle()
         const firstUnhandled = await this.getFirstUnhandledBlock()
         if (firstUnhandled >= lastToHandle) {
-          await deleteVar(this.context.orm.em.fork(), END_INSERTION_BLOCK)
           await deleteVar(this.context.orm.em.fork(), START_INSERTION_BLOCK)
+          await deleteVar(this.context.orm.em.fork(), END_INSERTION_BLOCK)
+          console.log('finished with back-insertions')
           break
         }
       } catch (e: any) {

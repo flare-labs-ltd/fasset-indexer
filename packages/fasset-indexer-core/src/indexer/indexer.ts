@@ -8,6 +8,7 @@ import {
   BLOCK_HEIGHT_OFFSET
 } from '../config/constants'
 import type { Context } from '../context'
+import { AgentVault } from '../database/entities/agent'
 
 
 export class EventIndexer {
@@ -40,8 +41,7 @@ export class EventIndexer {
     }
     for (let i = startBlock; i <= endBlock; i += LOG_FETCH_SIZE + 1) {
       const endLoopBlock = Math.min(endBlock, i + LOG_FETCH_SIZE)
-      const sources = await this.context.trackedSourceAddresses()
-      const logs = await this.eventScraper.getLogs(i, endLoopBlock, sources)
+      const logs = await this.eventScraper.getLogs(i, endLoopBlock)
       await this.storeLogs(logs)
       await this.setFirstUnhandledBlock(endLoopBlock + 1)
       console.log(`Processed logs from block ${i} to block ${endLoopBlock}`)
@@ -52,7 +52,9 @@ export class EventIndexer {
   protected async storeLogs(logs: FullLog[]): Promise<void> {
     let lastHandledBlock: number | null = null
     for (const log of logs) {
-      await this.stateUpdater.onNewEvent(log)
+      if (await this.validEvent(log)) {
+        await this.stateUpdater.onNewEvent(log)
+      }
       if (lastHandledBlock === null || lastHandledBlock < log.blockNumber) {
         lastHandledBlock = log.blockNumber
         await this.setFirstUnhandledBlock(lastHandledBlock)
@@ -72,6 +74,13 @@ export class EventIndexer {
 
   protected async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
     await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK, blockNumber.toString())
+  }
+
+  private async validEvent(log: FullLog): Promise<boolean> {
+    if (log.source === this.context.getContractAddress('AssetManager_FTestXRP')) return true
+    if (log.source === this.context.getContractAddress('FTestXRP')) return true
+    const pool = await this.context.orm.em.fork().findOne(AgentVault, { collateralPool: { hex: log.source }})
+    return pool !== null
   }
 
 }
