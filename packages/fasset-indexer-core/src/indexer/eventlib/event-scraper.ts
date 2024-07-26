@@ -1,10 +1,10 @@
 import type { Context } from "../../context"
-import type { Filter, Log } from "ethers"
+import type { Log } from "ethers"
 
 
 export type EventArgs = any[]
 
-export interface FullLog {
+export interface Event {
   name: string
   args: EventArgs
   blockNumber: number
@@ -13,6 +13,8 @@ export interface FullLog {
   source: string
   blockTimestamp: number
   transactionHash: string
+  transactionSource: string
+  transactionTarget: string | null
 }
 
 interface LogUri {
@@ -22,51 +24,12 @@ interface LogUri {
 }
 
 export class EventScraper {
+
   constructor(public readonly context: Context) { }
 
-  async getLogs(from: number, to: number): Promise<FullLog[]> {
-    const rawLogs = await this.getRawLogs(from, to)
-    return this.parseRawLogs(rawLogs)
-  }
-
-  async getRawLogs(from: number, to: number): Promise<Log[]> {
-    const filter: Filter = {
-      address: this.context.getContractAddress("AssetManager_FTestXRP"),
-      fromBlock: from,
-      toBlock: to
-    }
-    const logs = await this.context.provider.getLogs(filter)
-    return logs.sort(EventScraper.logOrder) // enforce correct order
-  }
-
-  protected async parseRawLogs(rawLogs: Log[]): Promise<FullLog[]> {
-    const iface = this.context.assetManagerEventInterface
-    let blockTimestamp: number | null = null
-    let lastBlockNumber: number | null = null
-    const logs: FullLog[] = []
-    for (const log of rawLogs) {
-      const logDescription = iface.parseLog(log)
-      if (logDescription === null) continue
-      if (blockTimestamp === null || lastBlockNumber !== log.blockNumber) {
-        const block = await this.context.provider.getBlock(log.blockNumber)
-        if (block === null) {
-          throw new Error(`Failed to fetch block ${log.blockNumber}`)
-        }
-        blockTimestamp = block.timestamp
-        lastBlockNumber = log.blockNumber
-      }
-      logs.push({
-        name: logDescription.name,
-        args: logDescription.args,
-        blockNumber: log.blockNumber,
-        transactionIndex: log.transactionIndex,
-        logIndex: log.index,
-        source: log.address,
-        transactionHash: log.transactionHash,
-        blockTimestamp: blockTimestamp
-      })
-    }
-    return logs
+  async getLogs(fromBlock: number, toBlock: number): Promise<Log[]> {
+    const rawLogs = await this.context.provider.getLogs({ fromBlock, toBlock })
+    return rawLogs.sort(EventScraper.logOrder)
   }
 
   private static logOrder(log1: LogUri, log2: LogUri): number {

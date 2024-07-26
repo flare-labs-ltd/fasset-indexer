@@ -1,7 +1,7 @@
 import { Entity, Property, ManyToOne, OneToOne } from '@mikro-orm/core'
 import { uint256 } from '../../custom/typeUint256'
 import { AgentVault } from '../agent'
-import { CollateralType } from '../token'
+import { CollateralType } from '../events/token'
 
 
 @Entity()

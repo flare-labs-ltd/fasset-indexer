@@ -1,4 +1,4 @@
-import { ADDRESS_LENGTH, BYTES32_LENGTH } from "../../src/constants"
+import { ADDRESS_LENGTH, BYTES32_LENGTH } from "../../src/config/constants"
 
 
 const XRP_ALPHABET = 'rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz'

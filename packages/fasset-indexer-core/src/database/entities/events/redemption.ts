@@ -3,7 +3,7 @@ import { uint256 } from "../../custom/typeUint256"
 import { EvmAddress, UnderlyingAddress } from "../address"
 import { AgentVault } from "../agent"
 import { EvmLog, EventBound } from "../logs"
-import { BYTES32_LENGTH } from "../../../constants"
+import { BYTES32_LENGTH } from "../../../config/constants"
 
 
 @Entity()
@@ -190,5 +190,24 @@ export class RedemptionPaymentFailed extends EventBound {
     this.transactionHash = transactionHash
     this.spentUnderlyingUBA = spentUnderlyingUBA
     this.failureReason = failureReason
+  }
+}
+
+@Entity()
+export class RedemptionRequestIncomplete extends EventBound {
+
+  @PrimaryKey({ type: "number", autoincrement: true })
+  id!: number
+
+  @ManyToOne({ entity: () => EvmAddress })
+  redeemer: EvmAddress
+
+  @Property({ type: new uint256() })
+  remainingLots: bigint
+
+  constructor(evmLog: EvmLog, redeemer: EvmAddress, remainingLots: bigint) {
+    super(evmLog)
+    this.redeemer = redeemer
+    this.remainingLots = remainingLots
   }
 }

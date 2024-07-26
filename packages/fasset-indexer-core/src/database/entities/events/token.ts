@@ -1,6 +1,6 @@
 import { Entity, Property, OneToOne } from "@mikro-orm/core"
-import { EvmAddress } from "./address"
-import { EventBound, EvmLog } from "./logs"
+import { EvmAddress } from "../address"
+import { EventBound, EvmLog } from "../logs"
 
 
 @Entity()

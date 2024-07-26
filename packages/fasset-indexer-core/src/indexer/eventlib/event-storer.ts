@@ -1,9 +1,9 @@
-import { isUntrackedAgentVault } from "../shared"
+import { isUntrackedAgentVault, findOrCreateEvmAddress, findOrCreateUnderlyingAddress } from "../shared"
 import { EvmLog } from "../../database/entities/logs"
-import { CollateralType } from "../../database/entities/token"
-import { AddressType, EvmAddress, UnderlyingAddress } from "../../database/entities/address"
+import { CollateralType } from "../../database/entities/events/token"
+import { AddressType, EvmAddress } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
-import { AgentVaultCreated } from "../../database/entities/events/agent"
+import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
 import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
 import {
   CollateralReservationDeleted,
@@ -12,12 +12,14 @@ import {
 } from "../../database/entities/events/minting"
 import {
   RedemptionRequested, RedemptionPerformed, RedemptionDefault,
-  RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected
+  RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
+  RedemptionRequestIncomplete
 } from "../../database/entities/events/redemption"
 import {
   FullLiquidationStarted, LiquidationEnded, LiquidationPerformed, LiquidationStarted
 } from "../../database/entities/events/liquidation"
-import { AgentSettingChanged, RedemptionRequestIncomplete } from "../../database/entities/events/tracking"
+import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
+import { ERC20Transfer } from "../../database/entities/events/fasset"
 import {
   AGENT_VAULT_CREATED, AGENT_SETTING_CHANGED,
   COLLATERAL_RESERVED, MINTING_EXECUTED, MINTING_PAYMENT_DEFAULT, COLLATERAL_RESERVATION_DELETED,
@@ -25,10 +27,14 @@ import {
   REDEMPTION_PAYMENT_FAILED, REDEMPTION_REJECTED, REDEMPTION_REQUEST_INCOMPLETE,
   LIQUIDATION_STARTED, LIQUIDATION_PERFORMED, LIQUIDATION_ENDED, FULL_LIQUIDATION_STARTED,
   AGENT_ENTERED_AVAILABLE, AVAILABLE_AGENT_EXITED, AGENT_DESTROYED,
-  COLLATERAL_TYPE_ADDED
-} from '../../constants'
+  COLLATERAL_TYPE_ADDED,
+  COLLATERAL_POOL_ENTER,
+  COLLATERAL_POOL_EXIT,
+  SELF_CLOSE,
+  ERC20_TRANSFER
+} from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
-import type { FullLog } from "./event-scraper"
+import type { Event } from "./event-scraper"
 import type {
   AgentAvailableEvent, AgentDestroyedEvent, AgentSettingChangeAnnouncedEvent,
   AgentVaultCreatedEvent, AvailableAgentExitAnnouncedEvent,
@@ -36,26 +42,30 @@ import type {
   MintingExecutedEvent, MintingPaymentDefaultEvent,
   RedemptionDefaultEvent, RedemptionPaymentBlockedEvent, RedemptionPaymentFailedEvent, RedemptionPerformedEvent,
   RedemptionRejectedEvent, RedemptionRequestIncompleteEvent, RedemptionRequestedEvent,
-  FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent
+  FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
+  SelfCloseEvent
 } from "../../../chain/typechain/AMEvents"
+import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/CollateralPool"
+import type { TransferEvent } from "../../../chain/typechain/ERC20"
 
 
 export abstract class EventStorer {
 
-  async logExists(em: EntityManager, log: FullLog): Promise<boolean> {
+  async logExists(em: EntityManager, log: Event): Promise<boolean> {
     const { blockNumber, transactionIndex, logIndex } = log
     const evmLog = await em.findOne(EvmLog, { blockNumber, transactionIndex, logIndex })
     return evmLog !== null
   }
 
-  async processLog(em: EntityManager, log: FullLog): Promise<void> {
+  async processEvent(em: EntityManager, log: Event): Promise<void> {
     if (!await this.logExists(em, log)) {
       const evmLog = await this.createLogEntity(em, log)
-      await this.processEvent(em, log, evmLog)
+      const processed = await this._processEvent(em, log, evmLog)
+      if (processed) em.persist(evmLog)
     }
   }
 
-  async processEvent(em: EntityManager, log: FullLog, evmLog: EvmLog): Promise<void> {
+  protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
     switch (log.name) {
       case COLLATERAL_TYPE_ADDED: {
         await this.onCollateralTypeAdded(em, evmLog, log.args as CollateralTypeAddedEvent.OutputTuple)
@@ -71,6 +81,9 @@ export abstract class EventStorer {
         break
       } case AGENT_DESTROYED: {
         await this.onAgentDestroyed(em, log.args as AgentDestroyedEvent.OutputTuple)
+        break
+      } case SELF_CLOSE: {
+        await this.onSelfClose(em, evmLog, log.args as SelfCloseEvent.OutputTuple)
         break
       } case MINTING_EXECUTED: {
         await this.onMintingExecuted(em, evmLog, log.args as MintingExecutedEvent.OutputTuple)
@@ -120,15 +133,25 @@ export abstract class EventStorer {
       } case AGENT_ENTERED_AVAILABLE: {
         await this.onAgentEnteredAvailable(em, log.args as AgentAvailableEvent.OutputTuple)
         break
-      } default: {
+      } case COLLATERAL_POOL_ENTER: {
+        await this.onCollateralPoolEntered(em, evmLog, log.args as EnteredEvent.OutputTuple)
         break
+      } case COLLATERAL_POOL_EXIT: {
+        await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
+        break
+      } case ERC20_TRANSFER: {
+        await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
+        break
+      } default: {
+        return false
       }
     }
+    return true
   }
 
   protected async onCollateralTypeAdded(em: EntityManager, evmLog: EvmLog, logArgs: CollateralTypeAddedEvent.OutputTuple): Promise<void> {
     const [ collateralClass, token, decimals, directPricePair, assetFtsoSymbol, tokenFtsoSymbol, ] = logArgs
-    const tokenEvmAddress = await this.findOrCreateEvmAddress(em, token, AddressType.SYSTEM)
+    const tokenEvmAddress = await findOrCreateEvmAddress(em, token, AddressType.SYSTEM)
     const collateralTypeAdded = new CollateralType(evmLog,
       Number(collateralClass), tokenEvmAddress, Number(decimals),
       directPricePair, assetFtsoSymbol, tokenFtsoSymbol
@@ -139,7 +162,7 @@ export abstract class EventStorer {
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // agent
 
-  protected async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, logArgs: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
+  protected async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, logArgs: AgentVaultCreatedEvent.OutputTuple, collateralPoolToken?: string): Promise<AgentVault> {
     const [
       owner, agentVault, collateralPool, underlyingAddress, vaultCollateralToken,
       feeBIPS, poolFeeShareBIPS, mintingVaultCollateralRatioBIPS, mintingPoolCollateralRatioBIPS,
@@ -147,14 +170,18 @@ export abstract class EventStorer {
     ] = logArgs
     const agentOwnerEntity = await em.findOneOrFail(AgentOwner, { manager: { address: { hex: owner }}})
     // addresses
-    const agentEvmAddressEntity = await this.findOrCreateEvmAddress(em, agentVault, AddressType.AGENT)
-    const agentUnderlyingAddressEntity = await this.findOrCreateUnderlyingAddress(em, underlyingAddress, AddressType.AGENT)
-    const collateralPoolEvmAddressEntity = await this.findOrCreateEvmAddress(em, collateralPool, AddressType.AGENT)
+    const agentEvmAddress = await findOrCreateEvmAddress(em, agentVault, AddressType.AGENT)
+    const agentUnderlyingAddress = await findOrCreateUnderlyingAddress(em, underlyingAddress, AddressType.AGENT)
+    const collateralPoolEvmAddress = await findOrCreateEvmAddress(em, collateralPool, AddressType.AGENT)
     // create agent vault
     const agentVaultEntity = new AgentVault(
-      agentEvmAddressEntity, agentUnderlyingAddressEntity,
-      collateralPoolEvmAddressEntity, agentOwnerEntity, false
+      agentEvmAddress, agentUnderlyingAddress,
+      collateralPoolEvmAddress,
+      agentOwnerEntity, false
     )
+    if (collateralPoolToken !== undefined) {
+      agentVaultEntity.collateralPoolToken = await findOrCreateEvmAddress(em, collateralPoolToken!, AddressType.AGENT)
+    }
     const vaultCollateralTokenEntity = await em.findOneOrFail(CollateralType, { address: { hex: vaultCollateralToken }})
     const agentVaultSettings = new AgentVaultSettings(
       agentVaultEntity, vaultCollateralTokenEntity, feeBIPS, poolFeeShareBIPS, mintingVaultCollateralRatioBIPS,
@@ -200,6 +227,13 @@ export abstract class EventStorer {
     em.persist(agentVaultEntity)
   }
 
+  protected async onSelfClose(em: EntityManager, evmLog: EvmLog, logArgs: SelfCloseEvent.OutputTuple): Promise<void> {
+    const [ agentVault, valueUBA ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const selfClose = new SelfClose(evmLog, agentVaultEntity, valueUBA)
+    em.persist(selfClose)
+  }
+
   private applyAgentSettingChange(agentSettings: AgentVaultSettings, name: string, value: bigint): void {
     switch (name) {
       case "feeBIPS": {
@@ -242,9 +276,9 @@ export abstract class EventStorer {
       paymentAddress, paymentReference, executor, executorFeeNatWei
     ] = logArgs
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
-    const minterEvmAddress = await this.findOrCreateEvmAddress(em, minter, AddressType.USER)
-    const paymentUnderlyingAddress = await this.findOrCreateUnderlyingAddress(em, paymentAddress, AddressType.AGENT)
-    const executorEvmAddress = await this.findOrCreateEvmAddress(em, executor, AddressType.SERVICE)
+    const minterEvmAddress = await findOrCreateEvmAddress(em, minter, AddressType.USER)
+    const paymentUnderlyingAddress = await findOrCreateUnderlyingAddress(em, paymentAddress, AddressType.AGENT)
+    const executorEvmAddress = await findOrCreateEvmAddress(em, executor, AddressType.SERVICE)
     const collateralReserved = new CollateralReserved(evmLog,
       Number(collateralReservationId), agentVaultEntity, minterEvmAddress, valueUBA, feeUBA,
       Number(firstUnderlyingBlock), Number(lastUnderlyingBlock), Number(lastUnderlyingTimestamp),
@@ -284,9 +318,9 @@ export abstract class EventStorer {
       paymentReference, executor, executorFeeNatWei
     ] = logArgs
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
-    const redeemerEvmAddress = await this.findOrCreateEvmAddress(em, redeemer, AddressType.USER)
-    const paymentUnderlyingAddress = await this.findOrCreateUnderlyingAddress(em, paymentAddress, AddressType.USER)
-    const executorEvmAddress = await this.findOrCreateEvmAddress(em, executor, AddressType.SERVICE)
+    const redeemerEvmAddress = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
+    const paymentUnderlyingAddress = await findOrCreateUnderlyingAddress(em, paymentAddress, AddressType.USER)
+    const executorEvmAddress = await findOrCreateEvmAddress(em, executor, AddressType.SERVICE)
     const redemptionRequested = new RedemptionRequested(evmLog,
       agentVaultEntity, redeemerEvmAddress, Number(requestId), paymentUnderlyingAddress, valueUBA, feeUBA,
       Number(firstUnderlyingBlock), Number(lastUnderlyingBlock), Number(lastUnderlyingTimestamp),
@@ -350,7 +384,7 @@ export abstract class EventStorer {
   protected async onLiquidationPerformed(em: EntityManager, evmLog: EvmLog, logArgs: LiquidationPerformedEvent.OutputTuple): Promise<void> {
     const [ agentVault, liquidator, valueUBA ] = logArgs
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
-    const liquidatorEvmAddress = await this.findOrCreateEvmAddress(em, liquidator, AddressType.USER)
+    const liquidatorEvmAddress = await findOrCreateEvmAddress(em, liquidator, AddressType.USER)
     const liquidationPerformed = new LiquidationPerformed(evmLog, agentVaultEntity, liquidatorEvmAddress, valueUBA)
     em.persist(liquidationPerformed)
   }
@@ -367,38 +401,56 @@ export abstract class EventStorer {
 
   protected async onRedemptionPaymentIncomplete(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionRequestIncompleteEvent.OutputTuple): Promise<void> {
     const [ redeemer, remainingLots ] = logArgs
-    const redeemerEvmAddress = await this.findOrCreateEvmAddress(em, redeemer, AddressType.USER)
+    const redeemerEvmAddress = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
     const redemptionRequestIncomplete = new RedemptionRequestIncomplete(evmLog, redeemerEvmAddress, remainingLots)
     em.persist(redemptionRequestIncomplete)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // collateral pool
+
+  protected async onCollateralPoolEntered(em: EntityManager, evmLog: EvmLog, logArgs: EnteredEvent.OutputTuple): Promise<void> {
+    const [ tokenHolder, amountNatWei, receivedTokensWei, addedFAssetFeesUBA, newFAssetFeeDebt, timelockExpiresAt ] = logArgs
+    const tokenHolderEvmAddress = await findOrCreateEvmAddress(em, tokenHolder, AddressType.USER)
+    const collateralPoolEntered = new CollateralPoolEntered(
+      evmLog, tokenHolderEvmAddress, amountNatWei, receivedTokensWei, addedFAssetFeesUBA, newFAssetFeeDebt, Number(timelockExpiresAt)
+    )
+    em.persist(collateralPoolEntered)
+  }
+
+  protected async onCollateralPoolExited(em: EntityManager, evmLog: EvmLog, logArgs: ExitedEvent.OutputTuple): Promise<void> {
+    const [ tokenHolder, burnedTokensWei, receivedNatWei, receviedFAssetFeesUBA, closedFAssetsUBA, newFAssetFeeDebt ] = logArgs
+    const tokenHolderEvmAddress = await findOrCreateEvmAddress(em, tokenHolder, AddressType.USER)
+    const collateralPoolExited = new CollateralPoolExited(
+      evmLog, tokenHolderEvmAddress, burnedTokensWei, receivedNatWei, receviedFAssetFeesUBA, closedFAssetsUBA, newFAssetFeeDebt
+    )
+    em.persist(collateralPoolExited)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // erc20 (fasset token)
+
+  protected async onERC20Transfer(em: EntityManager, evmLog: EvmLog, logArgs: TransferEvent.OutputTuple): Promise<void> {
+    const [ from, to, value ] = logArgs
+    const fromEvmAddress = await findOrCreateEvmAddress(em, from, AddressType.USER)
+    const toEvmAddress = await findOrCreateEvmAddress(em, to, AddressType.USER)
+    const erc20Transfer = new ERC20Transfer(evmLog, fromEvmAddress, toEvmAddress, value)
+    em.persist(erc20Transfer)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
   // helpers
 
-  protected async findOrCreateEvmAddress(em: EntityManager, address: string, type: AddressType): Promise<EvmAddress> {
-    let evmAddress = await em.findOne(EvmAddress, { hex: address})
-    if (!evmAddress) {
-      evmAddress = new EvmAddress(address, type)
-      em.persist(evmAddress)
-    }
-    return evmAddress
-  }
-
-  protected async findOrCreateUnderlyingAddress(em: EntityManager, address: string, type: AddressType): Promise<UnderlyingAddress> {
-    let underlyingAddress = await em.findOne(UnderlyingAddress, { text: address })
-    if (!underlyingAddress) {
-      underlyingAddress = new UnderlyingAddress(address, type)
-      em.persist(underlyingAddress)
-    }
-    return underlyingAddress
-  }
-
-  private async createLogEntity(em: EntityManager, log: FullLog): Promise<EvmLog> {
-    const source = await this.findOrCreateEvmAddress(em, log.source, AddressType.SYSTEM)
+  private async createLogEntity(em: EntityManager, log: Event): Promise<EvmLog> {
+    const source = await findOrCreateEvmAddress(em, log.source, AddressType.SYSTEM)
+    const txSource = await findOrCreateEvmAddress(em, log.transactionSource, AddressType.SYSTEM)
+    const txTarget = (log.transactionTarget === null) ? null
+      : await findOrCreateEvmAddress(em, log.transactionTarget, AddressType.SYSTEM)
     const evmLog = new EvmLog(
-      log.blockNumber, log.transactionIndex, log.logIndex,
-      log.name, source, log.transactionHash, log.blockTimestamp)
-    em.persist(evmLog)
+      log.blockNumber, log.transactionIndex, log.logIndex, log.name, source,
+      log.blockTimestamp, log.transactionHash, txSource, txTarget
+    )
+    // do not persist here, only persist if the log was processed
     return evmLog
   }
 

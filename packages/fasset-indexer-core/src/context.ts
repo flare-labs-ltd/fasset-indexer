@@ -1,23 +1,28 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "./database/utils"
-import { AssetManager__factory, AMEvents__factory, ERC20__factory, AgentOwnerRegistry__factory } from "../chain/typechain"
-import type { IConfig } from "./config"
-import type { AssetManager, ERC20 } from "../chain/typechain"
+import { AssetManager__factory, AMEvents__factory, ERC20__factory, AgentOwnerRegistry__factory, CollateralPool__factory } from "../chain/typechain"
+import type { AssetManager, ERC20, AgentOwnerRegistry } from "../chain/typechain"
 import type { AMEventsInterface } from "../chain/typechain/AMEvents"
-import type { AgentOwnerRegistry } from "../chain/typechain"
+import type { CollateralPool, CollateralPoolInterface } from "../chain/typechain/CollateralPool"
+import type { ERC20Interface } from "../chain/typechain/ERC20"
 import type { ORM } from "./database/interface"
+import type { IConfig } from "./config/interface"
 
 
 export class Context {
   provider: JsonRpcProvider
   assetManagerEventInterface: AMEventsInterface
+  collateralPoolInterface: CollateralPoolInterface
   agentOwnerRegistryContract: AgentOwnerRegistry
+  erc20Interface: ERC20Interface
   orm: ORM
 
   constructor(public config: IConfig, orm: ORM) {
     this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
-    this.assetManagerEventInterface = this.getAssetManagerEventInterface()
+    this.assetManagerEventInterface = AMEvents__factory.createInterface()
     this.agentOwnerRegistryContract = this.getAgentOwnerRegistryContract()
+    this.collateralPoolInterface = CollateralPool__factory.createInterface()
+    this.erc20Interface = ERC20__factory.createInterface()
     this.orm = orm
   }
 
@@ -55,16 +60,16 @@ export class Context {
     return ERC20__factory.connect(address, this.provider)
   }
 
+  getCollateralPool(address: string): CollateralPool {
+    return CollateralPool__factory.connect(address, this.provider)
+  }
+
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {
     const connection = new FetchRequest(rpcUrl)
     if (apiKey !== undefined) {
       connection.setHeader('x-api-key', apiKey)
     }
     return new JsonRpcProvider(connection)
-  }
-
-  private getAssetManagerEventInterface(): AMEventsInterface {
-    return AMEvents__factory.createInterface()
   }
 
   private getAgentOwnerRegistryContract(): AgentOwnerRegistry {

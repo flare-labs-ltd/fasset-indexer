@@ -1,26 +1,24 @@
+import { getOrmConfig } from "../config/utils"
 import { createOrm } from "../database/utils"
 import { getVar } from "../indexer/shared"
+import { EvmLog } from "../database/entities/logs"
+import { AgentVault } from "../database/entities/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
-import { FIRST_UNHANDLED_EVENT_BLOCK, MAX_DATABASE_ENTRIES_FETCH } from "../constants"
-import type { OrmOptions, ORM } from "../database/interface"
+import { END_EVENT_BLOCK__UPDATE_1, FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1, MAX_DATABASE_ENTRIES_FETCH } from "../config/constants"
+import type { ORM } from "../database/interface"
+import type { IUserDatabaseConfig } from "../config/interface"
 
 
 export class Analytics {
 
   constructor(public readonly orm: ORM) {}
 
-  static async create(path: OrmOptions) {
-    const orm = await createOrm(path, "safe")
+  static async create(config: IUserDatabaseConfig): Promise<Analytics> {
+    const ormOptions = getOrmConfig(config)
+    const orm = await createOrm(ormOptions, "safe")
     return new Analytics(orm)
-  }
-
-  async unhandledMintings(): Promise<number> {
-    const qb = this.orm.em.qb(MintingExecuted, 'o')
-    qb.select('o').where({ poolFeeUBA: null })
-    const result = await qb.count('o', true).execute()
-    return result[0].count
   }
 
   ///////////////////////////////////////////////////////////////
@@ -29,6 +27,28 @@ export class Analytics {
   async currentBlock(): Promise<number | null> {
     const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK)
     return (v && v.value) ? parseInt(v.value) : null
+  }
+
+  async blocksToBackSync(): Promise<number | null> {
+    const start = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1)
+    if (start === null || start.value === undefined) return null
+    const end = await getVar(this.orm.em.fork(), END_EVENT_BLOCK__UPDATE_1)
+    if (end === null || end.value === undefined)  return null
+    return parseInt(end.value) - parseInt(start.value) + 1
+  }
+
+  async logsWithoutSenders(): Promise<number> {
+    const qb = this.orm.em.qb(EvmLog, 'o')
+    qb.select('o').where({ transactionSource: null })
+    const result = await qb.count('o.id').execute()
+    return result[0].count
+  }
+
+  async agentsWithoutCPT(): Promise<number> {
+    const qb = this.orm.em.qb(AgentVault, 'o')
+    qb.select('o').where({ collateralPoolToken: null })
+    const result = await qb.count('o.address_id').execute()
+    return result[0].count
   }
 
   //////////////////////////////////////////////////////////////
@@ -187,15 +207,4 @@ export class Analytics {
   //////////////////////////////////////////////////////////////////////
   // user specific
 
-
 }
-
-import { config } from "../config"
-async function main() {
-  const metrics = await Analytics.create(config.db)
-  console.log(await metrics.totalReserved())
-  await metrics.orm.close()
-}
-
-
-main()

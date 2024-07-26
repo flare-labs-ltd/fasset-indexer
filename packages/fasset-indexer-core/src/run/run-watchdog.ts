@@ -1,6 +1,6 @@
 import { StateWatchdog } from "../indexer/watchdog"
 import { Context } from "../context"
-import { config } from "../config"
+import { config } from "../config/config"
 
 
 async function runWatchdog() {

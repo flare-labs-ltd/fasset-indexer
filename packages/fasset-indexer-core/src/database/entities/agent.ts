@@ -61,6 +61,9 @@ export class AgentVault {
   @ManyToOne({ entity: () => EvmAddress, unique: true })
   collateralPool: EvmAddress
 
+  @ManyToOne({ entity: () => EvmAddress, unique: true, nullable: true })
+  collateralPoolToken?: EvmAddress
+
   @ManyToOne(() => AgentOwner, { fieldName: 'vaults' })
   owner: AgentOwner
 
@@ -72,11 +75,13 @@ export class AgentVault {
     underlyingAddress: UnderlyingAddress,
     collateralPool: EvmAddress,
     owner: AgentOwner,
-    destroyed: boolean
+    destroyed: boolean,
+    collateralPoolToken?: EvmAddress
   ) {
     this.address = address
     this.underlyingAddress = underlyingAddress
     this.collateralPool = collateralPool
+    this.collateralPoolToken = collateralPoolToken
     this.owner = owner
     this.destroyed = destroyed
   }
