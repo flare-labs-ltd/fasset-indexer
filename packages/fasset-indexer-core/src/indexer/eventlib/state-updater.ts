@@ -4,7 +4,7 @@ import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/ag
 import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
-import type { FullLog } from "./event-scraper"
+import type { Event } from "./event-scraper"
 import type { Context } from "../../context"
 import type { EvmLog } from "../../database/entities/logs"
 import type { AgentVaultCreatedEvent } from "../../../chain/typechain/AMEvents"
@@ -17,7 +17,7 @@ export class StateUpdater extends EventStorer {
     super()
   }
 
-  async onNewEvent(log: FullLog): Promise<void> {
+  async onNewEvent(log: Event): Promise<void> {
     if (this.context.ignoreLog(log.name)) return
     await this.context.orm.em.fork().transactional(async (em) => {
       await this.processLog(em, log)

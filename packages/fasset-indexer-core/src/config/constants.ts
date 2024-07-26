@@ -1,6 +1,6 @@
 // chain call config
 export const CHAIN_FETCH_RETRY_LIMIT = 20
-export const MID_CHAIN_FETCH_SLEEP_MS = 250
+export const MID_CHAIN_FETCH_SLEEP_MS = 400
 
 // event scrape config
 export const LOG_FETCH_SIZE = 30
@@ -12,6 +12,8 @@ export const MIN_BLOCK_NUMBER = 16146574
 export const STATE_UPDATE_SLEEP_MS = 60 * 1000 // collect state every one minute
 
 // db settings
+export const MIN_DATABASE_POOL_CONNECTIONS = 2
+export const MAX_DATABASE_POOL_CONNECTIONS = 20
 export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names

@@ -20,6 +20,7 @@ import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/c
 import { ERC20Transfer } from "./entities/events/fasset"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
+import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
 import type { Options } from "@mikro-orm/core"
 import type { AbstractSqlDriver } from "@mikro-orm/knex"
 
@@ -36,6 +37,10 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     CollateralPoolEntered, CollateralPoolExited, ERC20Transfer,
     UntrackedAgentVault
   ],
+  pool: {
+    min: MIN_DATABASE_POOL_CONNECTIONS,
+    max: MAX_DATABASE_POOL_CONNECTIONS
+  },
   debug: false
 })
 

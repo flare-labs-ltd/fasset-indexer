@@ -1,6 +1,6 @@
 import { isUntrackedAgentVault, findOrCreateEvmAddress, findOrCreateUnderlyingAddress } from "../shared"
 import { EvmLog } from "../../database/entities/logs"
-import { CollateralType } from "../../database/entities/token"
+import { CollateralType } from "../../database/entities/events/token"
 import { AddressType } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
@@ -34,7 +34,7 @@ import {
   ERC20_TRANSFER
 } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
-import type { FullLog } from "./event-scraper"
+import type { Event } from "./event-scraper"
 import type {
   AgentAvailableEvent, AgentDestroyedEvent, AgentSettingChangeAnnouncedEvent,
   AgentVaultCreatedEvent, AvailableAgentExitAnnouncedEvent,
@@ -51,20 +51,20 @@ import type { TransferEvent } from "../../../chain/typechain/ERC20"
 
 export abstract class EventStorer {
 
-  async logExists(em: EntityManager, log: FullLog): Promise<boolean> {
+  async logExists(em: EntityManager, log: Event): Promise<boolean> {
     const { blockNumber, transactionIndex, logIndex } = log
     const evmLog = await em.findOne(EvmLog, { blockNumber, transactionIndex, logIndex })
     return evmLog !== null
   }
 
-  async processLog(em: EntityManager, log: FullLog): Promise<void> {
+  async processLog(em: EntityManager, log: Event): Promise<void> {
     if (!await this.logExists(em, log)) {
       const evmLog = await this.createLogEntity(em, log)
       await this.processEvent(em, log, evmLog)
     }
   }
 
-  async processEvent(em: EntityManager, log: FullLog, evmLog: EvmLog): Promise<void> {
+  async processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<void> {
     switch (log.name) {
       case COLLATERAL_TYPE_ADDED: {
         await this.onCollateralTypeAdded(em, evmLog, log.args as CollateralTypeAddedEvent.OutputTuple)
@@ -435,7 +435,7 @@ export abstract class EventStorer {
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // helpers
 
-  private async createLogEntity(em: EntityManager, log: FullLog): Promise<EvmLog> {
+  private async createLogEntity(em: EntityManager, log: Event): Promise<EvmLog> {
     const source = await findOrCreateEvmAddress(em, log.source, AddressType.SYSTEM)
     const txSource = await findOrCreateEvmAddress(em, log.transactionSource, AddressType.SYSTEM)
     const txTarget = (log.transactionTarget === null) ? null

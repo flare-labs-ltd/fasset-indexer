@@ -1,26 +1,31 @@
+import chalk, { Chalk } from 'chalk'
 import { sleep } from '../utils'
 import { getVar, setVar } from './shared'
 import { StateUpdater } from './eventlib/state-updater'
-import { EventScraper, type FullLog } from './eventlib/event-scraper'
+import { EventParser } from './eventlib/event-parser'
+import { EventScraper } from './eventlib/event-scraper'
 import {
   FIRST_UNHANDLED_EVENT_BLOCK, LOG_FETCH_SIZE,
   MID_CHAIN_FETCH_SLEEP_MS, MIN_BLOCK_NUMBER, LOG_FETCH_SLEEP_MS,
   BLOCK_HEIGHT_OFFSET
 } from '../config/constants'
+import type { Log } from 'ethers'
 import type { Context } from '../context'
-import { AgentVault } from '../database/entities/agent'
 
 
-export class EventIndexer {
+export class EventIndexer extends EventParser {
   readonly eventScraper: EventScraper
   readonly stateUpdater: StateUpdater
+  color: Chalk = chalk.green
 
   constructor(public readonly context: Context) {
+    super(context)
     this.eventScraper = new EventScraper(context)
     this.stateUpdater = new StateUpdater(context)
   }
 
   async run(startBlock?: number): Promise<void> {
+    console.log(chalk.cyan('starting indexer'))
     while (true) {
       try {
         await this.runHistoric(startBlock)
@@ -36,51 +41,46 @@ export class EventIndexer {
     if (startBlock === undefined || firstUnhandledBlock > startBlock) {
       startBlock = firstUnhandledBlock
     }
-    if (endBlock === undefined) {
-      endBlock = await this.lastBlockToHandle()
+    const lastBlockToHandle = await this.lastBlockToHandle()
+    if (endBlock === undefined || endBlock > lastBlockToHandle) {
+      endBlock = lastBlockToHandle
     }
     for (let i = startBlock; i <= endBlock; i += LOG_FETCH_SIZE + 1) {
       const endLoopBlock = Math.min(endBlock, i + LOG_FETCH_SIZE)
       const logs = await this.eventScraper.getLogs(i, endLoopBlock)
       await this.storeLogs(logs)
       await this.setFirstUnhandledBlock(endLoopBlock + 1)
-      console.log(`Processed logs from block ${i} to block ${endLoopBlock}`)
+      console.log(this.color(`Processed logs from block ${i} to block ${endLoopBlock}`))
       if (endLoopBlock !== endBlock) await sleep(MID_CHAIN_FETCH_SLEEP_MS)
     }
   }
 
-  protected async storeLogs(logs: FullLog[]): Promise<void> {
+  async lastBlockToHandle(): Promise<number> {
+    const blockHeight = await this.context.provider.getBlockNumber()
+    return blockHeight - BLOCK_HEIGHT_OFFSET
+  }
+
+  async getFirstUnhandledBlock(): Promise<number> {
+    const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK)
+    return firstUnhandled !== null ? parseInt(firstUnhandled!.value!) : MIN_BLOCK_NUMBER
+  }
+
+  async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
+    await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK, blockNumber.toString())
+  }
+
+  protected async storeLogs(logs: Log[]): Promise<void> {
     let lastHandledBlock: number | null = null
     for (const log of logs) {
-      if (await this.validEvent(log)) {
-        await this.stateUpdater.onNewEvent(log)
+      const fullLog = await this.logToEvent(log)
+      if (fullLog !== null) {
+        await this.stateUpdater.onNewEvent(fullLog)
       }
       if (lastHandledBlock === null || lastHandledBlock < log.blockNumber) {
         lastHandledBlock = log.blockNumber
         await this.setFirstUnhandledBlock(lastHandledBlock)
       }
     }
-  }
-
-  protected async lastBlockToHandle(): Promise<number> {
-    const blockHeight = await this.context.provider.getBlockNumber()
-    return blockHeight - BLOCK_HEIGHT_OFFSET
-  }
-
-  protected async getFirstUnhandledBlock(): Promise<number> {
-    const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK)
-    return firstUnhandled !== null ? parseInt(firstUnhandled!.value!) : MIN_BLOCK_NUMBER
-  }
-
-  protected async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
-    await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK, blockNumber.toString())
-  }
-
-  private async validEvent(log: FullLog): Promise<boolean> {
-    if (log.source === this.context.getContractAddress('AssetManager_FTestXRP')) return true
-    if (log.source === this.context.getContractAddress('FTestXRP')) return true
-    const pool = await this.context.orm.em.fork().findOne(AgentVault, { collateralPool: { hex: log.source }})
-    return pool !== null
   }
 
 }
