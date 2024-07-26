@@ -3,7 +3,7 @@ import { sleep } from "../utils"
 import { AgentVault } from "../database/entities/agent"
 import { isUntrackedAgentVault, updateAgentVaultInfo } from "./shared"
 import { Context } from "../context"
-import { MID_CHAIN_FETCH_SLEEP_MS, STATE_UPDATE_SLEEP_MS } from "../constants"
+import { MID_CHAIN_FETCH_SLEEP_MS, STATE_UPDATE_SLEEP_MS } from "../config/constants"
 
 
 export class StateWatchdog {

@@ -1,13 +1,13 @@
-import { EntityManager, NotFoundError } from "@mikro-orm/knex"
+import { EntityManager } from "@mikro-orm/knex"
 import { AddressType } from "../../database/entities/address"
 import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/agent"
 import { UntrackedAgentVault } from "../../database/entities/state/var"
-import { updateAgentVaultInfo } from "../shared"
+import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
-import type { FullLog } from "./event-scraper"
+import type { AgentVaultCreatedEvent } from "../../../chain/typechain/AMEvents"
+import type { Event } from "./event-scraper"
 import type { Context } from "../../context"
 import type { EvmLog } from "../../database/entities/logs"
-import type { AgentVaultCreatedEvent } from "../../../chain/typechain/AMEvents"
 
 
 // binds chain reading to event storage
@@ -17,20 +17,30 @@ export class StateUpdater extends EventStorer {
     super()
   }
 
-  async onNewEvent(log: FullLog): Promise<void> {
+  async onNewEvent(log: Event): Promise<void> {
     if (this.context.ignoreLog(log.name)) return
     await this.context.orm.em.fork().transactional(async (em) => {
-      await this.processLog(em, log)
+      await this.processEvent(em, log)
     })
   }
 
   protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
-    const [ owner, ] = args
+    const [ owner,, collateralPool ] = args
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentOwner(em, manager)
-    const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args)
+    const collateralPoolToken = await this.getCollateralPoolToken(collateralPool)
+    const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args, collateralPoolToken)
     await this.updateAgentVaultInfo(em, agentVaultEntity)
     return agentVaultEntity
+  }
+
+  private async getCollateralPoolToken(collateralPool: string): Promise<string | undefined> {
+    const collateralPoolContract = this.context.getCollateralPool(collateralPool)
+    try {
+      return collateralPoolContract.token()
+    } catch (e: any) {
+      console.error(`Failed to fetch collateral pool token for collateral pool ${collateralPool}: ${e}`)
+    }
   }
 
   private async ensureAgentManager(em: EntityManager, address: string): Promise<AgentManager> {
@@ -46,7 +56,7 @@ export class StateUpdater extends EventStorer {
     let agentOwner = await em.findOne(AgentOwner, { manager })
     if (agentOwner === null) {
       const address = await this.context.agentOwnerRegistryContract.getWorkAddress(manager.address.hex)
-      const evmAddress = await this.findOrCreateEvmAddress(em, address, AddressType.AGENT)
+      const evmAddress = await findOrCreateEvmAddress(em, address, AddressType.AGENT)
       agentOwner = new AgentOwner(evmAddress, manager)
       em.persist(agentOwner)
     }
@@ -56,7 +66,7 @@ export class StateUpdater extends EventStorer {
   private async findOrCreateAgentManager(em: EntityManager, manager: string, full: boolean): Promise<AgentManager> {
     let agentManager = await em.findOne(AgentManager, { address: { hex: manager }})
     if (agentManager === null) {
-      const managerEvmAddress = await this.findOrCreateEvmAddress(em, manager, AddressType.AGENT)
+      const managerEvmAddress = await findOrCreateEvmAddress(em, manager, AddressType.AGENT)
       agentManager = new AgentManager(managerEvmAddress)
     }
     if (full && agentManager.name === undefined) {

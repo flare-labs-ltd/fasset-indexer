@@ -39,6 +39,7 @@
         "@mikro-orm/mysql": "^6.2.9",
         "@mikro-orm/postgresql": "^6.2.9",
         "@mikro-orm/sqlite": "^6.2.9",
+        "chalk": "4.1.2",
         "ethers": "^6.13.0",
         "mikro-orm": "^6.2.9"
     },
