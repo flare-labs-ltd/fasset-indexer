@@ -33,11 +33,15 @@ export async function addCollateralPoolTokens(context: Context) {
   const vaults = await context.orm.em.fork().find(AgentVault, { collateralPoolToken: null }, { populate: ['collateralPool'] })
   for (const vault of vaults) {
     await context.orm.em.fork().transactional(async (em) => {
-      const collateralPool = context.getCollateralPool(vault.collateralPool.hex)
-      const collateralPoolToken = await collateralPool.token()
-      vault.collateralPoolToken = await findOrCreateEvmAddress(context.orm.em.fork(), collateralPoolToken, AddressType.AGENT)
-      em.persist(vault)
-      await sleep(MID_CHAIN_FETCH_SLEEP_MS / 2)
+      try {
+        const collateralPool = context.getCollateralPool(vault.collateralPool.hex)
+        const collateralPoolToken = await collateralPool.token()
+        vault.collateralPoolToken = await findOrCreateEvmAddress(context.orm.em.fork(), collateralPoolToken, AddressType.AGENT)
+        em.persist(vault)
+        await sleep(MID_CHAIN_FETCH_SLEEP_MS / 2)
+      } catch (e: any) {
+        console.error(`Failed to fetch collateral pool token for collateral pool ${vault.collateralPool.hex}: ${e}`)
+      }
     })
   }
   console.log(chalk.magenta('finished adding collateral pool tokens'))

@@ -1,7 +1,8 @@
-import { Context } from "../context"
-import { config } from "../config/config"
+import { sleep } from "../utils"
 import { addCollateralPoolTokens, addTransactionData, removeSelfCloseEvents } from "../indexer/migrations/scripts"
 import { EventIndexerBackAndFrontInsertion } from "../indexer/migrations/back-and-front"
+import { Context } from "../context"
+import { config } from "../config/config"
 
 
 async function runIndexer(start?: number) {
@@ -13,10 +14,18 @@ async function runIndexer(start?: number) {
     await context.orm.close()
     process.exit(0)
   })
-
-  await removeSelfCloseEvents(context)
-  await addTransactionData(context)
-  await addCollateralPoolTokens(context)
+  
+  while (true) {
+    try {
+      await removeSelfCloseEvents(context)
+      await addTransactionData(context)
+      await addCollateralPoolTokens(context)
+      break
+    } catch (e) {
+      console.error(`Error running migrations: ${e}`)
+      await sleep(5000)
+    }
+  }
   await indexer.run()
 }
 

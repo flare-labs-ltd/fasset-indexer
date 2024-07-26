@@ -28,11 +28,19 @@ export class StateUpdater extends EventStorer {
     const [ owner,, collateralPool ] = args
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentOwner(em, manager)
-    const collateralPoolContract = this.context.getCollateralPool(collateralPool)
-    const collateralPoolToken = await collateralPoolContract.token()
+    const collateralPoolToken = await this.getCollateralPoolToken(collateralPool)
     const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args, collateralPoolToken)
     await this.updateAgentVaultInfo(em, agentVaultEntity)
     return agentVaultEntity
+  }
+
+  private async getCollateralPoolToken(collateralPool: string): Promise<string | undefined> {
+    const collateralPoolContract = this.context.getCollateralPool(collateralPool)
+    try {
+      return collateralPoolContract.token()
+    } catch (e: any) {
+      console.error(`Failed to fetch collateral pool token for collateral pool ${collateralPool}: ${e}`)
+    }
   }
 
   private async ensureAgentManager(em: EntityManager, address: string): Promise<AgentManager> {
