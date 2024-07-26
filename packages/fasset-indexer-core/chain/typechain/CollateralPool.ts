@@ -26,26 +26,49 @@ import type {
 export interface CollateralPoolInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "MIN_NAT_BALANCE_AFTER_EXIT"
+      | "MIN_NAT_TO_ENTER"
+      | "MIN_TOKEN_SUPPLY_AFTER_EXIT"
       | "agentVault"
+      | "assetManager"
       | "claimAirdropDistribution"
       | "claimFtsoRewards"
+      | "debtFreeTokensOf"
+      | "debtLockedTokensOf"
       | "delegate"
+      | "delegateGovernance"
+      | "depositNat"
+      | "destroy"
       | "enter"
       | "exit"
       | "exitCollateralRatioBIPS"
+      | "fAsset"
       | "fAssetFeeDebtOf"
+      | "fAssetFeeDeposited"
       | "fAssetFeesOf"
       | "fAssetRequiredForSelfCloseExit"
       | "optOutOfAirdrop"
       | "payFAssetFeeDebt"
+      | "payout"
       | "poolToken"
+      | "revokeDelegationAt"
       | "selfCloseExit"
+      | "setExitCollateralRatioBIPS"
+      | "setPoolToken"
+      | "setTopupCollateralRatioBIPS"
+      | "setTopupTokenPriceFactorBIPS"
+      | "supportsInterface"
+      | "token"
       | "topupCollateralRatioBIPS"
       | "topupTokenPriceFactorBIPS"
       | "totalCollateral"
       | "totalFAssetFeeDebt"
       | "totalFAssetFees"
       | "undelegateAll"
+      | "undelegateGovernance"
+      | "upgradeWNatContract"
+      | "virtualFAssetOf"
+      | "wNat"
       | "withdrawCollateralWhenFAssetTerminated"
       | "withdrawFees"
   ): FunctionFragment;
@@ -55,7 +78,23 @@ export interface CollateralPoolInterface extends Interface {
   ): EventFragment;
 
   encodeFunctionData(
+    functionFragment: "MIN_NAT_BALANCE_AFTER_EXIT",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "MIN_NAT_TO_ENTER",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "MIN_TOKEN_SUPPLY_AFTER_EXIT",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "agentVault",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "assetManager",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -67,8 +106,28 @@ export interface CollateralPoolInterface extends Interface {
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "debtFreeTokensOf",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "debtLockedTokensOf",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "delegate",
     values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "delegateGovernance",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "depositNat",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "destroy",
+    values: [AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "enter",
@@ -82,9 +141,14 @@ export interface CollateralPoolInterface extends Interface {
     functionFragment: "exitCollateralRatioBIPS",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "fAsset", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "fAssetFeeDebtOf",
     values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "fAssetFeeDeposited",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "fAssetFeesOf",
@@ -102,11 +166,40 @@ export interface CollateralPoolInterface extends Interface {
     functionFragment: "payFAssetFeeDebt",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "payout",
+    values: [AddressLike, BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "poolToken", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "revokeDelegationAt",
+    values: [AddressLike, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "selfCloseExit",
     values: [BigNumberish, boolean, string, AddressLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setExitCollateralRatioBIPS",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setPoolToken",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setTopupCollateralRatioBIPS",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setTopupTokenPriceFactorBIPS",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(functionFragment: "token", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "topupCollateralRatioBIPS",
     values?: undefined
@@ -131,6 +224,19 @@ export interface CollateralPoolInterface extends Interface {
     functionFragment: "undelegateAll",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "undelegateGovernance",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "upgradeWNatContract",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "virtualFAssetOf",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(functionFragment: "wNat", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "withdrawCollateralWhenFAssetTerminated",
     values?: undefined
@@ -140,7 +246,23 @@ export interface CollateralPoolInterface extends Interface {
     values: [BigNumberish]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "MIN_NAT_BALANCE_AFTER_EXIT",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "MIN_NAT_TO_ENTER",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "MIN_TOKEN_SUPPLY_AFTER_EXIT",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "agentVault", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "assetManager",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "claimAirdropDistribution",
     data: BytesLike
@@ -149,15 +271,34 @@ export interface CollateralPoolInterface extends Interface {
     functionFragment: "claimFtsoRewards",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "debtFreeTokensOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "debtLockedTokensOf",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "delegate", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "delegateGovernance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "depositNat", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "destroy", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "enter", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "exit", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "exitCollateralRatioBIPS",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "fAsset", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "fAssetFeeDebtOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "fAssetFeeDeposited",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -176,11 +317,37 @@ export interface CollateralPoolInterface extends Interface {
     functionFragment: "payFAssetFeeDebt",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "payout", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "poolToken", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "revokeDelegationAt",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "selfCloseExit",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setExitCollateralRatioBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setPoolToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setTopupCollateralRatioBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setTopupTokenPriceFactorBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "token", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "topupCollateralRatioBIPS",
     data: BytesLike
@@ -205,6 +372,19 @@ export interface CollateralPoolInterface extends Interface {
     functionFragment: "undelegateAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "undelegateGovernance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeWNatContract",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "virtualFAssetOf",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "wNat", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "withdrawCollateralWhenFAssetTerminated",
     data: BytesLike
@@ -339,7 +519,15 @@ export interface CollateralPool extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  MIN_NAT_BALANCE_AFTER_EXIT: TypedContractMethod<[], [bigint], "view">;
+
+  MIN_NAT_TO_ENTER: TypedContractMethod<[], [bigint], "view">;
+
+  MIN_TOKEN_SUPPLY_AFTER_EXIT: TypedContractMethod<[], [bigint], "view">;
+
   agentVault: TypedContractMethod<[], [string], "view">;
+
+  assetManager: TypedContractMethod<[], [string], "view">;
 
   claimAirdropDistribution: TypedContractMethod<
     [_distribution: AddressLike, _month: BigNumberish],
@@ -353,32 +541,60 @@ export interface CollateralPool extends BaseContract {
     "nonpayable"
   >;
 
+  debtFreeTokensOf: TypedContractMethod<
+    [_account: AddressLike],
+    [bigint],
+    "view"
+  >;
+
+  debtLockedTokensOf: TypedContractMethod<
+    [_account: AddressLike],
+    [bigint],
+    "view"
+  >;
+
   delegate: TypedContractMethod<
     [_to: AddressLike, _bips: BigNumberish],
     [void],
     "nonpayable"
   >;
 
+  delegateGovernance: TypedContractMethod<
+    [_to: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  depositNat: TypedContractMethod<[], [void], "payable">;
+
+  destroy: TypedContractMethod<[_recipient: AddressLike], [void], "nonpayable">;
+
   enter: TypedContractMethod<
-    [_fAssets: BigNumberish, _enterWithFullFassets: boolean],
-    [
-      [bigint, bigint] & { _receivedTokens: bigint; _timelockExpiresAt: bigint }
-    ],
+    [_fAssets: BigNumberish, _enterWithFullFAssets: boolean],
+    [[bigint, bigint]],
     "payable"
   >;
 
   exit: TypedContractMethod<
     [_tokenShare: BigNumberish, _exitType: BigNumberish],
-    [[bigint, bigint] & { _natShare: bigint; _fassetShare: bigint }],
+    [[bigint, bigint]],
     "nonpayable"
   >;
 
   exitCollateralRatioBIPS: TypedContractMethod<[], [bigint], "view">;
 
+  fAsset: TypedContractMethod<[], [string], "view">;
+
   fAssetFeeDebtOf: TypedContractMethod<
     [_account: AddressLike],
     [bigint],
     "view"
+  >;
+
+  fAssetFeeDeposited: TypedContractMethod<
+    [_amount: BigNumberish],
+    [void],
+    "nonpayable"
   >;
 
   fAssetFeesOf: TypedContractMethod<[_account: AddressLike], [bigint], "view">;
@@ -396,12 +612,28 @@ export interface CollateralPool extends BaseContract {
   >;
 
   payFAssetFeeDebt: TypedContractMethod<
-    [_fassets: BigNumberish],
+    [_fAssets: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  payout: TypedContractMethod<
+    [
+      _recipient: AddressLike,
+      _amount: BigNumberish,
+      _agentResponsibilityWei: BigNumberish
+    ],
     [void],
     "nonpayable"
   >;
 
   poolToken: TypedContractMethod<[], [string], "view">;
+
+  revokeDelegationAt: TypedContractMethod<
+    [_who: AddressLike, _blockNumber: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
 
   selfCloseExit: TypedContractMethod<
     [
@@ -413,6 +645,38 @@ export interface CollateralPool extends BaseContract {
     [void],
     "payable"
   >;
+
+  setExitCollateralRatioBIPS: TypedContractMethod<
+    [_exitCollateralRatioBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setPoolToken: TypedContractMethod<
+    [_poolToken: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setTopupCollateralRatioBIPS: TypedContractMethod<
+    [_topupCollateralRatioBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setTopupTokenPriceFactorBIPS: TypedContractMethod<
+    [_topupTokenPriceFactorBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  supportsInterface: TypedContractMethod<
+    [_interfaceId: BytesLike],
+    [boolean],
+    "view"
+  >;
+
+  token: TypedContractMethod<[], [string], "view">;
 
   topupCollateralRatioBIPS: TypedContractMethod<[], [bigint], "view">;
 
@@ -426,6 +690,22 @@ export interface CollateralPool extends BaseContract {
 
   undelegateAll: TypedContractMethod<[], [void], "nonpayable">;
 
+  undelegateGovernance: TypedContractMethod<[], [void], "nonpayable">;
+
+  upgradeWNatContract: TypedContractMethod<
+    [_newWNat: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  virtualFAssetOf: TypedContractMethod<
+    [_account: AddressLike],
+    [bigint],
+    "view"
+  >;
+
+  wNat: TypedContractMethod<[], [string], "view">;
+
   withdrawCollateralWhenFAssetTerminated: TypedContractMethod<
     [],
     [void],
@@ -433,7 +713,7 @@ export interface CollateralPool extends BaseContract {
   >;
 
   withdrawFees: TypedContractMethod<
-    [_amount: BigNumberish],
+    [_fAssets: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -443,7 +723,19 @@ export interface CollateralPool extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "MIN_NAT_BALANCE_AFTER_EXIT"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "MIN_NAT_TO_ENTER"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "MIN_TOKEN_SUPPLY_AFTER_EXIT"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "agentVault"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "assetManager"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "claimAirdropDistribution"
@@ -460,6 +752,12 @@ export interface CollateralPool extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "debtFreeTokensOf"
+  ): TypedContractMethod<[_account: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "debtLockedTokensOf"
+  ): TypedContractMethod<[_account: AddressLike], [bigint], "view">;
+  getFunction(
     nameOrSignature: "delegate"
   ): TypedContractMethod<
     [_to: AddressLike, _bips: BigNumberish],
@@ -467,27 +765,40 @@ export interface CollateralPool extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "delegateGovernance"
+  ): TypedContractMethod<[_to: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "depositNat"
+  ): TypedContractMethod<[], [void], "payable">;
+  getFunction(
+    nameOrSignature: "destroy"
+  ): TypedContractMethod<[_recipient: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "enter"
   ): TypedContractMethod<
-    [_fAssets: BigNumberish, _enterWithFullFassets: boolean],
-    [
-      [bigint, bigint] & { _receivedTokens: bigint; _timelockExpiresAt: bigint }
-    ],
+    [_fAssets: BigNumberish, _enterWithFullFAssets: boolean],
+    [[bigint, bigint]],
     "payable"
   >;
   getFunction(
     nameOrSignature: "exit"
   ): TypedContractMethod<
     [_tokenShare: BigNumberish, _exitType: BigNumberish],
-    [[bigint, bigint] & { _natShare: bigint; _fassetShare: bigint }],
+    [[bigint, bigint]],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "exitCollateralRatioBIPS"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "fAsset"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "fAssetFeeDebtOf"
   ): TypedContractMethod<[_account: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "fAssetFeeDeposited"
+  ): TypedContractMethod<[_amount: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "fAssetFeesOf"
   ): TypedContractMethod<[_account: AddressLike], [bigint], "view">;
@@ -499,10 +810,28 @@ export interface CollateralPool extends BaseContract {
   ): TypedContractMethod<[_distribution: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "payFAssetFeeDebt"
-  ): TypedContractMethod<[_fassets: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<[_fAssets: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "payout"
+  ): TypedContractMethod<
+    [
+      _recipient: AddressLike,
+      _amount: BigNumberish,
+      _agentResponsibilityWei: BigNumberish
+    ],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "poolToken"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "revokeDelegationAt"
+  ): TypedContractMethod<
+    [_who: AddressLike, _blockNumber: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "selfCloseExit"
   ): TypedContractMethod<
@@ -515,6 +844,36 @@ export interface CollateralPool extends BaseContract {
     [void],
     "payable"
   >;
+  getFunction(
+    nameOrSignature: "setExitCollateralRatioBIPS"
+  ): TypedContractMethod<
+    [_exitCollateralRatioBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setPoolToken"
+  ): TypedContractMethod<[_poolToken: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setTopupCollateralRatioBIPS"
+  ): TypedContractMethod<
+    [_topupCollateralRatioBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setTopupTokenPriceFactorBIPS"
+  ): TypedContractMethod<
+    [_topupTokenPriceFactorBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "supportsInterface"
+  ): TypedContractMethod<[_interfaceId: BytesLike], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "token"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "topupCollateralRatioBIPS"
   ): TypedContractMethod<[], [bigint], "view">;
@@ -534,11 +893,23 @@ export interface CollateralPool extends BaseContract {
     nameOrSignature: "undelegateAll"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
+    nameOrSignature: "undelegateGovernance"
+  ): TypedContractMethod<[], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "upgradeWNatContract"
+  ): TypedContractMethod<[_newWNat: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "virtualFAssetOf"
+  ): TypedContractMethod<[_account: AddressLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "wNat"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "withdrawCollateralWhenFAssetTerminated"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "withdrawFees"
-  ): TypedContractMethod<[_amount: BigNumberish], [void], "nonpayable">;
+  ): TypedContractMethod<[_fAssets: BigNumberish], [void], "nonpayable">;
 
   getEvent(
     key: "Entered"

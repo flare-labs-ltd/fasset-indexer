@@ -3,7 +3,7 @@ import { createOrm } from "./database/utils"
 import { AssetManager__factory, AMEvents__factory, ERC20__factory, AgentOwnerRegistry__factory, CollateralPool__factory } from "../chain/typechain"
 import type { AssetManager, ERC20, AgentOwnerRegistry } from "../chain/typechain"
 import type { AMEventsInterface } from "../chain/typechain/AMEvents"
-import type { CollateralPoolInterface } from "../chain/typechain/CollateralPool"
+import type { CollateralPool, CollateralPoolInterface } from "../chain/typechain/CollateralPool"
 import type { ERC20Interface } from "../chain/typechain/ERC20"
 import type { ORM } from "./database/interface"
 import type { IConfig } from "./config/interface"
@@ -58,6 +58,10 @@ export class Context {
 
   getERC20(address: string): ERC20 {
     return ERC20__factory.connect(address, this.provider)
+  }
+
+  getCollateralPool(address: string): CollateralPool {
+    return CollateralPool__factory.connect(address, this.provider)
   }
 
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {

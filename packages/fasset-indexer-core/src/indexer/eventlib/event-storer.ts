@@ -1,7 +1,7 @@
 import { isUntrackedAgentVault, findOrCreateEvmAddress, findOrCreateUnderlyingAddress } from "../shared"
 import { EvmLog } from "../../database/entities/logs"
 import { CollateralType } from "../../database/entities/events/token"
-import { AddressType } from "../../database/entities/address"
+import { AddressType, EvmAddress } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
 import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
@@ -57,14 +57,15 @@ export abstract class EventStorer {
     return evmLog !== null
   }
 
-  async processLog(em: EntityManager, log: Event): Promise<void> {
+  async processEvent(em: EntityManager, log: Event): Promise<void> {
     if (!await this.logExists(em, log)) {
       const evmLog = await this.createLogEntity(em, log)
-      await this.processEvent(em, log, evmLog)
+      const processed = await this._processEvent(em, log, evmLog)
+      if (processed) em.persist(evmLog)
     }
   }
 
-  async processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<void> {
+  protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
     switch (log.name) {
       case COLLATERAL_TYPE_ADDED: {
         await this.onCollateralTypeAdded(em, evmLog, log.args as CollateralTypeAddedEvent.OutputTuple)
@@ -142,9 +143,10 @@ export abstract class EventStorer {
         await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
         break
       } default: {
-        break
+        return false
       }
     }
+    return true
   }
 
   protected async onCollateralTypeAdded(em: EntityManager, evmLog: EvmLog, logArgs: CollateralTypeAddedEvent.OutputTuple): Promise<void> {
@@ -160,7 +162,7 @@ export abstract class EventStorer {
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // agent
 
-  protected async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, logArgs: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
+  protected async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, logArgs: AgentVaultCreatedEvent.OutputTuple, collateralPoolToken?: string): Promise<AgentVault> {
     const [
       owner, agentVault, collateralPool, underlyingAddress, vaultCollateralToken,
       feeBIPS, poolFeeShareBIPS, mintingVaultCollateralRatioBIPS, mintingPoolCollateralRatioBIPS,
@@ -168,14 +170,18 @@ export abstract class EventStorer {
     ] = logArgs
     const agentOwnerEntity = await em.findOneOrFail(AgentOwner, { manager: { address: { hex: owner }}})
     // addresses
-    const agentEvmAddressEntity = await findOrCreateEvmAddress(em, agentVault, AddressType.AGENT)
-    const agentUnderlyingAddressEntity = await findOrCreateUnderlyingAddress(em, underlyingAddress, AddressType.AGENT)
-    const collateralPoolEvmAddressEntity = await findOrCreateEvmAddress(em, collateralPool, AddressType.AGENT)
+    const agentEvmAddress = await findOrCreateEvmAddress(em, agentVault, AddressType.AGENT)
+    const agentUnderlyingAddress = await findOrCreateUnderlyingAddress(em, underlyingAddress, AddressType.AGENT)
+    const collateralPoolEvmAddress = await findOrCreateEvmAddress(em, collateralPool, AddressType.AGENT)
     // create agent vault
     const agentVaultEntity = new AgentVault(
-      agentEvmAddressEntity, agentUnderlyingAddressEntity,
-      collateralPoolEvmAddressEntity, agentOwnerEntity, false
+      agentEvmAddress, agentUnderlyingAddress,
+      collateralPoolEvmAddress,
+      agentOwnerEntity, false
     )
+    if (collateralPoolToken !== undefined) {
+      agentVaultEntity.collateralPoolToken = await findOrCreateEvmAddress(em, collateralPoolToken!, AddressType.AGENT)
+    }
     const vaultCollateralTokenEntity = await em.findOneOrFail(CollateralType, { address: { hex: vaultCollateralToken }})
     const agentVaultSettings = new AgentVaultSettings(
       agentVaultEntity, vaultCollateralTokenEntity, feeBIPS, poolFeeShareBIPS, mintingVaultCollateralRatioBIPS,
@@ -444,7 +450,7 @@ export abstract class EventStorer {
       log.blockNumber, log.transactionIndex, log.logIndex, log.name, source,
       log.blockTimestamp, log.transactionHash, txSource, txTarget
     )
-    em.persist(evmLog)
+    // do not persist here, only persist if the log was processed
     return evmLog
   }
 

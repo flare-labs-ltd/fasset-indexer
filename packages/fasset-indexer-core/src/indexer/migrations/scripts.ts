@@ -5,6 +5,7 @@ import { EvmLog } from "../../database/entities/logs"
 import { findOrCreateEvmAddress } from "../shared"
 import { Context } from "../../context"
 import { MID_CHAIN_FETCH_SLEEP_MS } from "../../config/constants"
+import { AgentVault } from '../../database/entities/agent'
 
 
 export async function addTransactionData(context: Context) {
@@ -26,3 +27,34 @@ export async function addTransactionData(context: Context) {
   }
   console.log(chalk.cyan('finished adding transaction data'))
 }
+
+export async function addCollateralPoolTokens(context: Context) {
+  console.log(chalk.magenta('adding collateral pool tokens'))
+  const vaults = await context.orm.em.fork().find(AgentVault, { collateralPoolToken: null }, { populate: ['collateralPool'] })
+  for (const vault of vaults) {
+    await context.orm.em.fork().transactional(async (em) => {
+      const collateralPool = context.getCollateralPool(vault.collateralPool.hex)
+      const collateralPoolToken = await collateralPool.token()
+      vault.collateralPoolToken = await findOrCreateEvmAddress(context.orm.em.fork(), collateralPoolToken, AddressType.AGENT)
+      em.persist(vault)
+      await sleep(MID_CHAIN_FETCH_SLEEP_MS / 2)
+    })
+  }
+  console.log(chalk.magenta('finished adding collateral pool tokens'))
+}
+
+export async function removeSelfCloseEvents(context: Context) {
+  const em = context.orm.em.fork()
+  await em.nativeDelete(EvmLog, { name: 'DustChanged' })
+  await em.flush()
+}
+
+/* import { config } from '../../config/config'
+
+async function main() {
+  const context = await Context.create(config)
+  await addCollateralPoolTokens(context)
+  await context.orm.close()
+}
+
+main() */

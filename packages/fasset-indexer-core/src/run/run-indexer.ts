@@ -1,7 +1,7 @@
 import { Context } from "../context"
 import { config } from "../config/config"
-import { addTransactionData } from "../indexer/insertion/add-tx-data"
-import { EventIndexerBackAndFrontInsertion } from "../indexer/insertion/back-and-front"
+import { addCollateralPoolTokens, addTransactionData, removeSelfCloseEvents } from "../indexer/migrations/scripts"
+import { EventIndexerBackAndFrontInsertion } from "../indexer/migrations/back-and-front"
 
 
 async function runIndexer(start?: number) {
@@ -14,7 +14,9 @@ async function runIndexer(start?: number) {
     process.exit(0)
   })
 
+  await removeSelfCloseEvents(context)
   await addTransactionData(context)
+  await addCollateralPoolTokens(context)
   await indexer.run()
 }
 

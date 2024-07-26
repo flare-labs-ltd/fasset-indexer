@@ -44,13 +44,18 @@ export class EventParser {
       return this.context.erc20Interface.parseLog(log)
     }
     const em = this.context.orm.em.fork()
-    const pool = await em.findOne(AgentVault, { collateralPool: { hex: log.address }})
-    if (pool !== null) {
-      return this.context.collateralPoolInterface.parseLog(log)
-    }
     const collateralType = await em.findOne(CollateralType, { address: { hex: log.address } })
     if (collateralType !== null && collateralType.collateralClass !== 1) {
       return this.context.erc20Interface.parseLog(log)
+    } else {
+      const collateralPoolToken = await em.findOne(AgentVault, { collateralPoolToken: { hex: log.address }})
+      if (collateralPoolToken !== null) {
+        return this.context.erc20Interface.parseLog(log)
+      }
+    }
+    const pool = await em.findOne(AgentVault, { collateralPool: { hex: log.address }})
+    if (pool !== null) {
+      return this.context.collateralPoolInterface.parseLog(log)
     }
     return null
   }

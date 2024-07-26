@@ -18,8 +18,8 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
 export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1 = "collateralPoolEventsAndTransactionSenders"
-export const END_EVENT_BLOCK__UPDATE_1 = "collateralPoolEventsAndTransactionSenders_endBlock"
+export const FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1 = "firstUnhandledEventBlockCollateralPoolEventsAndErc20TransfersAndSelfCloses"
+export const END_EVENT_BLOCK__UPDATE_1 = "endEventBlockCollateralPoolEventsAndErc20TransfersAndSelfCloses"
 
 // event names
 // agent

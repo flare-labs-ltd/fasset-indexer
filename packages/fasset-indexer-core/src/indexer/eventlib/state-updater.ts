@@ -4,10 +4,10 @@ import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/ag
 import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
+import type { AgentVaultCreatedEvent } from "../../../chain/typechain/AMEvents"
 import type { Event } from "./event-scraper"
 import type { Context } from "../../context"
 import type { EvmLog } from "../../database/entities/logs"
-import type { AgentVaultCreatedEvent } from "../../../chain/typechain/AMEvents"
 
 
 // binds chain reading to event storage
@@ -20,15 +20,17 @@ export class StateUpdater extends EventStorer {
   async onNewEvent(log: Event): Promise<void> {
     if (this.context.ignoreLog(log.name)) return
     await this.context.orm.em.fork().transactional(async (em) => {
-      await this.processLog(em, log)
+      await this.processEvent(em, log)
     })
   }
 
   protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
-    const [ owner, ] = args
+    const [ owner,, collateralPool ] = args
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentOwner(em, manager)
-    const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args)
+    const collateralPoolContract = this.context.getCollateralPool(collateralPool)
+    const collateralPoolToken = await collateralPoolContract.token()
+    const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args, collateralPoolToken)
     await this.updateAgentVaultInfo(em, agentVaultEntity)
     return agentVaultEntity
   }
