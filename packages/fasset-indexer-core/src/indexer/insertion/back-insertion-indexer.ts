@@ -2,13 +2,14 @@ import chalk from "chalk"
 import { sleep } from "../../utils"
 import { getVar, setVar } from "../shared"
 import { EventIndexer } from "../indexer"
-import { COLLATERAL_POOL_ENTER, COLLATERAL_POOL_EXIT, ERC20_TRANSFER, LOG_FETCH_SLEEP_MS, MIN_BLOCK_NUMBER, SELF_CLOSE } from "../../config/constants"
+import {
+  COLLATERAL_POOL_ENTER, COLLATERAL_POOL_EXIT, SELF_CLOSE, ERC20_TRANSFER,
+  LOG_FETCH_SLEEP_MS, MIN_BLOCK_NUMBER,
+  END_EVENT_BLOCK__UPDATE_1, FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1
+} from "../../config/constants"
 import type { Log } from "ethers"
 import type { Context } from "../../context"
 
-
-const START_INSERTION_BLOCK = "collateralPoolEventsAndTransactionSenders"
-const END_INSERTION_BLOCK = START_INSERTION_BLOCK + "_endBlock"
 
 const INSERTION_EVENTS: string[] = [
   COLLATERAL_POOL_ENTER,
@@ -39,22 +40,22 @@ export class EventIndexerBackInsertion extends EventIndexer {
   }
 
   override async lastBlockToHandle(): Promise<number> {
-    const endBlock = await getVar(this.context.orm.em.fork(), END_INSERTION_BLOCK)
+    const endBlock = await getVar(this.context.orm.em.fork(), END_EVENT_BLOCK__UPDATE_1)
     if (endBlock === null) {
       const endBlock = await super.getFirstUnhandledBlock()
-      await setVar(this.context.orm.em.fork(), END_INSERTION_BLOCK, endBlock.toString())
+      await setVar(this.context.orm.em.fork(), END_EVENT_BLOCK__UPDATE_1, endBlock.toString())
       return endBlock
     }
     return parseInt(endBlock.value!)
   }
 
   override async getFirstUnhandledBlock(): Promise<number> {
-    const firstUnhandled = await getVar(this.context.orm.em.fork(), START_INSERTION_BLOCK)
+    const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1)
     return firstUnhandled !== null ? parseInt(firstUnhandled!.value!) : MIN_BLOCK_NUMBER
   }
 
   override async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
-    await setVar(this.context.orm.em.fork(), START_INSERTION_BLOCK, blockNumber.toString())
+    await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1, blockNumber.toString())
   }
 
   protected override async storeLogs(logs: Log[]): Promise<void> {

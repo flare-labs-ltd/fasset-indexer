@@ -16,6 +16,11 @@ export class FAssetIndexerController {
     return apiResponse(this.appService.currentBlock(), 200)
   }
 
+  @Get('/blocks-to-back-sync')
+  getBlocksToBackSync(): Promise<ApiResponse<number | null>> {
+    return apiResponse(this.appService.blocksToBackSync(), 200)
+  }
+
   @Get('/total-minted')
   getTotalMinted(): Promise<ApiResponse<string>> {
     return apiResponse(this.appService.totalMinted().then(String), 200)
