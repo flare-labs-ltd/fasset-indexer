@@ -1,7 +1,7 @@
 import { isUntrackedAgentVault, findOrCreateEvmAddress, findOrCreateUnderlyingAddress } from "../shared"
 import { EvmLog } from "../../database/entities/logs"
 import { CollateralType } from "../../database/entities/events/token"
-import { AddressType, EvmAddress } from "../../database/entities/address"
+import { AddressType } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
 import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
