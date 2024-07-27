@@ -15,7 +15,7 @@ async function runIndexer(start?: number) {
     process.exit(0)
   })
 
-  await removeSelfCloseEvents(context)
+  //await removeSelfCloseEvents(context)
   await Promise.all([
     async () => {
       while (true) {
@@ -29,7 +29,7 @@ async function runIndexer(start?: number) {
         }
       }
     },
-    await indexer.run()
+    indexer.run()
   ])
 }
 
