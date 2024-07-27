@@ -1,6 +1,6 @@
 import { isUntrackedAgentVault, findOrCreateEvmAddress, findOrCreateUnderlyingAddress } from "../shared"
 import { EvmLog } from "../../database/entities/logs"
-import { CollateralType } from "../../database/entities/events/token"
+import { CollateralType, ERC20Transfer } from "../../database/entities/events/token"
 import { AddressType } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
@@ -19,7 +19,6 @@ import {
   FullLiquidationStarted, LiquidationEnded, LiquidationPerformed, LiquidationStarted
 } from "../../database/entities/events/liquidation"
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
-import { ERC20Transfer } from "../../database/entities/events/fasset"
 import {
   AGENT_VAULT_CREATED, AGENT_SETTING_CHANGED,
   COLLATERAL_RESERVED, MINTING_EXECUTED, MINTING_PAYMENT_DEFAULT, COLLATERAL_RESERVATION_DELETED,

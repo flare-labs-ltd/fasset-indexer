@@ -15,11 +15,11 @@ async function runIndexer(start?: number) {
     process.exit(0)
   })
 
+  await removeSelfCloseEvents(context)
   await Promise.all([
     async () => {
       while (true) {
         try {
-          await removeSelfCloseEvents(context)
           await addTransactionData(context)
           await addCollateralPoolTokens(context)
           break
