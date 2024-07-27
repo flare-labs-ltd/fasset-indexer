@@ -17,7 +17,7 @@ async function runIndexer(start?: number) {
 
   //await removeSelfCloseEvents(context)
   await Promise.all([
-    async () => {
+    (async () => {
       while (true) {
         try {
           await addTransactionData(context)
@@ -28,7 +28,7 @@ async function runIndexer(start?: number) {
           await sleep(5000)
         }
       }
-    },
+    })(),
     indexer.run()
   ])
 }
