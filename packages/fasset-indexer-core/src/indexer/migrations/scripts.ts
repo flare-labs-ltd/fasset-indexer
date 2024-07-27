@@ -22,8 +22,8 @@ export async function addTransactionData(context: Context) {
         evmLog.transactionTarget = await findOrCreateEvmAddress(em, transaction.to, AddressType.USER)
       }
       em.persist(evmLog)
-      await sleep(MID_CHAIN_FETCH_SLEEP_MS / 2)
     })
+    await sleep(MID_CHAIN_FETCH_SLEEP_MS / 10)
   }
   console.log(chalk.cyan('finished adding transaction data'))
 }
