@@ -14,19 +14,23 @@ async function runIndexer(start?: number) {
     await context.orm.close()
     process.exit(0)
   })
-  
-  while (true) {
-    try {
-      await removeSelfCloseEvents(context)
-      await addTransactionData(context)
-      await addCollateralPoolTokens(context)
-      break
-    } catch (e) {
-      console.error(`Error running migrations: ${e}`)
-      await sleep(5000)
-    }
-  }
-  await indexer.run()
+
+  await Promise.all([
+    async () => {
+      while (true) {
+        try {
+          await removeSelfCloseEvents(context)
+          await addTransactionData(context)
+          await addCollateralPoolTokens(context)
+          break
+        } catch (e) {
+          console.error(`Error running migrations: ${e}`)
+          await sleep(5000)
+        }
+      }
+    },
+    await indexer.run()
+  ])
 }
 
 runIndexer()

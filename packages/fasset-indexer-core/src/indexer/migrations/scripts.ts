@@ -49,7 +49,7 @@ export async function addCollateralPoolTokens(context: Context) {
 
 export async function removeSelfCloseEvents(context: Context) {
   const em = context.orm.em.fork()
-  await em.nativeDelete(EvmLog, { name: 'DustChanged' })
+  await em.nativeDelete(EvmLog, { name: 'SelfClose' })
   await em.flush()
 }
 
