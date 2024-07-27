@@ -16,8 +16,8 @@ import {
   FullLiquidationStarted, LiquidationEnded,
   LiquidationPerformed, LiquidationStarted
 } from "./entities/events/liquidation"
+import { CollateralType, ERC20Transfer } from "./entities/events/token"
 import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateralPool"
-import { ERC20Transfer } from "./entities/events/fasset"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
@@ -34,7 +34,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     RedemptionRequested, RedemptionPerformed, RedemptionDefault,
     RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected, RedemptionRequestIncomplete,
     LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
-    CollateralPoolEntered, CollateralPoolExited, ERC20Transfer,
+    CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralType,
     UntrackedAgentVault
   ],
   pool: {
