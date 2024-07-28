@@ -3,10 +3,13 @@ export const CHAIN_FETCH_RETRY_LIMIT = 20
 export const MID_CHAIN_FETCH_SLEEP_MS = 400
 
 // event scrape config
-export const LOG_FETCH_SIZE = 30
+export const MIN_BLOCK_NUMBER = 16146574 // asset manager controller contract deployment block
 export const LOG_FETCH_SLEEP_MS = 30 * 1000 // collect logs every 30 seconds
-export const BLOCK_HEIGHT_OFFSET = 10
-export const MIN_BLOCK_NUMBER = 16146574
+export const BLOCK_HEIGHT_OFFSET = 10 // log collection offset from the current block height
+export const LOG_FETCH_SIZE = 30
+export const IGNORE_EVENTS = [
+    'CurrentUnderlyingBlockUpdated'
+]
 
 // update state config
 export const STATE_UPDATE_SLEEP_MS = 60 * 1000 // collect state every one minute

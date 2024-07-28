@@ -18,7 +18,7 @@ const INSERTION_EVENTS: string[] = [
   ERC20_TRANSFER
 ]
 
-export class EventIndexerBackInsertion extends EventIndexer {
+export class EventIndexerBackPopulation extends EventIndexer {
 
   constructor(context: Context) {
     super(context)
