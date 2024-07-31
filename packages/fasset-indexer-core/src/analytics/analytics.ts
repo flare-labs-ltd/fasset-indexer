@@ -203,8 +203,20 @@ export class Analytics {
     return result[0].count
   }
 
-
   //////////////////////////////////////////////////////////////////////
   // user specific
+
+  //////////////////////////////////////////////////////////////////////
+  // system health
+
+  async totalFreeLots(): Promise<bigint> {
+    const em = this.orm.em.fork()
+    const result = await em.getConnection('read').execute(`
+      SELECT SUM(value_uba) as total
+      FROM agent_vault_info
+      WHERE publicly_available = TRUE
+    `)
+    return result[0].total
+  }
 
 }
