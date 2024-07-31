@@ -116,4 +116,32 @@ export class FAssetIndexerController {
   getAgentLiquidationCount(@Query('agent') agent: string): Promise<ApiResponse<number>> {
     return apiResponse(this.appService.agentLiquidationCount(agent), 200)
   }
+
+  @Get('/events-per-interval?')
+  getEventsPerSecond(@Query('seconds') seconds: number): Promise<ApiResponse<number>> {
+    return apiResponse(this.appService.eventsPerInterval(seconds), 200)
+  }
+
+  @Get('/total-free-lots')
+  getTotalFreeLots(): Promise<ApiResponse<string>> {
+    return apiResponse(this.appService.totalFreeLots().then(String), 200)
+  }
+
+  @Get('/agents-in-liquidation')
+  getAgentsInLiquidation(): Promise<ApiResponse<{ totalAgents: number, agentsInLiquidation: number }>> {
+    return apiResponse(this.appService.agentsInLiquidation().then(x => ({
+      totalAgents: x[1],
+      agentsInLiquidation: x[0]
+    })), 200)
+  }
+
+  @Get('/minting-executed-with-executor?')
+  mintingExecutedWithExecutor(@Query('executor') executor: string): Promise<ApiResponse<number>> {
+    return apiResponse(this.appService.executorMintingPerformed(executor), 200)
+  }
+
+  @Get('/total-minting-executions?')
+  totalMintingExecutions(): Promise<ApiResponse<number>> {
+    return apiResponse(this.appService.totalMintingExecutions(), 200)
+  }
 }

@@ -1,13 +1,11 @@
-import { sleep } from "../utils"
-import { addCollateralPoolTokens, addTransactionData, removeSelfCloseEvents } from "../indexer/migrations/scripts"
-import { EventIndexerParallelPolulation } from "../indexer/migrations/indexer-parallel-population"
 import { Context } from "../context"
 import { config } from "../config/config"
+import { EventIndexer } from "../indexer/indexer"
 
 
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
-  const indexer = new EventIndexerParallelPolulation(context)
+  const indexer = new EventIndexer(context)
 
   process.on("SIGINT", async () => {
     console.log("Stopping indexer...")
@@ -15,22 +13,7 @@ async function runIndexer(start?: number) {
     process.exit(0)
   })
 
-  //await removeSelfCloseEvents(context)
-  await Promise.all([
-    (async () => {
-      while (true) {
-        try {
-          await addTransactionData(context)
-          await addCollateralPoolTokens(context)
-          break
-        } catch (e) {
-          console.error(`Error running migrations: ${e}`)
-          await sleep(5000)
-        }
-      }
-    })(),
-    indexer.run()
-  ])
+  await indexer.run(start)
 }
 
 runIndexer()
