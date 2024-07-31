@@ -7,7 +7,10 @@ import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
-import { END_EVENT_BLOCK__UPDATE_1, FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1, MAX_DATABASE_ENTRIES_FETCH } from "../config/constants"
+import {
+  FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
+  MAX_DATABASE_ENTRIES_FETCH
+} from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
 
@@ -31,9 +34,9 @@ export class Analytics {
   }
 
   async blocksToBackSync(): Promise<number | null> {
-    const start = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1)
+    const start = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE)
     if (start === null || start.value === undefined) return null
-    const end = await getVar(this.orm.em.fork(), END_EVENT_BLOCK__UPDATE_1)
+    const end = await getVar(this.orm.em.fork(), END_EVENT_BLOCK_FOR_CURRENT_UPDATE)
     if (end === null || end.value === undefined)  return null
     return parseInt(end.value) - parseInt(start.value) + 1
   }
