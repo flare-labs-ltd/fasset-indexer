@@ -10,9 +10,7 @@ import type { Log } from "ethers"
 import type { Context } from "../../context"
 
 
-const INSERTION_EVENTS: string[] = [
-  ERC20_TRANSFER
-]
+const INSERTION_EVENTS: string[] = [ ERC20_TRANSFER ]
 
 export class EventIndexerBackPopulation extends EventIndexer {
 
