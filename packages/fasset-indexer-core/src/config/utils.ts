@@ -6,11 +6,10 @@ import { PostgreSqlDriver } from "@mikro-orm/postgresql"
 import { abi as ASSET_MANAGER_ABI } from '../../chain/artifacts/AssetManager.json'
 import { abi as ASSET_MANAGER_EVENTS_ABI } from '../../chain/artifacts/AMEvents.json'
 import CONTRACTS from '../../chain/coston.json'
+import { IGNORE_EVENTS } from "./constants"
 import type { OrmOptions } from '../database/interface'
 import type { IUserConfig, IUserDatabaseConfig, IConfig } from "./interface"
 
-
-const IGNORE_EVENTS = ['CurrentUnderlyingBlockUpdated']
 
 type ValidationOptions = {
   required?: boolean

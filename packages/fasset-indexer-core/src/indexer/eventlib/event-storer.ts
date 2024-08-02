@@ -222,6 +222,10 @@ export abstract class EventStorer {
   protected async onAgentDestroyed(em: EntityManager, logArgs: AgentDestroyedEvent.OutputTuple): Promise<void> {
     const [ agentVault ] = logArgs
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const agentVaultInfo = await em.findOne(AgentVaultInfo, { agentVault: agentVaultEntity })
+    if (agentVaultInfo) {
+      em.remove(agentVaultInfo)
+    }
     agentVaultEntity.destroyed = true
     em.persist(agentVaultEntity)
   }

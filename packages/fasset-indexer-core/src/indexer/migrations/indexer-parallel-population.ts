@@ -1,18 +1,18 @@
 import { EventIndexer } from "../indexer"
-import { EventIndexerBackInsertion } from "./back-insertion-indexer"
+import { EventIndexerBackPopulation } from "./indexer-back-population"
 import type { Context } from "../../context"
 
 
 const BLOCK_INDEX_NUMBER = 92
 const NEW_BLOCKS_BEFORE_INDEX = 15
 
-export class EventIndexerBackAndFrontInsertion {
+export class EventIndexerParallelPolulation {
   readonly eventIndexer: EventIndexer
-  readonly backIndexer: EventIndexerBackInsertion
+  readonly backIndexer: EventIndexerBackPopulation
 
   constructor(context: Context) {
     this.eventIndexer = new EventIndexer(context)
-    this.backIndexer = new EventIndexerBackInsertion(context)
+    this.backIndexer = new EventIndexerBackPopulation(context)
   }
 
   async run() {

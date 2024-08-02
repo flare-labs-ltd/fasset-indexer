@@ -3,10 +3,14 @@ import { createOrm } from "../database/utils"
 import { getVar } from "../indexer/shared"
 import { EvmLog } from "../database/entities/logs"
 import { AgentVault } from "../database/entities/agent"
+import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
-import { END_EVENT_BLOCK__UPDATE_1, FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1, MAX_DATABASE_ENTRIES_FETCH } from "../config/constants"
+import {
+  FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
+  MAX_DATABASE_ENTRIES_FETCH
+} from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
 
@@ -30,9 +34,9 @@ export class Analytics {
   }
 
   async blocksToBackSync(): Promise<number | null> {
-    const start = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK__UPDATE_1)
+    const start = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE)
     if (start === null || start.value === undefined) return null
-    const end = await getVar(this.orm.em.fork(), END_EVENT_BLOCK__UPDATE_1)
+    const end = await getVar(this.orm.em.fork(), END_EVENT_BLOCK_FOR_CURRENT_UPDATE)
     if (end === null || end.value === undefined)  return null
     return parseInt(end.value) - parseInt(start.value) + 1
   }
@@ -203,8 +207,53 @@ export class Analytics {
     return result[0].count
   }
 
-
   //////////////////////////////////////////////////////////////////////
   // user specific
+
+  ////////////////////////////////////////////////////////////////////
+  // executor
+
+  async executorRedemptionRequests(executor: string): Promise<number> {
+    const qb = this.orm.em.fork().qb(RedemptionRequested, 'o')
+    qb.select('o.request_id').where({ executor })
+    const result = await qb.count('o.request_id').execute()
+    return result[0].count
+  }
+
+  async executorMintingPerformed(executor: string): Promise<number> {
+    const qb = this.orm.em.fork().qb(MintingExecuted, 'o')
+    qb.select('o.collateral_reserved_collateral_reservation_id').where({ collateralReserved: { executor }})
+    const result = await qb.count('o.collateral_reserved_collateral_reservation_id').execute()
+    return result[0].count
+  }
+
+  async totalMintingExecutions(): Promise<number> {
+    const qb = this.orm.em.fork().qb(MintingExecuted, 'o')
+    const result = await qb.count('o.collateral_reserved_collateral_reservation_id').execute()
+    return result[0].count
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // system health
+
+  async totalFreeLots(): Promise<bigint> {
+    const em = this.orm.em.fork()
+    const result = await em.getConnection('read').execute(`
+      SELECT SUM(free_collateral_lots) as total
+      FROM agent_vault_info
+      WHERE publicly_available = TRUE
+    `)
+    return result[0].total
+  }
+
+  async agentsInLiquidation(): Promise<[number, number]> {
+    const nAgentsInLiquidation = await this.orm.em.fork().count(AgentVaultInfo, { status: 2 })
+    const nAgents = await this.orm.em.fork().count(AgentVaultInfo)
+    return [nAgentsInLiquidation, nAgents]
+  }
+
+  async eventsPerInterval(seconds: number = 60): Promise<number> {
+    return this.orm.em.fork().count(EvmLog, { timestamp: { $gt: Date.now() / 1000 - seconds }})
+  }
 
 }
