@@ -123,8 +123,13 @@ export class FAssetIndexerController {
   }
 
   @Get('/total-free-lots')
-  getTotalFreeLots(): Promise<ApiResponse<string>> {
-    return apiResponse(this.appService.totalFreeLots().then(String), 200)
+  getTotalFreeLots(): Promise<ApiResponse<{
+    publicLots: bigint,
+    privateLots: bigint,
+    liquidationLots: bigint,
+    normalLots: bigint
+  }>> {
+    return apiResponse(this.appService.totalFreeLots(), 200)
   }
 
   @Get('/agents-in-liquidation')

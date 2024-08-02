@@ -236,12 +236,28 @@ export class Analytics {
   //////////////////////////////////////////////////////////////////////
   // system health
 
-  async totalFreeLots(): Promise<bigint> {
+  async totalFreeLots(): Promise<{
+    publicLots: bigint,
+    privateLots: bigint,
+    liquidationLots: bigint,
+    normalLots: bigint
+  }> {
+    const publicLots = await this._totalFreeLots(true)
+    const privateLots = await this._totalFreeLots(false)
+    const liquidationLots = await this._totalFreeLots(undefined, true)
+    const normalLots = await this._totalFreeLots(undefined, false)
+    return { publicLots, privateLots, liquidationLots, normalLots }
+  }
+
+  private async _totalFreeLots(publicAgents?: boolean, inLiquidation?: boolean): Promise<bigint> {
+    const publicFilter = (publicAgents !== undefined) ? `AND avi.publicly_available = ${publicAgents}` : ""
+    const liquidationFilter = (inLiquidation !== undefined) ? `AND avi.status ${inLiquidation ? `> 0`: `= 0`}` : ""
     const em = this.orm.em.fork()
     const result = await em.getConnection('read').execute(`
-      SELECT SUM(free_collateral_lots) as total
-      FROM agent_vault_info
-      WHERE publicly_available = TRUE
+      SELECT SUM(avi.free_collateral_lots) as total
+      FROM agent_vault_info avi
+      INNER JOIN agent_vault av ON avi.agent_vault_address_id = av.address_id
+      WHERE av.destroyed = FALSE ${publicFilter} ${liquidationFilter}
     `)
     return result[0].total
   }
