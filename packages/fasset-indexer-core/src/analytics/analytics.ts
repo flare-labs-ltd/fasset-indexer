@@ -166,7 +166,7 @@ export class Analytics {
 
   async agentCollateralReservationCount(agentAddress: string): Promise<number> {
     const qb = this.orm.em.fork().qb(CollateralReserved, 'o')
-    qb.select('o.collateral_reservation_id').where({ agentVault: { address: agentAddress }})
+    qb.select('o.collateral_reservation_id').where({ agentVault: { address: { hex: agentAddress }}})
     const result = await qb.count('o.collateral_reservation_id').execute()
     return result[0].count
   }
@@ -174,14 +174,14 @@ export class Analytics {
   async agentMintingExecutedCount(agentAddress: string): Promise<number> {
     const qb = this.orm.em.fork().qb(MintingExecuted, 'o')
     qb.select('o.collateral_reserved_collateral_reservation_id')
-      .where({ collateralReserved: { agentVault: { address: agentAddress }}})
+      .where({ collateralReserved: { agentVault: { address: { hex: agentAddress }}}})
     const result = await qb.count('o.collateral_reserved_collateral_reservation_id').execute()
     return result[0].count
   }
 
   async agentRedemptionRequestCount(agentAddress: string): Promise<number> {
     const qb = this.orm.em.fork().qb(RedemptionRequested, 'o')
-    qb.select('o.request_id').where({ agentVault: { address: agentAddress }})
+    qb.select('o.request_id').where({ agentVault: { address: { hex: agentAddress }}})
     const result = await qb.count('o.request_id').execute()
     return result[0].count
   }
@@ -189,7 +189,7 @@ export class Analytics {
   async agentRedemptionPerformedCount(agentAddress: string): Promise<number> {
     const qb = this.orm.em.fork().qb(RedemptionPerformed, 'o')
     qb.select('o.redemption_requested_request_id')
-      .where({ redemptionRequested: { agentVault: { address: agentAddress }}})
+      .where({ redemptionRequested: { agentVault: { address: { hex: agentAddress }}}})
     const result = await qb.count('o.redemption_requested_request_id').execute()
     return result[0].count
   }
@@ -202,7 +202,7 @@ export class Analytics {
 
   async agentLiquidationCount(agentAddress: string): Promise<number> {
     const qb = this.orm.em.fork().qb(LiquidationPerformed, 'o')
-    qb.select('o.id').where({ agentVault: { address: agentAddress }, valueUBA: { $gt: 0 } })
+    qb.select('o.id').where({ agentVault: { address: { hex: agentAddress }}, valueUBA: { $gt: 0 } })
     const result = await qb.count('o.id').execute()
     return result[0].count
   }
@@ -215,14 +215,14 @@ export class Analytics {
 
   async executorRedemptionRequests(executor: string): Promise<number> {
     const qb = this.orm.em.fork().qb(RedemptionRequested, 'o')
-    qb.select('o.request_id').where({ executor })
+    qb.select('o.request_id').where({ executor: { hex: executor }})
     const result = await qb.count('o.request_id').execute()
     return result[0].count
   }
 
   async executorMintingPerformed(executor: string): Promise<number> {
     const qb = this.orm.em.fork().qb(MintingExecuted, 'o')
-    qb.select('o.collateral_reserved_collateral_reservation_id').where({ collateralReserved: { executor }})
+    qb.select('o.collateral_reserved_collateral_reservation_id').where({ collateralReserved: { executor: { hex: executor }}})
     const result = await qb.count('o.collateral_reserved_collateral_reservation_id').execute()
     return result[0].count
   }
