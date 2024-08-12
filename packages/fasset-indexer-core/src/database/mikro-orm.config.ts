@@ -1,7 +1,9 @@
 import { defineConfig } from "@mikro-orm/core"
 import { UntrackedAgentVault, Var } from "./entities/state/var"
 import { EvmAddress, UnderlyingAddress } from "./entities/address"
-import { EvmLog } from "./entities/logs"
+import { EvmBlock } from "./entities/evm/block"
+import { EvmTransaction } from "./entities/evm/transaction"
+import { EvmLog } from "./entities/evm/log"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "./entities/events/agent"
 import {
   CollateralReserved, MintingExecuted,
@@ -27,7 +29,7 @@ import type { AbstractSqlDriver } from "@mikro-orm/knex"
 
 export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
   entities: [
-    Var, EvmLog, EvmAddress, UnderlyingAddress,
+    Var, EvmBlock, EvmTransaction, EvmLog, EvmAddress, UnderlyingAddress,
     AgentManager, AgentOwner, AgentVault, AgentVaultSettings, AgentVaultInfo,
     AgentVaultCreated, AgentSettingChanged, SelfClose,
     CollateralReserved, MintingExecuted, MintingPaymentDefault, CollateralReservationDeleted,

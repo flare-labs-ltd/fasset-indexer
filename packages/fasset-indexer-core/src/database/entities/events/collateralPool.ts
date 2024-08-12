@@ -1,14 +1,12 @@
-import { Entity, Property, ManyToOne, PrimaryKey } from "@mikro-orm/core"
+import { Entity, Property, ManyToOne } from "@mikro-orm/core"
 import { uint256 } from "../../custom/typeUint256"
-import { EventBound, EvmLog } from "../logs"
+import { FAssetEventBound ,type FAssetType } from "./_bound"
 import { EvmAddress } from "../address"
+import type { EvmLog } from "../evm/log"
 
 
 @Entity()
-export class CollateralPoolEntered extends EventBound {
-
-  @PrimaryKey({ type: 'number', autoincrement: true })
-  id!: number
+export class CollateralPoolEntered extends FAssetEventBound {
 
   @ManyToOne({ entity: () => EvmAddress })
   tokenHolder: EvmAddress
@@ -29,6 +27,7 @@ export class CollateralPoolEntered extends EventBound {
   timelockExpiresAt: number
 
   constructor(evmLog: EvmLog,
+    fasset: FAssetType,
     tokenHolder: EvmAddress,
     amountNatWei: bigint,
     receivedTokensWei: bigint,
@@ -36,7 +35,7 @@ export class CollateralPoolEntered extends EventBound {
     newFAssetFeeDebt: bigint,
     timelockExpiresAt: number
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.tokenHolder = tokenHolder
     this.amountNatWei = amountNatWei
     this.receivedTokensWei = receivedTokensWei
@@ -47,10 +46,7 @@ export class CollateralPoolEntered extends EventBound {
 }
 
 @Entity()
-export class CollateralPoolExited extends EventBound {
-
-  @PrimaryKey({ type: 'number', autoincrement: true })
-  id!: number
+export class CollateralPoolExited extends FAssetEventBound {
 
   @ManyToOne({ entity: () => EvmAddress })
   tokenHolder: EvmAddress
@@ -71,6 +67,7 @@ export class CollateralPoolExited extends EventBound {
   newFAssetFeeDebt: bigint
 
   constructor(evmLog: EvmLog,
+    fasset: FAssetType,
     tokenHolder: EvmAddress,
     burnedTokensWei: bigint,
     receivedNatWei: bigint,
@@ -78,7 +75,7 @@ export class CollateralPoolExited extends EventBound {
     closedFAssetsUBA: bigint,
     newFAssetFeeDebt: bigint
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.tokenHolder = tokenHolder
     this.burnedTokensWei = burnedTokensWei
     this.receivedNatWei = receivedNatWei

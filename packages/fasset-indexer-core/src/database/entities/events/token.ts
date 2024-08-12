@@ -1,13 +1,14 @@
-import { Entity, Property, OneToOne, ManyToOne, PrimaryKey } from "@mikro-orm/core"
+import { Entity, Property, OneToOne, ManyToOne } from "@mikro-orm/core"
 import { uint256 } from "../../custom/typeUint256"
 import { EvmAddress } from "../address"
-import { EventBound, EvmLog } from "../logs"
+import { EventBound, FAssetEventBound, type FAssetType } from "./_bound"
+import type { EvmLog } from "../evm/log"
 
 
 @Entity()
-export class CollateralType extends EventBound {
+export class CollateralType extends FAssetEventBound {
 
-  @OneToOne({ entity: () => EvmAddress, owner: true, primary: true })
+  @OneToOne({ entity: () => EvmAddress, owner: true })
   address: EvmAddress
 
   @Property({ type: 'number' })
@@ -27,6 +28,7 @@ export class CollateralType extends EventBound {
 
   constructor(
     evmLog: EvmLog,
+    fasset: FAssetType,
     collateralClass: number,
     address: EvmAddress,
     decimals: number,
@@ -34,7 +36,7 @@ export class CollateralType extends EventBound {
     assetFtsoSymbol: string,
     tokenFtsoSymbol: string
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.collateralClass = collateralClass
     this.address = address
     this.decimals = decimals
@@ -46,9 +48,6 @@ export class CollateralType extends EventBound {
 
 @Entity()
 export class ERC20Transfer extends EventBound {
-
-  @PrimaryKey({ type: 'number', autoincrement: true })
-  id!: number
 
   @ManyToOne({ entity: () => EvmAddress })
   from: EvmAddress

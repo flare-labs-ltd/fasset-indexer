@@ -1,15 +1,18 @@
-import { Entity, ManyToOne, PrimaryKey, Property, OneToOne } from "@mikro-orm/core"
+import { Entity, ManyToOne, Property, OneToOne, Unique } from "@mikro-orm/core"
 import { uint256 } from "../../custom/typeUint256"
 import { EvmAddress, UnderlyingAddress } from "../address"
 import { AgentVault } from "../agent"
-import { EvmLog, EventBound } from "../logs"
+import { FAssetEventBound, type FAssetType } from "./_bound"
 import { BYTES32_LENGTH } from "../../../config/constants"
+import { EvmLog } from "../evm/log"
 
 
 @Entity()
-export class RedemptionRequested extends EventBound {
+@Unique({ properties: ['fasset', 'requestId'] })
+@Unique({ properties: ['fasset', 'paymentReference'] })
+export class RedemptionRequested extends FAssetEventBound {
 
-  @PrimaryKey({ type: 'number' })
+  @Property({ type: 'number' })
   requestId: number
 
   @ManyToOne({ entity: () => AgentVault })
@@ -36,7 +39,7 @@ export class RedemptionRequested extends EventBound {
   @Property({ type: 'number' })
   lastUnderlyingTimestamp: number
 
-  @Property({ type: 'text', length: BYTES32_LENGTH, unique: true })
+  @Property({ type: 'text', length: BYTES32_LENGTH })
   paymentReference: string
 
   @ManyToOne({ entity: () => EvmAddress })
@@ -47,6 +50,7 @@ export class RedemptionRequested extends EventBound {
 
   constructor(
     evmLog: EvmLog,
+    fasset: FAssetType,
     agentVault: AgentVault,
     redeemer: EvmAddress,
     requestId: number,
@@ -60,7 +64,7 @@ export class RedemptionRequested extends EventBound {
     executor: EvmAddress,
     executorFeeNatWei: bigint
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.agentVault = agentVault
     this.redeemer = redeemer
     this.requestId = requestId
@@ -77,9 +81,9 @@ export class RedemptionRequested extends EventBound {
 }
 
 @Entity()
-export class RedemptionPerformed extends EventBound {
+export class RedemptionPerformed extends FAssetEventBound {
 
-  @OneToOne({ primary: true, owner: true, entity: () => RedemptionRequested })
+  @OneToOne({ entity: () => RedemptionRequested, owner: true })
   redemptionRequested: RedemptionRequested
 
   @Property({ type: 'text', length: BYTES32_LENGTH, unique: true })
@@ -90,11 +94,12 @@ export class RedemptionPerformed extends EventBound {
 
   constructor(
     evmLog: EvmLog,
+    fasset: FAssetType,
     redemptionRequested: RedemptionRequested,
     transactionHash: string,
     spentUnderlyingUBA: bigint
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.redemptionRequested = redemptionRequested
     this.transactionHash = transactionHash
     this.spentUnderlyingUBA = spentUnderlyingUBA
@@ -102,9 +107,9 @@ export class RedemptionPerformed extends EventBound {
 }
 
 @Entity()
-export class RedemptionDefault extends EventBound {
+export class RedemptionDefault extends FAssetEventBound {
 
-  @OneToOne({ primary: true, owner: true, entity: () => RedemptionRequested })
+  @OneToOne({ entity: () => RedemptionRequested, owner: true })
   redemptionRequested: RedemptionRequested
 
   @Property({ type: new uint256() })
@@ -115,11 +120,12 @@ export class RedemptionDefault extends EventBound {
 
   constructor(
     evmLog: EvmLog,
+    fasset: FAssetType,
     redemptionRequested: RedemptionRequested,
     redeemedVaultCollateralWei: bigint,
     redeemedPoolCollateralWei: bigint
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.redemptionRequested = redemptionRequested
     this.redeemedVaultCollateralWei = redeemedVaultCollateralWei
     this.redeemedPoolCollateralWei = redeemedPoolCollateralWei
@@ -127,21 +133,21 @@ export class RedemptionDefault extends EventBound {
 }
 
 @Entity()
-export class RedemptionRejected extends EventBound {
+export class RedemptionRejected extends FAssetEventBound {
 
-  @OneToOne({ primary: true, owner: true, entity: () => RedemptionRequested })
+  @OneToOne({ entity: () => RedemptionRequested, owner: true })
   redemptionRequested: RedemptionRequested
 
-  constructor(evmLog: EvmLog, redemptionRequested: RedemptionRequested) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, redemptionRequested: RedemptionRequested) {
+    super(evmLog, fasset)
     this.redemptionRequested = redemptionRequested
   }
 }
 
 @Entity()
-export class RedemptionPaymentBlocked extends EventBound {
+export class RedemptionPaymentBlocked extends FAssetEventBound {
 
-  @OneToOne({ primary: true, owner: true, entity: () => RedemptionRequested })
+  @OneToOne({ entity: () => RedemptionRequested, owner: true })
   redemptionRequested: RedemptionRequested
 
   @Property({ type: 'text', length: BYTES32_LENGTH })
@@ -152,11 +158,12 @@ export class RedemptionPaymentBlocked extends EventBound {
 
   constructor(
     evmLog: EvmLog,
+    fasset: FAssetType,
     redemptionRequested: RedemptionRequested,
     transactionHash: string,
     spentUnderlyingUBA: bigint
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.redemptionRequested = redemptionRequested
     this.transactionHash = transactionHash
     this.spentUnderlyingUBA = spentUnderlyingUBA
@@ -164,9 +171,9 @@ export class RedemptionPaymentBlocked extends EventBound {
 }
 
 @Entity()
-export class RedemptionPaymentFailed extends EventBound {
+export class RedemptionPaymentFailed extends FAssetEventBound {
 
-  @OneToOne({ primary: true, owner: true, entity: () => RedemptionRequested })
+  @OneToOne({ entity: () => RedemptionRequested, owner: true })
   redemptionRequested: RedemptionRequested
 
   @Property({ type: 'text', length: BYTES32_LENGTH })
@@ -180,12 +187,13 @@ export class RedemptionPaymentFailed extends EventBound {
 
   constructor(
     evmLog: EvmLog,
+    fasset: FAssetType,
     redemptionRequested: RedemptionRequested,
     transactionHash: string,
     spentUnderlyingUBA: bigint,
     failureReason: string
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.redemptionRequested = redemptionRequested
     this.transactionHash = transactionHash
     this.spentUnderlyingUBA = spentUnderlyingUBA
@@ -194,10 +202,7 @@ export class RedemptionPaymentFailed extends EventBound {
 }
 
 @Entity()
-export class RedemptionRequestIncomplete extends EventBound {
-
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
+export class RedemptionRequestIncomplete extends FAssetEventBound {
 
   @ManyToOne({ entity: () => EvmAddress })
   redeemer: EvmAddress
@@ -205,8 +210,8 @@ export class RedemptionRequestIncomplete extends EventBound {
   @Property({ type: new uint256() })
   remainingLots: bigint
 
-  constructor(evmLog: EvmLog, redeemer: EvmAddress, remainingLots: bigint) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, redeemer: EvmAddress, remainingLots: bigint) {
+    super(evmLog, fasset)
     this.redeemer = redeemer
     this.remainingLots = remainingLots
   }

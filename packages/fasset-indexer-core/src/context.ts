@@ -7,6 +7,7 @@ import type { CollateralPool, CollateralPoolInterface } from "../chain/typechain
 import type { ERC20Interface } from "../chain/typechain/ERC20"
 import type { ORM } from "./database/interface"
 import type { IConfig } from "./config/interface"
+import { FAssetType } from "./database/entities/events/_bound"
 
 
 export class Context {
@@ -29,6 +30,24 @@ export class Context {
   static async create(config: IConfig): Promise<Context> {
     const orm = await createOrm(config.db, "safe")
     return new Context(config, orm)
+  }
+
+  isAssetManagerAddress(address: string): boolean {
+    for (const contract of this.config.contracts.addresses) {
+      if (contract.address === address && contract.name.startsWith('AssetManager_')) {
+        return true
+      }
+    }
+    return false
+  }
+
+  isFAssetToken(address: string): boolean {
+    for (const contract of this.config.contracts.addresses) {
+      if (contract.address === address && contract.contractName === "FAsset.sol") {
+        return true
+      }
+    }
+    return false
   }
 
   getAssetManagerContract(fAsset: string): AssetManager {
@@ -62,6 +81,21 @@ export class Context {
 
   getCollateralPool(address: string): CollateralPool {
     return CollateralPool__factory.connect(address, this.provider)
+  }
+
+  addressToFAssetType(address: string): FAssetType {
+    for (const contract of this.config.contracts.addresses) {
+      if (contract.address === address) {
+        if (contract.name.startsWith('FTestXRP')) {
+          return FAssetType.FXRP
+        } else if (contract.name.startsWith('FTestBTC')) {
+          return FAssetType.FBTC
+        } else if (contract.name.startsWith('FTestDOGE')) {
+          return FAssetType.FDOGE
+        }
+      }
+    }
+    throw new Error(`No FAsset found for address ${address}`)
   }
 
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {

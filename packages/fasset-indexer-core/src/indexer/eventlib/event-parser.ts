@@ -2,6 +2,7 @@ import { CollateralType } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context"
 import type { Log, LogDescription } from "ethers"
+import type { EntityManager } from "@mikro-orm/knex"
 import type { Event } from "./event-scraper"
 
 
@@ -38,22 +39,25 @@ export class EventParser {
   }
 
   protected async parseLog(log: Log): Promise<LogDescription | null> {
-    if (log.address === this.context.getContractAddress('AssetManager_FTestXRP')) {
+    if (this.context.isAssetManagerAddress(log.address)) {
       return this.context.assetManagerEventInterface.parseLog(log)
-    } else if (log.address === this.context.getContractAddress('FTestXRP')) {
+    } else if (this.context.isFAssetToken(log.address)) {
       return this.context.erc20Interface.parseLog(log)
     }
     const em = this.context.orm.em.fork()
+    // is collateral token
     const collateralType = await em.findOne(CollateralType, { address: { hex: log.address } })
     if (collateralType !== null && collateralType.collateralClass !== 1) {
       return this.context.erc20Interface.parseLog(log)
     } else if (collateralType?.collateralClass === 1) {
       return null
     }
+    // is collateral pool token
     const collateralPoolToken = await em.findOne(AgentVault, { collateralPoolToken: { hex: log.address }})
     if (collateralPoolToken !== null) {
       return this.context.erc20Interface.parseLog(log)
     }
+    // is agent vault
     const pool = await em.findOne(AgentVault, { collateralPool: { hex: log.address }})
     if (pool !== null) {
       return this.context.collateralPoolInterface.parseLog(log)

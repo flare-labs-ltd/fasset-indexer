@@ -1,15 +1,12 @@
-import { Entity, PrimaryKey, ManyToOne, Property } from '@mikro-orm/core'
+import { Entity, ManyToOne, Property } from '@mikro-orm/core'
 import { uint256 } from '../../custom/typeUint256'
-import { EventBound } from '../logs'
+import { FAssetEventBound, type FAssetType } from './_bound'
 import { AgentVault } from '../agent'
 import { EvmAddress } from '../address'
-import type { EvmLog } from '../logs'
+import type { EvmLog } from '../evm/log'
 
 
-class LiquidationStartedBase extends EventBound {
-
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
+class LiquidationStartedBase extends FAssetEventBound {
 
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
@@ -17,8 +14,8 @@ class LiquidationStartedBase extends EventBound {
   @Property({ type: 'number' })
   timestamp: number
 
-  constructor(evmLog: EvmLog, agentVault: AgentVault, timestamp: number) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, timestamp: number) {
+    super(evmLog, fasset)
     this.agentVault = agentVault
     this.timestamp = timestamp
   }
@@ -31,10 +28,7 @@ export class LiquidationStarted extends LiquidationStartedBase { }
 export class FullLiquidationStarted extends LiquidationStartedBase { }
 
 @Entity()
-export class LiquidationPerformed extends EventBound {
-
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
+export class LiquidationPerformed extends FAssetEventBound {
 
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
@@ -45,8 +39,8 @@ export class LiquidationPerformed extends EventBound {
   @Property({ type: new uint256() })
   valueUBA: bigint
 
-  constructor(evmLog: EvmLog, agentVault: AgentVault, liquidator: EvmAddress, valueUBA: bigint) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, liquidator: EvmAddress, valueUBA: bigint) {
+    super(evmLog, fasset)
     this.agentVault = agentVault
     this.liquidator = liquidator
     this.valueUBA = valueUBA
@@ -54,16 +48,13 @@ export class LiquidationPerformed extends EventBound {
 }
 
 @Entity()
-export class LiquidationEnded extends EventBound {
-
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
+export class LiquidationEnded extends FAssetEventBound {
 
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
 
-  constructor(evmLog: EvmLog, agentVault: AgentVault) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault) {
+    super(evmLog, fasset)
     this.agentVault = agentVault
   }
 }

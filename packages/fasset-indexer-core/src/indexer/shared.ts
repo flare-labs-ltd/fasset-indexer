@@ -1,5 +1,7 @@
 import { EntityManager } from "@mikro-orm/knex"
 import { AddressType, EvmAddress, UnderlyingAddress } from "../database/entities/address"
+import { EvmTransaction } from "../database/entities/evm/transaction"
+import { EvmBlock } from "../database/entities/evm/block"
 import { AgentVault } from "../database/entities/agent"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { UntrackedAgentVault, Var } from "../database/entities/state/var"
@@ -46,6 +48,27 @@ export async function findOrCreateUnderlyingAddress(em: EntityManager, address: 
     em.persist(underlyingAddress)
   }
   return underlyingAddress
+}
+
+export async function findOrCreateEvmBlock(em: EntityManager, index: number, timestamp: number): Promise<EvmBlock> {
+  let block = await em.findOne(EvmBlock, { index: index })
+  if (!block) {
+    block = new EvmBlock(index, timestamp)
+    em.persist(block)
+  }
+  return block
+}
+
+export async function findOrCreateEvmTransaction(
+  em: EntityManager, hash: string, block: EvmBlock, index: number,
+  source: EvmAddress, target?: EvmAddress
+): Promise<EvmTransaction> {
+  let transaction = await em.findOne(EvmTransaction, { hash: hash })
+  if (!transaction) {
+    transaction = new EvmTransaction(hash, block, index, source, target)
+    em.persist(transaction)
+  }
+  return transaction
 }
 
 export async function isUntrackedAgentVault(em: EntityManager, address: string): Promise<boolean> {

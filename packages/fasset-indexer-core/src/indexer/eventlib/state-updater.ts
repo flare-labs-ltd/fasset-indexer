@@ -7,14 +7,14 @@ import { EventStorer } from "./event-storer"
 import type { AgentVaultCreatedEvent } from "../../../chain/typechain/AMEvents"
 import type { Event } from "./event-scraper"
 import type { Context } from "../../context"
-import type { EvmLog } from "../../database/entities/logs"
+import type { EvmLog } from "../../database/entities/evm/log"
 
 
 // binds chain reading to event storage
 export class StateUpdater extends EventStorer {
 
   constructor(public readonly context: Context) {
-    super()
+    super(context)
   }
 
   async onNewEvent(log: Event): Promise<void> {

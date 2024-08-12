@@ -1,15 +1,18 @@
-import { Entity, Property, ManyToOne, PrimaryKey, OneToOne } from '@mikro-orm/core'
+import { Entity, Property, ManyToOne, OneToOne, Unique } from '@mikro-orm/core'
 import { uint256 } from '../../custom/typeUint256'
-import { EvmAddress, UnderlyingAddress } from '../address'
-import { EvmLog, EventBound } from '../logs'
 import { AgentVault } from '../agent'
+import { EvmAddress, UnderlyingAddress } from '../address'
+import { FAssetEventBound, type FAssetType } from './_bound'
 import { BYTES32_LENGTH } from '../../../config/constants'
+import type { EvmLog } from '../evm/log'
 
 
 @Entity()
-export class CollateralReserved extends EventBound {
+@Unique({ properties: ['fasset', 'paymentReference'] })
+@Unique({ properties: ['fasset', 'collateralReservationId'] })
+export class CollateralReserved extends FAssetEventBound {
 
-  @PrimaryKey({ type: 'number' })
+  @Property({ type: 'number' })
   collateralReservationId: number
 
   @ManyToOne({ entity: () => AgentVault })
@@ -36,7 +39,7 @@ export class CollateralReserved extends EventBound {
   @ManyToOne({ entity: () => UnderlyingAddress})
   paymentAddress: UnderlyingAddress
 
-  @Property({ type: 'text', length: BYTES32_LENGTH, unique: true })
+  @Property({ type: 'text', length: BYTES32_LENGTH })
   paymentReference: string
 
   @ManyToOne({ entity: () => EvmAddress })
@@ -47,6 +50,7 @@ export class CollateralReserved extends EventBound {
 
   constructor(
     evmLog: EvmLog,
+    fasset: FAssetType,
     collateralReservationId: number,
     agentVault: AgentVault,
     minter: EvmAddress,
@@ -60,7 +64,7 @@ export class CollateralReserved extends EventBound {
     executor: EvmAddress,
     executorFeeNatWei: bigint
   ) {
-    super(evmLog)
+    super(evmLog, fasset)
     this.agentVault = agentVault
     this.minter = minter
     this.collateralReservationId = collateralReservationId
@@ -77,41 +81,41 @@ export class CollateralReserved extends EventBound {
 }
 
 @Entity()
-export class MintingExecuted extends EventBound {
+export class MintingExecuted extends FAssetEventBound {
 
-  @OneToOne({ primary: true, owner: true, entity: () => CollateralReserved })
+  @OneToOne({ entity: () => CollateralReserved, owner: true })
   collateralReserved: CollateralReserved
 
   @Property({ type: new uint256() })
   poolFeeUBA: bigint
 
-  constructor(evmLog: EvmLog, collateralReserved: CollateralReserved, poolFeeUBA: bigint) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, collateralReserved: CollateralReserved, poolFeeUBA: bigint) {
+    super(evmLog, fasset)
     this.collateralReserved = collateralReserved
     this.poolFeeUBA = poolFeeUBA
   }
 }
 
 @Entity()
-export class MintingPaymentDefault extends EventBound {
+export class MintingPaymentDefault extends FAssetEventBound {
 
-  @OneToOne(() => CollateralReserved, { primary: true, entity: () => CollateralReserved, owner: true })
+  @OneToOne({ entity: () => CollateralReserved, owner: true })
   collateralReserved: CollateralReserved
 
-  constructor(evmLog: EvmLog, collateralReserved: CollateralReserved) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, collateralReserved: CollateralReserved) {
+    super(evmLog, fasset)
     this.collateralReserved = collateralReserved
   }
 }
 
 @Entity()
-export class CollateralReservationDeleted extends EventBound {
+export class CollateralReservationDeleted extends FAssetEventBound {
 
-  @OneToOne({ primary: true, owner: true, entity: () => CollateralReserved })
+  @OneToOne({ entity: () => CollateralReserved, owner: true })
   collateralReserved: CollateralReserved
 
-  constructor(evmLog: EvmLog, collateralReserved: CollateralReserved) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, collateralReserved: CollateralReserved) {
+    super(evmLog, fasset)
     this.collateralReserved = collateralReserved
   }
 }
