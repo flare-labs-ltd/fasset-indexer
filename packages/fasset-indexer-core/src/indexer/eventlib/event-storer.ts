@@ -56,18 +56,18 @@ export class EventStorer {
 
   constructor(readonly context: Context) {}
 
-  async logExists(em: EntityManager, log: Event): Promise<boolean> {
-    const { blockNumber, logIndex } = log
-    const evmLog = await em.findOne(EvmLog, { index: logIndex, block: { index: blockNumber }})
-    return evmLog !== null
-  }
-
   async processEvent(em: EntityManager, log: Event): Promise<void> {
     if (!await this.logExists(em, log)) {
       const evmLog = await this.createLogEntity(em, log)
       const processed = await this._processEvent(em, log, evmLog)
       if (processed) em.persist(evmLog)
     }
+  }
+
+  protected async logExists(em: EntityManager, log: Event): Promise<boolean> {
+    const { blockNumber, logIndex } = log
+    const evmLog = await em.findOne(EvmLog, { index: logIndex, block: { index: blockNumber }})
+    return evmLog !== null
   }
 
   protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
@@ -81,14 +81,14 @@ export class EventStorer {
       } case AGENT_SETTING_CHANGED: {
         await this.onAgentSettingChanged(em, evmLog, log.args as AgentSettingChangeAnnouncedEvent.OutputTuple)
         break
-      } case COLLATERAL_RESERVED: {
-        await this.onCollateralReserved(em, evmLog, log.args as CollateralReservedEvent.OutputTuple)
-        break
       } case AGENT_DESTROYED: {
         await this.onAgentDestroyed(em, log.args as AgentDestroyedEvent.OutputTuple)
         break
       } case SELF_CLOSE: {
         await this.onSelfClose(em, evmLog, log.args as SelfCloseEvent.OutputTuple)
+        break
+      } case COLLATERAL_RESERVED: {
+        await this.onCollateralReserved(em, evmLog, log.args as CollateralReservedEvent.OutputTuple)
         break
       } case MINTING_EXECUTED: {
         await this.onMintingExecuted(em, evmLog, log.args as MintingExecutedEvent.OutputTuple)

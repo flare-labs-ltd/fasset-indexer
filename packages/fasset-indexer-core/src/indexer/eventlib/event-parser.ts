@@ -2,7 +2,6 @@ import { CollateralType } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context"
 import type { Log, LogDescription } from "ethers"
-import type { EntityManager } from "@mikro-orm/knex"
 import type { Event } from "./event-scraper"
 
 

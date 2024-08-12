@@ -1,6 +1,9 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "./database/utils"
-import { AssetManager__factory, AMEvents__factory, ERC20__factory, AgentOwnerRegistry__factory, CollateralPool__factory } from "../chain/typechain"
+import {
+  AssetManager__factory, AMEvents__factory, ERC20__factory,
+  AgentOwnerRegistry__factory, CollateralPool__factory
+} from "../chain/typechain"
 import type { AssetManager, ERC20, AgentOwnerRegistry } from "../chain/typechain"
 import type { AMEventsInterface } from "../chain/typechain/AMEvents"
 import type { CollateralPool, CollateralPoolInterface } from "../chain/typechain/CollateralPool"
@@ -86,11 +89,11 @@ export class Context {
   addressToFAssetType(address: string): FAssetType {
     for (const contract of this.config.contracts.addresses) {
       if (contract.address === address) {
-        if (contract.name.startsWith('FTestXRP')) {
+        if (contract.name.includes('FTestXRP')) {
           return FAssetType.FXRP
-        } else if (contract.name.startsWith('FTestBTC')) {
+        } else if (contract.name.includes('FTestBTC')) {
           return FAssetType.FBTC
-        } else if (contract.name.startsWith('FTestDOGE')) {
+        } else if (contract.name.includes('FTestDOGE')) {
           return FAssetType.FDOGE
         }
       }
