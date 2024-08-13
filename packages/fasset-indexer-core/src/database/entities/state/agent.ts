@@ -1,7 +1,7 @@
 import { Entity, Property, ManyToOne, OneToOne } from '@mikro-orm/core'
 import { uint256 } from '../../custom/typeUint256'
 import { AgentVault } from '../agent'
-import { CollateralType } from '../events/token'
+import { CollateralTypeAdded } from '../events/token'
 
 
 @Entity()
@@ -10,8 +10,8 @@ export class AgentVaultSettings {
   @OneToOne({ primary: true, owner: true, entity: () => AgentVault })
   agentVault: AgentVault
 
-  @ManyToOne({ entity: () => CollateralType })
-  collateralToken: CollateralType
+  @ManyToOne({ entity: () => CollateralTypeAdded })
+  collateralToken: CollateralTypeAdded
 
   @Property({ type: new uint256() })
   feeBIPS: bigint
@@ -39,7 +39,7 @@ export class AgentVaultSettings {
 
   constructor(
     agentVault: AgentVault,
-    collateralToken: CollateralType,
+    collateralToken: CollateralTypeAdded,
     feeBIPS: bigint,
     poolFeeShareBIPS: bigint,
     mintingVaultCollateralRatioBIPS: bigint,

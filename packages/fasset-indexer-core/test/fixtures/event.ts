@@ -1,9 +1,11 @@
 import { ORM } from "../../src"
-import { CollateralType } from "../../src/database/entities/events/token"
+import { EvmAddress, UnderlyingAddress } from "../../src/database/entities/address"
+import { CollateralTypeAdded } from "../../src/database/entities/events/token"
 import { AgentManager, AgentOwner, AgentVault } from "../../src/database/entities/agent"
 import { CollateralReserved } from "../../src/database/entities/events/minting"
 import { RedemptionRequested } from "../../src/database/entities/events/redemption"
 import { randomChoice, randomHash, randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress } from "./utils"
+import { ASSET_MANAGERS, AGENT_SETTINGS } from "./constants"
 import type {
   AgentVaultCreatedEvent,
   CollateralTypeAddedEvent,
@@ -31,23 +33,6 @@ import type {
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/CollateralPool"
 import type { TransferEvent } from "../../chain/typechain/ERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
-import { EvmAddress, UnderlyingAddress } from "../../src/database/entities/address"
-
-
-const AGENT_SETTINGS = [
-  'feeBIPS',
-  'poolFeeShareBIPS',
-  'mintingVaultCollateralRatioBIPS',
-  'mintingPoolCollateralRatioBIPS',
-  'buyFAssetByAgentFactorBIPS',
-  'poolExitCollateralRatioBIPS',
-  'poolTopupCollateralRatioBIPS',
-  'poolTopupTokenPriceFactorBIPS'
-]
-
-const ASSET_MANAGERS = [
-  '0x901E620B91fBFa32f68738Ef9027Cdb76F21d208'
-]
 
 export class EventFixture {
 
@@ -70,14 +55,14 @@ export class EventFixture {
     })
   }
 
-  async generateEvent(name: string): Promise<Event> {
+  async generateEvent(name: string, source?: string): Promise<Event> {
     return {
       name: name,
       args: await this.argumentsFromEventName(name),
       blockNumber: randomNumber(1, 1e6),
       transactionIndex: randomNumber(1, 1e6),
       logIndex: randomNumber(1, 1e6),
-      source: randomChoice(ASSET_MANAGERS),
+      source: source ?? randomChoice(ASSET_MANAGERS),
       blockTimestamp: Date.now(),
       transactionHash: randomHash(),
       transactionSource: randomNativeAddress(),
@@ -101,7 +86,7 @@ export class EventFixture {
 
   protected async generateAgentVaultCreated(): Promise<AgentVaultCreatedEvent.OutputTuple> {
     return [
-      await this.getRandomAgentOwner(),
+      await this.getRandomAgentManager(),
       randomNativeAddress(),
       randomNativeAddress(),
       randomUnderlyingAddress(),
@@ -331,15 +316,15 @@ export class EventFixture {
   // utils
 
   private async getRandomCollateralType(): Promise<string> {
-    const vaultCollateralToken = await this.orm.em.fork().findOne(CollateralType, { collateralClass: 1 }, { populate: ['address'] })
+    const vaultCollateralToken = await this.orm.em.fork().findOne(CollateralTypeAdded, { collateralClass: 1 }, { populate: ['address'] })
     if (vaultCollateralToken === null) throw new Error('CollateralType not found')
     return vaultCollateralToken.address.hex
   }
 
-  private async getRandomAgentOwner(): Promise<string> {
-    const agentOwner = await this.orm.em.fork().findAll(AgentOwner, { populate: ['address'] })
-    if (agentOwner === null) throw new Error('AgentOwner not found')
-    return randomChoice(agentOwner).address.hex
+  private async getRandomAgentManager(): Promise<string> {
+    const agentManager = await this.orm.em.fork().findAll(AgentManager, { populate: ['address'] })
+    if (agentManager === null) throw new Error('AgentManager not found')
+    return randomChoice(agentManager).address.hex
   }
 
   private async getRandomAgentVault(): Promise<string> {

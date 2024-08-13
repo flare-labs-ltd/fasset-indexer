@@ -6,7 +6,7 @@ import type { EvmLog } from "../evm/log"
 
 
 @Entity()
-export class CollateralType extends FAssetEventBound {
+export class CollateralTypeAdded extends FAssetEventBound {
 
   @OneToOne({ entity: () => EvmAddress, owner: true })
   address: EvmAddress

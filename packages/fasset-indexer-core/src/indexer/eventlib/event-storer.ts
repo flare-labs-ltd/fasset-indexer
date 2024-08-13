@@ -3,7 +3,7 @@ import {
   findOrCreateUnderlyingAddress, findOrCreateEvmBlock, findOrCreateEvmTransaction
 } from "../shared"
 import { EvmLog } from "../../database/entities/evm/log"
-import { CollateralType, ERC20Transfer } from "../../database/entities/events/token"
+import { CollateralTypeAdded, ERC20Transfer } from "../../database/entities/events/token"
 import { AddressType } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
@@ -158,7 +158,7 @@ export class EventStorer {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ collateralClass, token, decimals, directPricePair, assetFtsoSymbol, tokenFtsoSymbol, ] = logArgs
     const tokenEvmAddress = await findOrCreateEvmAddress(em, token, AddressType.SYSTEM)
-    const collateralTypeAdded = new CollateralType(evmLog, fasset,
+    const collateralTypeAdded = new CollateralTypeAdded(evmLog, fasset,
       Number(collateralClass), tokenEvmAddress, Number(decimals),
       directPricePair, assetFtsoSymbol, tokenFtsoSymbol
     )
@@ -189,7 +189,7 @@ export class EventStorer {
     if (collateralPoolToken !== undefined) {
       agentVaultEntity.collateralPoolToken = await findOrCreateEvmAddress(em, collateralPoolToken!, AddressType.AGENT)
     }
-    const vaultCollateralTokenEntity = await em.findOneOrFail(CollateralType, { address: { hex: vaultCollateralToken }})
+    const vaultCollateralTokenEntity = await em.findOneOrFail(CollateralTypeAdded, { address: { hex: vaultCollateralToken }, fasset })
     const agentVaultSettings = new AgentVaultSettings(
       agentVaultEntity, vaultCollateralTokenEntity, feeBIPS, poolFeeShareBIPS, mintingVaultCollateralRatioBIPS,
       mintingPoolCollateralRatioBIPS, buyFAssetByAgentFactorBIPS, poolExitCollateralRatioBIPS,
@@ -304,7 +304,7 @@ export class EventStorer {
   protected async onMintingExecuted(em: EntityManager, evmLog: EvmLog, logArgs: MintingExecutedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ , collateralReservationId,,, poolFeeUBA ] = logArgs
-    const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId) })
+    const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId), fasset })
     const mintingExecuted = new MintingExecuted(evmLog, fasset, collateralReserved, poolFeeUBA)
     em.persist(mintingExecuted)
   }
@@ -312,7 +312,7 @@ export class EventStorer {
   protected async onMintingPaymentDefault(em: EntityManager, evmLog: EvmLog, logArgs: MintingPaymentDefaultEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ ,, collateralReservationId, ] = logArgs
-    const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId) })
+    const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId), fasset })
     const mintingPaymentDefault = new MintingPaymentDefault(evmLog, fasset, collateralReserved)
     em.persist(mintingPaymentDefault)
   }
@@ -320,7 +320,7 @@ export class EventStorer {
   protected async onCollateralReservationDeleted(em: EntityManager, evmLog: EvmLog, logArgs: CollateralReservationDeletedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ ,, collateralReservationId, ] = logArgs
-    const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId) })
+    const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId), fasset })
     const collateralReservationDeleted = new CollateralReservationDeleted(evmLog, fasset, collateralReserved)
     em.persist(collateralReservationDeleted)
   }
@@ -349,8 +349,8 @@ export class EventStorer {
 
   protected async onRedemptionPerformed(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionPerformedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
-    const [ ,, requestId, transactionHash, spentUnderlyingUBA ] = logArgs
-    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId) })
+    const [ ,, requestId, transactionHash,, spentUnderlyingUBA ] = logArgs
+    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId), fasset })
     const redemptionPerformed = new RedemptionPerformed(evmLog, fasset, redemptionRequested, transactionHash, spentUnderlyingUBA)
     em.persist(redemptionPerformed)
   }
@@ -358,7 +358,7 @@ export class EventStorer {
   protected async onRedemptionDefault(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionDefaultEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ ,, requestId,, redeemedVaultCollateralWei, redeemedPoolCollateralWei ] = logArgs
-    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId) })
+    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId), fasset })
     const redemptionDefault = new RedemptionDefault(evmLog, fasset, redemptionRequested, redeemedVaultCollateralWei, redeemedPoolCollateralWei)
     em.persist(redemptionDefault)
   }
@@ -366,7 +366,7 @@ export class EventStorer {
   protected async onRedemptionPaymentBlocked(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionPaymentBlockedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ ,, requestId, transactionHash,, spentUnderlyingUBA ] = logArgs
-    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId) })
+    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId), fasset })
     const redemptionPaymentBlocked = new RedemptionPaymentBlocked(evmLog, fasset, redemptionRequested, transactionHash, spentUnderlyingUBA)
     em.persist(redemptionPaymentBlocked)
   }
@@ -374,7 +374,7 @@ export class EventStorer {
   protected async onRedemptionPaymentFailed(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionPaymentFailedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ ,, requestId, transactionHash, spentUnderlyingUBA, failureReason ] = logArgs
-    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId) })
+    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId), fasset })
     const redemptionPaymentFailed = new RedemptionPaymentFailed(evmLog, fasset, redemptionRequested, transactionHash, spentUnderlyingUBA, failureReason)
     em.persist(redemptionPaymentFailed)
   }
@@ -382,7 +382,7 @@ export class EventStorer {
   protected async onRedemptionRejected(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionRejectedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ ,, requestId, ] = logArgs
-    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId) })
+    const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId), fasset })
     const redemptionRejected = new RedemptionRejected(evmLog, fasset, redemptionRequested)
     em.persist(redemptionRejected)
   }

@@ -1,4 +1,4 @@
-import { CollateralType } from "../../database/entities/events/token"
+import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context"
 import type { Log, LogDescription } from "ethers"
@@ -45,7 +45,7 @@ export class EventParser {
     }
     const em = this.context.orm.em.fork()
     // is collateral token
-    const collateralType = await em.findOne(CollateralType, { address: { hex: log.address } })
+    const collateralType = await em.findOne(CollateralTypeAdded, { address: { hex: log.address } })
     if (collateralType !== null && collateralType.collateralClass !== 1) {
       return this.context.erc20Interface.parseLog(log)
     } else if (collateralType?.collateralClass === 1) {
