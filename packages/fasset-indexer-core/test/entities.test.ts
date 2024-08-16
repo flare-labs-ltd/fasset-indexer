@@ -1,5 +1,6 @@
 import { describe, beforeEach, afterEach, it } from "mocha"
-import { expect } from "chai"
+import { use, expect } from "chai"
+import chaiAsPromised from "chai-as-promised"
 import { unlink } from "fs"
 import { FAssetType } from "../src/database/entities/events/_bound"
 import { EvmLog } from "../src/database/entities/evm/log"
@@ -21,6 +22,11 @@ import { Context } from "../src/context"
 import { CONFIG } from "./fixtures/config"
 
 
+const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
+const ASSET_MANAGER_FBTC = "AssetManager_FTestBTC"
+
+use(chaiAsPromised)
+
 describe("ORM: Agent", () => {
   let context: Context
   let fixture: EventFixture
@@ -38,7 +44,7 @@ describe("ORM: Agent", () => {
   })
 
   it("should store agent created event", async () => {
-    const assetManager = context.getContractAddress('FTestXRP')
+    const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
     await fixture.storeInitialAgents()
     const em = context.orm.em.fork()
     // add initial collateral token type
@@ -77,7 +83,7 @@ describe("ORM: Agent", () => {
   })
 
   it("should store all minting events", async () => {
-    const assetManager = context.getContractAddress('FTestXRP')
+    const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
     await fixture.storeInitialAgents()
     const em = context.orm.em.fork()
     // collateral reserved event
@@ -126,7 +132,7 @@ describe("ORM: Agent", () => {
   })
 
   it("should store all redemption events", async () => {
-    const assetManager = context.getContractAddress('FTestXRP')
+    const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
     await fixture.storeInitialAgents()
     const em = context.orm.em.fork()
     // redemption requested event
@@ -206,8 +212,35 @@ describe("ORM: Agent", () => {
 
   describe("edge cases", () => {
 
-    it("should not confuse between cross-fasset collateral reservation ids", async () => {
-      // TODO
+    it("should be able to store collateral reserved events with same ids, from different fassets", async () => {
+      const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+      const assetManagerBtc = context.getContractAddress(ASSET_MANAGER_FBTC)
+      await fixture.storeInitialAgents()
+      const event1 = await fixture.generateEvent('CollateralReserved', assetManagerXrp)
+      const event2 = await fixture.generateEvent('CollateralReserved', assetManagerBtc)
+      event2.args[2] = event1.args[2]
+      const em = context.orm.em.fork()
+      await storer.processEvent(em, event1)
+      await storer.processEvent(em, event2)
+      const collateralReserved = await em.findOneOrFail(CollateralReserved, { fasset: FAssetType.FXRP })
+      expect(collateralReserved.collateralReservationId).to.equal(Number(event1.args[2]))
+      expect(collateralReserved.fasset).to.equal(FAssetType.FXRP)
+      const collateralReservedBtc = await em.findOneOrFail(CollateralReserved, { fasset: FAssetType.FBTC })
+      expect(collateralReservedBtc.collateralReservationId).to.equal(Number(event2.args[2]))
+      expect(collateralReservedBtc.fasset).to.equal(FAssetType.FBTC)
+    })
+
+    it("should not confuse collatearl reserved from different fassets", async () => {
+      const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+      const assetManagerBtc = context.getContractAddress(ASSET_MANAGER_FBTC)
+      await fixture.storeInitialAgents()
+      const em = context.orm.em.fork()
+      const event1 = await fixture.generateEvent('CollateralReserved', assetManagerXrp)
+      await storer.processEvent(em, event1)
+      await em.flush()
+      const event2 = await fixture.generateEvent('MintingExecuted', assetManagerBtc)
+      event2.args[1] = event1.args[2]
+      expect(storer.processEvent(em, event2)).to.eventually.be.rejected
     })
 
     it("should not allow two events with same log index and block index", async () => {
@@ -215,21 +248,19 @@ describe("ORM: Agent", () => {
       const event2 = await fixture.generateEvent('CollateralTypeAdded')
       event2.logIndex = event1.logIndex
       event2.blockNumber = event1.blockNumber
-      await context.orm.em.fork().transactional(async em => {
-        await storer.processEvent(em, event1)
-        await storer.processEvent(em, event2)
-      })
-      const logs = await context.orm.em.fork().findAll(EvmLog)
+      const em = context.orm.em.fork()
+      await storer.processEvent(em, event1)
+      await storer.processEvent(em, event2)
+      const logs = await em.findAll(EvmLog)
       expect(logs).to.have.length(1)
     })
 
     it("should not store an event that is not processed", async () => {
       const collateralTypeAddedEvent = await fixture.generateEvent('CollateralTypeAdded')
       collateralTypeAddedEvent.name = 'ShmollateralShmypeAShmadded'
-      await context.orm.em.fork().transactional(async em => {
-        await storer.processEvent(em, collateralTypeAddedEvent)
-      })
-      const evmLogs = await context.orm.em.fork().findAll(EvmLog)
+      const em = context.orm.em.fork()
+      await storer.processEvent(em, collateralTypeAddedEvent)
+      const evmLogs = await em.findAll(EvmLog)
       expect(evmLogs).to.be.empty
     })
   })
