@@ -62,11 +62,12 @@ describe("ORM: Agent", () => {
     // check that vault was created
     const agentVault = await em.findOneOrFail(AgentVault,
       { address: { hex: agentVaultCreatedEvent.args[1] }},
-      { populate: ['address', 'underlyingAddress', 'collateralPool'] })
+      { populate: ['address', 'underlyingAddress', 'collateralPool', 'collateralPoolToken'] })
     expect(agentVault).to.exist
     expect(agentVault.address.hex).to.equal(agentVaultCreatedEvent.args[1])
-    expect(agentVault.collateralPool.hex).to.equal(agentVaultCreatedEvent.args[2])
-    expect(agentVault.underlyingAddress.text).to.equal(agentVaultCreatedEvent.args[3])
+    expect(agentVault.collateralPool.hex).to.equal(agentVaultCreatedEvent.args.creationData[0])
+    expect(agentVault.collateralPoolToken.hex).to.equal(agentVaultCreatedEvent.args.creationData[1])
+    expect(agentVault.underlyingAddress.text).to.equal(agentVaultCreatedEvent.args.creationData[2])
     // check that event was logged
     const agentVaultCreated = await em.findOneOrFail(AgentVaultCreated,
       { evmLog: { index: agentVaultCreatedEvent.logIndex, block: { index: agentVaultCreatedEvent.blockNumber }}},
@@ -79,7 +80,7 @@ describe("ORM: Agent", () => {
     expect(agentVaultSettings).to.exist
     expect(agentVaultSettings.agentVault).to.equal(agentVault)
     expect(agentVaultSettings.collateralToken).to.equal(collateralTypeAdded)
-    expect(agentVaultSettings.feeBIPS).to.equal(agentVaultCreatedEvent.args[5])
+    expect(agentVaultSettings.feeBIPS).to.equal(agentVaultCreatedEvent.args.creationData[5])
   })
 
   it("should store all minting events", async () => {
@@ -244,8 +245,10 @@ describe("ORM: Agent", () => {
     })
 
     it("should not allow two events with same log index and block index", async () => {
-      const event1 = await fixture.generateEvent('CollateralTypeAdded')
-      const event2 = await fixture.generateEvent('CollateralTypeAdded')
+      const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+      const assetManagerBtc = context.getContractAddress(ASSET_MANAGER_FBTC)
+      const event1 = await fixture.generateEvent('CollateralTypeAdded', assetManagerXrp)
+      const event2 = await fixture.generateEvent('CollateralTypeAdded', assetManagerBtc)
       event2.logIndex = event1.logIndex
       event2.blockNumber = event1.blockNumber
       const em = context.orm.em.fork()

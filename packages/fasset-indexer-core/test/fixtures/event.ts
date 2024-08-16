@@ -5,7 +5,7 @@ import { AgentManager, AgentOwner, AgentVault } from "../../src/database/entitie
 import { CollateralReserved } from "../../src/database/entities/events/minting"
 import { RedemptionRequested } from "../../src/database/entities/events/redemption"
 import { randomChoice, randomHash, randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress } from "./utils"
-import { ASSET_MANAGERS, AGENT_SETTINGS } from "./constants"
+import { ASSET_MANAGERS, AGENT_SETTINGS, WNAT_TOKEN } from "./constants"
 import type {
   AgentVaultCreatedEvent,
   CollateralTypeAddedEvent,
@@ -29,7 +29,7 @@ import type {
   LiquidationEndedEvent,
   AvailableAgentExitedEvent,
   AgentAvailableEvent
-} from "../../chain/typechain/AMEvents"
+} from "../../chain/typechain/IAssetManagerEvents"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/CollateralPool"
 import type { TransferEvent } from "../../chain/typechain/ERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
@@ -50,7 +50,11 @@ export class EventFixture {
       const vaultAddress = new EvmAddress(randomNativeAddress(), 1)
       const underlyingVaultAddress = new UnderlyingAddress(randomUnderlyingAddress(), 1)
       const collateralPoolAddress = new EvmAddress(randomNativeAddress(), 1)
-      const agentVault = new AgentVault(vaultAddress, underlyingVaultAddress, collateralPoolAddress, agentOwner, false)
+      const collateralPoolTokenAddress = new EvmAddress(randomNativeAddress(), 1)
+      const agentVault = new AgentVault(
+        vaultAddress, underlyingVaultAddress, collateralPoolAddress,
+        collateralPoolTokenAddress, agentOwner, false
+      )
       em.persist(agentVault)
     })
   }
@@ -85,21 +89,40 @@ export class EventFixture {
   }
 
   protected async generateAgentVaultCreated(): Promise<AgentVaultCreatedEvent.OutputTuple> {
-    return [
-      await this.getRandomAgentManager(),
-      randomNativeAddress(),
-      randomNativeAddress(),
-      randomUnderlyingAddress(),
-      await this.getRandomCollateralType(),
-      BigInt(randomNumber(10, 9999)),
-      BigInt(randomNumber(10, 9999)),
-      BigInt(randomNumber(15_000, 20_000)),
-      BigInt(randomNumber(14_000, 19_000)),
-      BigInt(randomNumber(9000, 11000)),
-      BigInt(randomNumber(14_000, 25_000)),
-      BigInt(randomNumber(10_000, 13_000)),
-      BigInt(randomNumber(10_000, 13_000)),
-    ]
+    const struct = {
+      collateralPool: randomNativeAddress(),
+      collateralPoolToken: randomNativeAddress(),
+      underlyingAddress: randomUnderlyingAddress(),
+      vaultCollateralToken: await this.getRandomCollateralType(),
+      poolWNatToken: WNAT_TOKEN,
+      feeBIPS: BigInt(randomNumber(10, 9999)),
+      poolFeeShareBIPS: BigInt(randomNumber(10, 9999)),
+      mintingVaultCollateralRatioBIPS: BigInt(randomNumber(15_000, 20_000)),
+      mintingPoolCollateralRatioBIPS: BigInt(randomNumber(14_000, 19_000)),
+      buyFAssetByAgentFactorBIPS: BigInt(randomNumber(9000, 11000)),
+      poolExitCollateralRatioBIPS: BigInt(randomNumber(14_000, 25_000)),
+      poolTopupCollateralRatioBIPS: BigInt(randomNumber(10_000, 13_000)),
+      poolTopupTokenPriceFactorBIPS: BigInt(randomNumber(10_000, 13_000))
+    }
+    return {
+      0: await this.getRandomAgentManager(),
+      1: randomNativeAddress(),
+      creationData: [
+        struct.collateralPool,
+        struct.collateralPoolToken,
+        struct.underlyingAddress,
+        struct.vaultCollateralToken,
+        struct.poolWNatToken,
+        struct.feeBIPS,
+        struct.poolFeeShareBIPS,
+        struct.mintingVaultCollateralRatioBIPS,
+        struct.mintingPoolCollateralRatioBIPS,
+        struct.buyFAssetByAgentFactorBIPS,
+        struct.poolExitCollateralRatioBIPS,
+        struct.poolTopupCollateralRatioBIPS,
+        struct.poolTopupTokenPriceFactorBIPS
+      ]
+    } as any
   }
 
   protected async generateAgentSettingsChanged(): Promise<AgentSettingChangedEvent.OutputTuple> {

@@ -21,7 +21,55 @@ import type {
   TypedListener,
 } from "./common";
 
-export interface AMEventsInterface extends Interface {
+export declare namespace IAssetManagerEvents {
+  export type AgentVaultCreationDataStruct = {
+    collateralPool: AddressLike;
+    collateralPoolToken: AddressLike;
+    underlyingAddress: string;
+    vaultCollateralToken: AddressLike;
+    poolWNatToken: AddressLike;
+    feeBIPS: BigNumberish;
+    poolFeeShareBIPS: BigNumberish;
+    mintingVaultCollateralRatioBIPS: BigNumberish;
+    mintingPoolCollateralRatioBIPS: BigNumberish;
+    buyFAssetByAgentFactorBIPS: BigNumberish;
+    poolExitCollateralRatioBIPS: BigNumberish;
+    poolTopupCollateralRatioBIPS: BigNumberish;
+    poolTopupTokenPriceFactorBIPS: BigNumberish;
+  };
+
+  export type AgentVaultCreationDataStructOutput = [
+    collateralPool: string,
+    collateralPoolToken: string,
+    underlyingAddress: string,
+    vaultCollateralToken: string,
+    poolWNatToken: string,
+    feeBIPS: bigint,
+    poolFeeShareBIPS: bigint,
+    mintingVaultCollateralRatioBIPS: bigint,
+    mintingPoolCollateralRatioBIPS: bigint,
+    buyFAssetByAgentFactorBIPS: bigint,
+    poolExitCollateralRatioBIPS: bigint,
+    poolTopupCollateralRatioBIPS: bigint,
+    poolTopupTokenPriceFactorBIPS: bigint
+  ] & {
+    collateralPool: string;
+    collateralPoolToken: string;
+    underlyingAddress: string;
+    vaultCollateralToken: string;
+    poolWNatToken: string;
+    feeBIPS: bigint;
+    poolFeeShareBIPS: bigint;
+    mintingVaultCollateralRatioBIPS: bigint;
+    mintingPoolCollateralRatioBIPS: bigint;
+    buyFAssetByAgentFactorBIPS: bigint;
+    poolExitCollateralRatioBIPS: bigint;
+    poolTopupCollateralRatioBIPS: bigint;
+    poolTopupTokenPriceFactorBIPS: bigint;
+  };
+}
+
+export interface IAssetManagerEventsInterface extends Interface {
   getEvent(
     nameOrSignatureOrTopic:
       | "AgentAvailable"
@@ -43,6 +91,8 @@ export interface AMEventsInterface extends Interface {
       | "CurrentUnderlyingBlockUpdated"
       | "DuplicatePaymentConfirmed"
       | "DustChanged"
+      | "EmergencyPauseCanceled"
+      | "EmergencyPauseTriggered"
       | "FullLiquidationStarted"
       | "IllegalPaymentConfirmed"
       | "LiquidationEnded"
@@ -213,47 +263,17 @@ export namespace AgentVaultCreatedEvent {
   export type InputTuple = [
     owner: AddressLike,
     agentVault: AddressLike,
-    collateralPool: AddressLike,
-    underlyingAddress: string,
-    vaultCollateralToken: AddressLike,
-    feeBIPS: BigNumberish,
-    poolFeeShareBIPS: BigNumberish,
-    mintingVaultCollateralRatioBIPS: BigNumberish,
-    mintingPoolCollateralRatioBIPS: BigNumberish,
-    buyFAssetByAgentFactorBIPS: BigNumberish,
-    poolExitCollateralRatioBIPS: BigNumberish,
-    poolTopupCollateralRatioBIPS: BigNumberish,
-    poolTopupTokenPriceFactorBIPS: BigNumberish
+    creationData: IAssetManagerEvents.AgentVaultCreationDataStruct
   ];
   export type OutputTuple = [
     owner: string,
     agentVault: string,
-    collateralPool: string,
-    underlyingAddress: string,
-    vaultCollateralToken: string,
-    feeBIPS: bigint,
-    poolFeeShareBIPS: bigint,
-    mintingVaultCollateralRatioBIPS: bigint,
-    mintingPoolCollateralRatioBIPS: bigint,
-    buyFAssetByAgentFactorBIPS: bigint,
-    poolExitCollateralRatioBIPS: bigint,
-    poolTopupCollateralRatioBIPS: bigint,
-    poolTopupTokenPriceFactorBIPS: bigint
+    creationData: IAssetManagerEvents.AgentVaultCreationDataStructOutput
   ];
   export interface OutputObject {
     owner: string;
     agentVault: string;
-    collateralPool: string;
-    underlyingAddress: string;
-    vaultCollateralToken: string;
-    feeBIPS: bigint;
-    poolFeeShareBIPS: bigint;
-    mintingVaultCollateralRatioBIPS: bigint;
-    mintingPoolCollateralRatioBIPS: bigint;
-    buyFAssetByAgentFactorBIPS: bigint;
-    poolExitCollateralRatioBIPS: bigint;
-    poolTopupCollateralRatioBIPS: bigint;
-    poolTopupTokenPriceFactorBIPS: bigint;
+    creationData: IAssetManagerEvents.AgentVaultCreationDataStructOutput;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -516,6 +536,28 @@ export namespace DustChangedEvent {
   export interface OutputObject {
     agentVault: string;
     dustUBA: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace EmergencyPauseCanceledEvent {
+  export type InputTuple = [];
+  export type OutputTuple = [];
+  export interface OutputObject {}
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace EmergencyPauseTriggeredEvent {
+  export type InputTuple = [pausedUntil: BigNumberish];
+  export type OutputTuple = [pausedUntil: bigint];
+  export interface OutputObject {
+    pausedUntil: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -1154,11 +1196,11 @@ export namespace VaultCollateralWithdrawalAnnouncedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export interface AMEvents extends BaseContract {
-  connect(runner?: ContractRunner | null): AMEvents;
+export interface IAssetManagerEvents extends BaseContract {
+  connect(runner?: ContractRunner | null): IAssetManagerEvents;
   waitForDeployment(): Promise<this>;
 
-  interface: AMEventsInterface;
+  interface: IAssetManagerEventsInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
@@ -1333,6 +1375,20 @@ export interface AMEvents extends BaseContract {
     DustChangedEvent.InputTuple,
     DustChangedEvent.OutputTuple,
     DustChangedEvent.OutputObject
+  >;
+  getEvent(
+    key: "EmergencyPauseCanceled"
+  ): TypedContractEvent<
+    EmergencyPauseCanceledEvent.InputTuple,
+    EmergencyPauseCanceledEvent.OutputTuple,
+    EmergencyPauseCanceledEvent.OutputObject
+  >;
+  getEvent(
+    key: "EmergencyPauseTriggered"
+  ): TypedContractEvent<
+    EmergencyPauseTriggeredEvent.InputTuple,
+    EmergencyPauseTriggeredEvent.OutputTuple,
+    EmergencyPauseTriggeredEvent.OutputObject
   >;
   getEvent(
     key: "FullLiquidationStarted"
@@ -1616,7 +1672,7 @@ export interface AMEvents extends BaseContract {
       AgentSettingChangedEvent.OutputObject
     >;
 
-    "AgentVaultCreated(address,address,address,string,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)": TypedContractEvent<
+    "AgentVaultCreated(address,address,tuple)": TypedContractEvent<
       AgentVaultCreatedEvent.InputTuple,
       AgentVaultCreatedEvent.OutputTuple,
       AgentVaultCreatedEvent.OutputObject
@@ -1746,6 +1802,28 @@ export interface AMEvents extends BaseContract {
       DustChangedEvent.InputTuple,
       DustChangedEvent.OutputTuple,
       DustChangedEvent.OutputObject
+    >;
+
+    "EmergencyPauseCanceled()": TypedContractEvent<
+      EmergencyPauseCanceledEvent.InputTuple,
+      EmergencyPauseCanceledEvent.OutputTuple,
+      EmergencyPauseCanceledEvent.OutputObject
+    >;
+    EmergencyPauseCanceled: TypedContractEvent<
+      EmergencyPauseCanceledEvent.InputTuple,
+      EmergencyPauseCanceledEvent.OutputTuple,
+      EmergencyPauseCanceledEvent.OutputObject
+    >;
+
+    "EmergencyPauseTriggered(uint256)": TypedContractEvent<
+      EmergencyPauseTriggeredEvent.InputTuple,
+      EmergencyPauseTriggeredEvent.OutputTuple,
+      EmergencyPauseTriggeredEvent.OutputObject
+    >;
+    EmergencyPauseTriggered: TypedContractEvent<
+      EmergencyPauseTriggeredEvent.InputTuple,
+      EmergencyPauseTriggeredEvent.OutputTuple,
+      EmergencyPauseTriggeredEvent.OutputObject
     >;
 
     "FullLiquidationStarted(address,uint256)": TypedContractEvent<

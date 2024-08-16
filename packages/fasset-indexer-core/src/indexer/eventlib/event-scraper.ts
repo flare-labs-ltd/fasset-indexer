@@ -2,7 +2,7 @@ import type { Context } from "../../context"
 import type { Log } from "ethers"
 
 
-export type EventArgs = any[]
+export type EventArgs = any
 
 export interface Event {
   name: string

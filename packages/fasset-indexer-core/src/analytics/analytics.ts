@@ -1,7 +1,7 @@
 import { getOrmConfig } from "../config/utils"
 import { createOrm } from "../database/utils"
 import { getVar } from "../indexer/shared"
-import { EvmLog } from "../database/entities/logs"
+import { EvmLog } from "../database/entities/evm/log"
 import { AgentVault } from "../database/entities/agent"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
@@ -269,7 +269,7 @@ export class Analytics {
   }
 
   async eventsPerInterval(seconds: number = 60): Promise<number> {
-    return this.orm.em.fork().count(EvmLog, { timestamp: { $gt: Date.now() / 1000 - seconds }})
+    return this.orm.em.fork().count(EvmLog, { block: { timestamp: { $gt: Date.now() / 1000 - seconds }}})
   }
 
 }

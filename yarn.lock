@@ -1026,6 +1026,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/chai-as-promised@npm:^7.1.8":
+  version: 7.1.8
+  resolution: "@types/chai-as-promised@npm:7.1.8"
+  dependencies:
+    "@types/chai": "*"
+  checksum: f0e5eab451b91bc1e289ed89519faf6591932e8a28d2ec9bbe95826eb73d28fe43713633e0c18706f3baa560a7d97e7c7c20dc53ce639e5d75bac46b2a50bf21
+  languageName: node
+  linkType: hard
+
+"@types/chai@npm:*":
+  version: 4.3.17
+  resolution: "@types/chai@npm:4.3.17"
+  checksum: 56661c74c76df06547e3584be4a2b85eec60e7de4c0f6e7bbf7bf492a0ce96ce5bfc30f52a8889a7b35e24161d225e4a57041d4fa80f6e5592fea78e45dfd34c
+  languageName: node
+  linkType: hard
+
 "@types/chai@npm:^4.3.16":
   version: 4.3.16
   resolution: "@types/chai@npm:4.3.16"
@@ -2068,6 +2084,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chai-as-promised@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "chai-as-promised@npm:8.0.0"
+  dependencies:
+    check-error: ^2.0.0
+  peerDependencies:
+    chai: ">= 2.1.2 < 6"
+  checksum: 89a1b9702171e006ba9551909c67f0780b768185651f3bd831d74a0951b9405b5761fe2c80c46096c46829ffe62803e68c33bc782279edf386d4be08fe6c3b67
+  languageName: node
+  linkType: hard
+
 "chai@npm:^5.1.1":
   version: 5.1.1
   resolution: "chai@npm:5.1.1"
@@ -2116,7 +2143,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"check-error@npm:^2.1.1":
+"check-error@npm:^2.0.0, check-error@npm:^2.1.1":
   version: 2.1.1
   resolution: "check-error@npm:2.1.1"
   checksum: d785ed17b1d4a4796b6e75c765a9a290098cf52ff9728ce0756e8ffd4293d2e419dd30c67200aee34202463b474306913f2fcfaf1890641026d9fc6966fea27a
@@ -3183,8 +3210,10 @@ __metadata:
     "@mikro-orm/sqlite": ^6.2.9
     "@typechain/ethers-v6": ^0.5.1
     "@types/chai": ^4.3.16
+    "@types/chai-as-promised": ^7.1.8
     "@types/mocha": ^10.0.6
     chai: ^5.1.1
+    chai-as-promised: ^8.0.0
     chalk: 4.1.2
     ethers: ^6.13.0
     fs: ^0.0.1-security

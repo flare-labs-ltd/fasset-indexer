@@ -3,7 +3,7 @@ export const CHAIN_FETCH_RETRY_LIMIT = 20
 export const MID_CHAIN_FETCH_SLEEP_MS = 400
 
 // event scrape config
-export const MIN_BLOCK_NUMBER = 16146574 // asset manager controller contract deployment block
+export const MIN_BLOCK_NUMBER = 20234651 // asset manager controller contract deployment block
 export const LOG_FETCH_SLEEP_MS = 30 * 1000 // collect logs every 30 seconds
 export const BLOCK_HEIGHT_OFFSET = 10 // log collection offset from the current block height
 export const LOG_FETCH_SIZE = 30

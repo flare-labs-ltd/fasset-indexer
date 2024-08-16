@@ -47,7 +47,7 @@ import type {
   RedemptionRejectedEvent, RedemptionRequestIncompleteEvent, RedemptionRequestedEvent,
   FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
   SelfCloseEvent
-} from "../../../chain/typechain/AMEvents"
+} from "../../../chain/typechain/IAssetManagerEvents"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/CollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
 
@@ -168,27 +168,26 @@ export class EventStorer {
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // agent
 
-  protected async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, logArgs: AgentVaultCreatedEvent.OutputTuple, collateralPoolToken?: string): Promise<AgentVault> {
+  protected async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, logArgs: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
-    const [
-      owner, agentVault, collateralPool, underlyingAddress, vaultCollateralToken,
+    const { 0: owner, 1: agentVault } = logArgs
+    const [ collateralPool, collateralPoolToken, underlyingAddress, vaultCollateralToken, poolWNatToken,
       feeBIPS, poolFeeShareBIPS, mintingVaultCollateralRatioBIPS, mintingPoolCollateralRatioBIPS,
       buyFAssetByAgentFactorBIPS, poolExitCollateralRatioBIPS, poolTopupCollateralRatioBIPS, poolTopupTokenPriceFactorBIPS
-    ] = logArgs
+    ] = (logArgs as any).creationData
     const agentOwnerEntity = await em.findOneOrFail(AgentOwner, { manager: { address: { hex: owner }}})
     // addresses
     const agentEvmAddress = await findOrCreateEvmAddress(em, agentVault, AddressType.AGENT)
     const agentUnderlyingAddress = await findOrCreateUnderlyingAddress(em, underlyingAddress, AddressType.AGENT)
     const collateralPoolEvmAddress = await findOrCreateEvmAddress(em, collateralPool, AddressType.AGENT)
+    const collateralPoolTokenEvmAddress = await findOrCreateEvmAddress(em, collateralPoolToken!, AddressType.AGENT)
     // create agent vault
     const agentVaultEntity = new AgentVault(
       agentEvmAddress, agentUnderlyingAddress,
       collateralPoolEvmAddress,
+      collateralPoolTokenEvmAddress,
       agentOwnerEntity, false
     )
-    if (collateralPoolToken !== undefined) {
-      agentVaultEntity.collateralPoolToken = await findOrCreateEvmAddress(em, collateralPoolToken!, AddressType.AGENT)
-    }
     const vaultCollateralTokenEntity = await em.findOneOrFail(CollateralTypeAdded, { address: { hex: vaultCollateralToken }, fasset })
     const agentVaultSettings = new AgentVaultSettings(
       agentVaultEntity, vaultCollateralTokenEntity, feeBIPS, poolFeeShareBIPS, mintingVaultCollateralRatioBIPS,
