@@ -46,10 +46,12 @@ export class EventParser {
     const em = this.context.orm.em.fork()
     // is collateral token
     const collateralType = await em.findOne(CollateralTypeAdded, { address: { hex: log.address } })
-    if (collateralType !== null && collateralType.collateralClass !== 1) {
-      return this.context.erc20Interface.parseLog(log)
-    } else if (collateralType?.collateralClass === 1) {
-      return null
+    if (collateralType !== null) {
+      if (collateralType.collateralClass !== 1) {
+        return this.context.erc20Interface.parseLog(log)
+      } else {
+        return null
+      }
     }
     // is collateral pool token
     const collateralPoolToken = await em.findOne(AgentVault, { collateralPoolToken: { hex: log.address }})
