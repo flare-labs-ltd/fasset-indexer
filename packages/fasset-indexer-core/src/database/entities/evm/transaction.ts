@@ -1,7 +1,7 @@
 import { Entity, PrimaryKey, Property, Unique, ManyToOne } from "@mikro-orm/core"
 import { EvmAddress } from "../address"
-import { BYTES32_LENGTH } from "../../../config/constants"
 import { EvmBlock } from "./block"
+import { BYTES32_LENGTH } from "../../../config/constants"
 
 
 @Entity()

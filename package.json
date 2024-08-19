@@ -13,6 +13,7 @@
   },
   "scripts": {
     "clean": "rimraf -g dist \"packages/*/dist\"",
+    "clean-nm": "rimraf -g node_modules \"packages/*/node_modules\"",
     "build-api": "cd packages/fasset-indexer-api && yarn build",
     "build": "yarn clean && tsc --build && yarn build-api",
     "lint": "eslint . --ext .ts"

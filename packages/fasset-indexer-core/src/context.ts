@@ -4,13 +4,13 @@ import {
   AssetManager__factory, IAssetManagerEvents__factory, ERC20__factory,
   AgentOwnerRegistry__factory, CollateralPool__factory
 } from "../chain/typechain"
+import { FAssetType } from "./database/entities/events/_bound"
 import type { AssetManager, ERC20, AgentOwnerRegistry } from "../chain/typechain"
 import type { IAssetManagerEventsInterface } from "../chain/typechain/IAssetManagerEvents"
 import type { CollateralPool, CollateralPoolInterface } from "../chain/typechain/CollateralPool"
 import type { ERC20Interface } from "../chain/typechain/ERC20"
 import type { ORM } from "./database/interface"
 import type { IConfig } from "./config/interface"
-import { FAssetType } from "./database/entities/events/_bound"
 
 
 export class Context {
@@ -95,6 +95,8 @@ export class Context {
           return FAssetType.FBTC
         } else if (contract.name.includes('FTestDOGE')) {
           return FAssetType.FDOGE
+        } else if (contract.name.includes('FSimCoinX')) {
+          return FAssetType.FSIMCOINX
         }
       }
     }

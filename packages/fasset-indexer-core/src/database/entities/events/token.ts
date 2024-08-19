@@ -1,4 +1,4 @@
-import { Entity, Property, OneToOne, ManyToOne } from "@mikro-orm/core"
+import { Entity, Property, ManyToOne, Unique } from "@mikro-orm/core"
 import { uint256 } from "../../custom/typeUint256"
 import { EvmAddress } from "../address"
 import { EventBound, FAssetEventBound, type FAssetType } from "./_bound"
@@ -6,9 +6,10 @@ import type { EvmLog } from "../evm/log"
 
 
 @Entity()
+@Unique({ properties: ['fasset', 'address'] })
 export class CollateralTypeAdded extends FAssetEventBound {
 
-  @OneToOne({ entity: () => EvmAddress, owner: true })
+  @ManyToOne({ entity: () => EvmAddress })
   address: EvmAddress
 
   @Property({ type: 'number' })

@@ -51,7 +51,7 @@ export async function findOrCreateUnderlyingAddress(em: EntityManager, address: 
 }
 
 export async function findOrCreateEvmBlock(em: EntityManager, index: number, timestamp: number): Promise<EvmBlock> {
-  let block = await em.findOne(EvmBlock, { index: index })
+  let block = await em.findOne(EvmBlock, { index })
   if (!block) {
     block = new EvmBlock(index, timestamp)
     em.persist(block)

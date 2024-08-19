@@ -16,7 +16,7 @@ export const STATE_UPDATE_SLEEP_MS = 60 * 1000 // collect state every one minute
 
 // db settings
 export const MIN_DATABASE_POOL_CONNECTIONS = 2
-export const MAX_DATABASE_POOL_CONNECTIONS = 20
+export const MAX_DATABASE_POOL_CONNECTIONS = 30
 export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names

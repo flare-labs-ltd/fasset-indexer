@@ -472,8 +472,8 @@ export class EventStorer {
 
   private async createLogEntity(em: EntityManager, log: Event): Promise<EvmLog> {
     const transactionSource = await findOrCreateEvmAddress(em, log.transactionSource, AddressType.SYSTEM)
-    const transactionTarget = (log.transactionTarget === null) ? undefined
-    : await findOrCreateEvmAddress(em, log.transactionTarget, AddressType.SYSTEM)
+    const transactionTarget = log.transactionTarget === null ? undefined
+      : await findOrCreateEvmAddress(em, log.transactionTarget, AddressType.SYSTEM)
     const block = await findOrCreateEvmBlock(em, log.blockNumber, log.blockTimestamp)
     const transaction = await findOrCreateEvmTransaction(em, log.transactionHash, block,
       log.transactionIndex, transactionSource, transactionTarget)
