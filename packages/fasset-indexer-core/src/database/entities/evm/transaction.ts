@@ -11,7 +11,7 @@ export class EvmTransaction {
   @PrimaryKey({ type: "number", autoincrement: true })
   id!: number
 
-  @Property({ type: "text", length: BYTES32_LENGTH })
+  @Property({ type: "text", length: BYTES32_LENGTH, unique: true })
   hash: string
 
   @ManyToOne({ entity: () => EvmBlock })

@@ -1,6 +1,6 @@
 // chain call config
 export const CHAIN_FETCH_RETRY_LIMIT = 20
-export const MID_CHAIN_FETCH_SLEEP_MS = 400
+export const MID_CHAIN_FETCH_SLEEP_MS = 100
 
 // event scrape config
 export const MIN_BLOCK_NUMBER = 20234651 // asset manager controller contract deployment block
@@ -26,39 +26,42 @@ export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockFixCollateralPoo
 
 // event names
 // agent
-export const AGENT_VAULT_CREATED = "AgentVaultCreated"
-export const AGENT_SETTING_CHANGED = "AgentSettingChanged"
-export const AVAILABLE_AGENT_EXITED = "AvailableAgentExited"
-export const AGENT_ENTERED_AVAILABLE = "AgentAvailable"
-export const AGENT_DESTROYED = "AgentDestroyed"
-export const SELF_CLOSE = "SelfClose"
-// minting
-export const COLLATERAL_RESERVED = "CollateralReserved"
-export const MINTING_EXECUTED = "MintingExecuted"
-export const MINTING_PAYMENT_DEFAULT = "MintingPaymentDefault"
-export const COLLATERAL_RESERVATION_DELETED = "CollateralReservationDeleted"
-// redemption
-export const REDEMPTION_REQUESTED = "RedemptionRequested"
-export const REDEMPTION_PERFORMED = "RedemptionPerformed"
-export const REDEMPTION_DEFAULT = "RedemptionDefault"
-export const REDEMPTION_PAYMENT_BLOCKED = "RedemptionPaymentBlocked"
-export const REDEMPTION_PAYMENT_FAILED = "RedemptionPaymentFailed"
-export const REDEMPTION_REJECTED = "RedemptionRejected"
-export const REDEMPTION_REQUEST_INCOMPLETE = "RedemptionRequestIncomplete"
-// liquidation
-export const LIQUIDATION_STARTED = "LiquidationStarted"
-export const FULL_LIQUIDATION_STARTED = "FullLiquidationStarted"
-export const LIQUIDATION_PERFORMED = "LiquidationPerformed"
-export const LIQUIDATION_ENDED = "LiquidationEnded"
-// collateral types
-export const COLLATERAL_TYPE_ADDED = "CollateralTypeAdded"
-export const COLLATERAL_TYPE_DEPRECATED = "CollateralTypeDeprecated"
-export const AGENT_COLLATERAL_TYPE_CHANGED = "AgentCollateralTypeChanged"
-// collateral pool
-export const COLLATERAL_POOL_ENTER = "Entered"
-export const COLLATERAL_POOL_EXIT = "Exited"
-// erc20
-export const ERC20_TRANSFER = "Transfer"
+export const EVENTS = {
+    // agent
+    AGENT_VAULT_CREATED: "AgentVaultCreated",
+    AGENT_SETTING_CHANGED: "AgentSettingChanged",
+    AVAILABLE_AGENT_EXITED: "AvailableAgentExited",
+    AGENT_ENTERED_AVAILABLE: "AgentAvailable",
+    AGENT_DESTROYED: "AgentDestroyed",
+    SELF_CLOSE: "SelfClose",
+    // minting
+    COLLATERAL_RESERVED: "CollateralReserved",
+    MINTING_EXECUTED: "MintingExecuted",
+    MINTING_PAYMENT_DEFAULT: "MintingPaymentDefault",
+    COLLATERAL_RESERVATION_DELETED: "CollateralReservationDeleted",
+    // redemption
+    REDEMPTION_REQUESTED: "RedemptionRequested",
+    REDEMPTION_PERFORMED: "RedemptionPerformed",
+    REDEMPTION_DEFAULT: "RedemptionDefault",
+    REDEMPTION_PAYMENT_BLOCKED: "RedemptionPaymentBlocked",
+    REDEMPTION_PAYMENT_FAILED: "RedemptionPaymentFailed",
+    REDEMPTION_REJECTED: "RedemptionRejected",
+    REDEMPTION_REQUEST_INCOMPLETE: "RedemptionRequestIncomplete",
+    // liquidation
+    LIQUIDATION_STARTED: "LiquidationStarted",
+    FULL_LIQUIDATION_STARTED: "FullLiquidationStarted",
+    LIQUIDATION_PERFORMED: "LiquidationPerformed",
+    LIQUIDATION_ENDED: "LiquidationEnded",
+    // collateral types
+    COLLATERAL_TYPE_ADDED: "CollateralTypeAdded",
+    COLLATERAL_TYPE_DEPRECATED: "CollateralTypeDeprecated",
+    AGENT_COLLATERAL_TYPE_CHANGED: "AgentCollateralTypeChanged",
+    // collateral pool
+    COLLATERAL_POOL_ENTER: "Entered",
+    COLLATERAL_POOL_EXIT: "Exited",
+    // erc20
+    ERC20_TRANSFER: "Transfer"
+}
 
 // metadata
 export const ADDRESS_LENGTH = 42

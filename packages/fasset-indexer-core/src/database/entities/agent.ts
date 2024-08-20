@@ -1,5 +1,6 @@
-import { Cascade, Collection, Entity, OneToMany, OneToOne, ManyToOne, PrimaryKey, Property } from "@mikro-orm/core"
+import { Cascade, Collection, Entity, OneToMany, OneToOne, ManyToOne, PrimaryKey, Property, Enum } from "@mikro-orm/core"
 import { EvmAddress, UnderlyingAddress } from "./address"
+import { FAssetType } from "./events/_bound"
 
 
 @Entity()
@@ -52,6 +53,9 @@ export class AgentOwner {
 @Entity()
 export class AgentVault {
 
+  @Enum(() => FAssetType)
+  fasset: FAssetType
+
   @OneToOne({ entity: () => EvmAddress, owner: true, primary: true })
   address: EvmAddress
 
@@ -71,6 +75,7 @@ export class AgentVault {
   destroyed: boolean
 
   constructor(
+    fasset: FAssetType,
     address: EvmAddress,
     underlyingAddress: UnderlyingAddress,
     collateralPool: EvmAddress,
@@ -78,6 +83,7 @@ export class AgentVault {
     owner: AgentOwner,
     destroyed: boolean
   ) {
+    this.fasset = fasset
     this.address = address
     this.underlyingAddress = underlyingAddress
     this.collateralPool = collateralPool

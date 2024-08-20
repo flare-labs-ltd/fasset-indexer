@@ -6,7 +6,7 @@ import { AgentVault } from "../database/entities/agent"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { UntrackedAgentVault, Var } from "../database/entities/state/var"
 import type { Context } from "../context"
-import type { AgentInfo } from "../../chain/typechain/AssetManager"
+import type { AgentInfo } from "../../chain/typechain/IAssetManager"
 
 
 export async function setVar(em: EntityManager, key: string, value?: string): Promise<void> {
@@ -54,7 +54,8 @@ export async function findOrCreateEvmBlock(em: EntityManager, index: number, tim
   let block = await em.findOne(EvmBlock, { index })
   if (!block) {
     block = new EvmBlock(index, timestamp)
-    em.persist(block)
+    // do not persist - do not store unnecessary blocks of non-processed events
+    // is ok - no two blocks will be processed during one event processing
   }
   return block
 }
@@ -66,7 +67,8 @@ export async function findOrCreateEvmTransaction(
   let transaction = await em.findOne(EvmTransaction, { hash: hash })
   if (!transaction) {
     transaction = new EvmTransaction(hash, block, index, source, target)
-    em.persist(transaction)
+    // do not persist - do not store unnecessary transactions of non-processed events
+    // is ok - no two transactions will be processed during one event processing
   }
   return transaction
 }
@@ -76,9 +78,9 @@ export async function isUntrackedAgentVault(em: EntityManager, address: string):
   return untracked !== null
 }
 
-export async function updateAgentVaultInfo(context: Context, em: EntityManager, agentVault: string): Promise<void> {
-  const assetManager = context.getAssetManagerContract("FTestXRP")
-  const agentVaultInfo: AgentInfo.InfoStructOutput = await assetManager.getAgentInfo(agentVault)
+export async function updateAgentVaultInfo(context: Context, em: EntityManager, assetManager: string, agentVault: string): Promise<void> {
+  const contract = context.getAssetManagerContract(assetManager)
+  const agentVaultInfo: AgentInfo.InfoStructOutput = await contract.getAgentInfo(agentVault)
   const agentVaultInfoEntity = await agentInfoToEntity(em, agentVaultInfo, agentVault)
   await em.upsert(agentVaultInfoEntity)
 }

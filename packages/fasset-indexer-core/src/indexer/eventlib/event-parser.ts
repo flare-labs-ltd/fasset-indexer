@@ -1,11 +1,14 @@
 import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context"
+import { EVENTS } from "../../config/constants"
 import type { Log, LogDescription } from "ethers"
 import type { Event } from "./event-scraper"
 
 
 export class EventParser {
+  supportedEvents: Set<string>
+  // cache
   blockCache: {
     index: number
     timestamp: number
@@ -16,11 +19,14 @@ export class EventParser {
     target: string | null
   } | null = null
 
-  constructor(public readonly context: Context) {}
+  constructor(public readonly context: Context) {
+    this.supportedEvents = new Set(Object.values(EVENTS))
+  }
 
   protected async logToEvent(log: Log): Promise<Event | null> {
     const logDescription = await this.parseLog(log)
     if (logDescription === null) return null
+    if (!this.supportedEvents.has(logDescription.name))
     await this.updateCachedBlock(log.blockNumber)
     await this.updateCachedTransaction(log.transactionHash)
     return {
@@ -38,7 +44,7 @@ export class EventParser {
   }
 
   protected async parseLog(log: Log): Promise<LogDescription | null> {
-    if (this.context.isAssetManagerAddress(log.address)) {
+    if (this.context.isAssetManager(log.address)) {
       return this.context.assetManagerEventInterface.parseLog(log)
     } else if (this.context.isFAssetToken(log.address)) {
       return this.context.erc20Interface.parseLog(log)
@@ -58,7 +64,7 @@ export class EventParser {
     if (collateralPoolToken !== null) {
       return this.context.erc20Interface.parseLog(log)
     }
-    // is agent vault
+    // is collateral pool
     const pool = await em.findOne(AgentVault, { collateralPool: { hex: log.address }})
     if (pool !== null) {
       return this.context.collateralPoolInterface.parseLog(log)

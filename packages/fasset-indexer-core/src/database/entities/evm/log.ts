@@ -1,7 +1,7 @@
 import { Entity, PrimaryKey, Property, Unique, ManyToOne } from "@mikro-orm/core"
+import { EvmBlock } from "./block"
 import { EvmAddress } from "../address"
 import { EvmTransaction } from "./transaction"
-import { EvmBlock } from "./block"
 
 
 @Entity()
@@ -20,7 +20,7 @@ export class EvmLog {
   @ManyToOne({ entity: () => EvmAddress })
   address: EvmAddress
 
-  @ManyToOne({ entity: () => EvmAddress })
+  @ManyToOne({ entity: () => EvmTransaction })
   transaction: EvmTransaction
 
   @ManyToOne({ entity: () => EvmBlock })

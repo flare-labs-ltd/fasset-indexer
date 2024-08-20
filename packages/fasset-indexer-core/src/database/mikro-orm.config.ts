@@ -43,7 +43,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     min: MIN_DATABASE_POOL_CONNECTIONS,
     max: MAX_DATABASE_POOL_CONNECTIONS
   },
-  debug: true
+  debug: false
 })
 
 export default ORM_OPTIONS

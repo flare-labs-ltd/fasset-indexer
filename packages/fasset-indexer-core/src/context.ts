@@ -1,13 +1,13 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "./database/utils"
 import {
-  AssetManager__factory, IAssetManagerEvents__factory, ERC20__factory,
-  AgentOwnerRegistry__factory, CollateralPool__factory
+  IAssetManager__factory, IAssetManagerEvents__factory, ERC20__factory,
+  IAgentOwnerRegistry__factory, ICollateralPool__factory
 } from "../chain/typechain"
 import { FAssetType } from "./database/entities/events/_bound"
-import type { AssetManager, ERC20, AgentOwnerRegistry } from "../chain/typechain"
+import type { IAssetManager, ERC20, IAgentOwnerRegistry } from "../chain/typechain"
 import type { IAssetManagerEventsInterface } from "../chain/typechain/IAssetManagerEvents"
-import type { CollateralPool, CollateralPoolInterface } from "../chain/typechain/CollateralPool"
+import type { ICollateralPoolInterface } from "../chain/typechain/ICollateralPool"
 import type { ERC20Interface } from "../chain/typechain/ERC20"
 import type { ORM } from "./database/interface"
 import type { IConfig } from "./config/interface"
@@ -16,18 +16,27 @@ import type { IConfig } from "./config/interface"
 export class Context {
   provider: JsonRpcProvider
   assetManagerEventInterface: IAssetManagerEventsInterface
-  collateralPoolInterface: CollateralPoolInterface
-  agentOwnerRegistryContract: AgentOwnerRegistry
+  collateralPoolInterface: ICollateralPoolInterface
+  agentOwnerRegistryContract: IAgentOwnerRegistry
   erc20Interface: ERC20Interface
   orm: ORM
+
+  addressToFAsset__cache: Map<string, FAssetType> = new Map()
+  fAssetToAddress__cache: Map<FAssetType, string> = new Map()
+  isAssetManager__cache: Set<string> = new Set()
+  isFAssetToken__cache: Set<string> = new Set()
 
   constructor(public config: IConfig, orm: ORM) {
     this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
     this.assetManagerEventInterface = IAssetManagerEvents__factory.createInterface()
     this.agentOwnerRegistryContract = this.getAgentOwnerRegistryContract()
-    this.collateralPoolInterface = CollateralPool__factory.createInterface()
+    this.collateralPoolInterface = ICollateralPool__factory.createInterface()
     this.erc20Interface = ERC20__factory.createInterface()
     this.orm = orm
+    // populate caches for faster lookups
+    this.populateAddressToFAssetCache()
+    this.populateIsAssetManagerCache()
+    this.populateIsFAssetTokenCache()
   }
 
   static async create(config: IConfig): Promise<Context> {
@@ -35,40 +44,8 @@ export class Context {
     return new Context(config, orm)
   }
 
-  isAssetManagerAddress(address: string): boolean {
-    for (const contract of this.config.contracts.addresses) {
-      if (contract.address === address && contract.name.startsWith('AssetManager_')) {
-        return true
-      }
-    }
-    return false
-  }
-
-  isFAssetToken(address: string): boolean {
-    for (const contract of this.config.contracts.addresses) {
-      if (contract.address === address && contract.contractName === "FAsset.sol") {
-        return true
-      }
-    }
-    return false
-  }
-
-  getAssetManagerContract(fAsset: string): AssetManager {
-    const contractName = `AssetManager_${fAsset}`
-    const address = this.getContractAddress(contractName)
-    return AssetManager__factory.connect(address, this.provider)
-  }
-
-  getContractAddress(name: string): string {
-    for (const contract of this.config.contracts.addresses) {
-      if (contract.name === name)
-        return contract.address
-    }
-    throw new Error(`Contract address not found for ${name}`)
-  }
-
-  getLogTopic(name: string): string | undefined {
-    return this.assetManagerEventInterface.getEvent(name as any)?.topicHash
+  getAssetManagerContract(address: string): IAssetManager {
+    return IAssetManager__factory.connect(address, this.provider)
   }
 
   ignoreLog(name: string): boolean {
@@ -82,25 +59,71 @@ export class Context {
     return ERC20__factory.connect(address, this.provider)
   }
 
-  getCollateralPool(address: string): CollateralPool {
-    return CollateralPool__factory.connect(address, this.provider)
+  isAssetManager(address: string): boolean {
+    return this.isAssetManager__cache.has(address)
+  }
+
+  isFAssetToken(address: string): boolean {
+    return this.isFAssetToken__cache.has(address)
   }
 
   addressToFAssetType(address: string): FAssetType {
+    if (this.addressToFAsset__cache.has(address)) {
+      return this.addressToFAsset__cache.get(address)!
+    } else {
+      throw new Error(`No FAsset found for address ${address}`)
+    }
+  }
+
+  fAssetTypeToAssetManagerAddress(type: FAssetType): string {
+    if (this.fAssetToAddress__cache.has(type)) {
+      return this.fAssetToAddress__cache.get(type)!
+    } else {
+      throw new Error(`No AssetManager found for type ${type}`)
+    }
+  }
+
+  getContractAddress(name: string): string {
     for (const contract of this.config.contracts.addresses) {
-      if (contract.address === address) {
-        if (contract.name.includes('FTestXRP')) {
-          return FAssetType.FXRP
-        } else if (contract.name.includes('FTestBTC')) {
-          return FAssetType.FBTC
-        } else if (contract.name.includes('FTestDOGE')) {
-          return FAssetType.FDOGE
-        } else if (contract.name.includes('FSimCoinX')) {
-          return FAssetType.FSIMCOINX
-        }
+      if (contract.name === name)
+        return contract.address
+    }
+    throw new Error(`Contract address not found for ${name}`)
+  }
+
+  populateAddressToFAssetCache(): void {
+    for (const contract of this.config.contracts.addresses) {
+      let fasset = null
+      if (contract.name.includes('FTestXRP')) {
+        fasset = FAssetType.FXRP
+      } else if (contract.name.includes('FTestBTC')) {
+        fasset = FAssetType.FBTC
+      } else if (contract.name.includes('FTestDOGE')) {
+        fasset = FAssetType.FDOGE
+      } else if (contract.name.includes('FSimCoinX')) {
+        fasset = FAssetType.FSIMCOINX
+      } else {
+        continue
+      }
+      this.addressToFAsset__cache.set(contract.address, fasset)
+      this.fAssetToAddress__cache.set(fasset, contract.address)
+    }
+  }
+
+  populateIsAssetManagerCache(): void {
+    for (const contract of this.config.contracts.addresses) {
+      if (contract.name.startsWith('AssetManager_')) {
+        this.isAssetManager__cache.add(contract.address)
       }
     }
-    throw new Error(`No FAsset found for address ${address}`)
+  }
+
+  populateIsFAssetTokenCache(): void {
+    for (const contract of this.config.contracts.addresses) {
+      if (contract.contractName === "FAsset.sol") {
+        this.isFAssetToken__cache.add(contract.address)
+      }
+    }
   }
 
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {
@@ -111,8 +134,8 @@ export class Context {
     return new JsonRpcProvider(connection)
   }
 
-  private getAgentOwnerRegistryContract(): AgentOwnerRegistry {
+  private getAgentOwnerRegistryContract(): IAgentOwnerRegistry {
     const address = this.getContractAddress("AgentOwnerRegistry")
-    return AgentOwnerRegistry__factory.connect(address, this.provider)
+    return IAgentOwnerRegistry__factory.connect(address, this.provider)
   }
 }

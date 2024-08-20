@@ -3,10 +3,10 @@ import { resolve } from "path"
 import { defineConfig } from "@mikro-orm/core"
 import { SqliteDriver } from '@mikro-orm/sqlite'
 import { PostgreSqlDriver } from "@mikro-orm/postgresql"
-import { abi as ASSET_MANAGER_ABI } from '../../chain/artifacts/AssetManager.json'
+import { IGNORE_EVENTS } from "./constants"
+import { abi as ASSET_MANAGER_ABI } from '../../chain/artifacts/IAssetManager.json'
 import { abi as ASSET_MANAGER_EVENTS_ABI } from '../../chain/artifacts/IAssetManagerEvents.json'
 import CONTRACTS from '../../chain/coston.json'
-import { IGNORE_EVENTS } from "./constants"
 import type { OrmOptions } from '../database/interface'
 import type { IUserConfig, IUserDatabaseConfig, IConfig } from "./interface"
 

@@ -69,7 +69,8 @@ export class StateUpdater extends EventStorer {
 
   private async updateAgentVaultInfo(em: EntityManager, agentVault: AgentVault): Promise<void> {
     try {
-      await updateAgentVaultInfo(this.context, em, agentVault.address.hex)
+      const assetManager = this.context.fAssetTypeToAssetManagerAddress(agentVault.fasset)
+      await updateAgentVaultInfo(this.context, em, assetManager, agentVault.address.hex)
     } catch (e: any) {
       if (e?.reason === 'invalid agent vault address') {
         return await em.transactional(async (em) => {

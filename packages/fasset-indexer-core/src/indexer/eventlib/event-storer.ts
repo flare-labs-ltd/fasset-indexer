@@ -23,19 +23,7 @@ import {
 } from "../../database/entities/events/liquidation"
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
 import { Context } from "../../context"
-import {
-  AGENT_VAULT_CREATED, AGENT_SETTING_CHANGED,
-  COLLATERAL_RESERVED, MINTING_EXECUTED, MINTING_PAYMENT_DEFAULT, COLLATERAL_RESERVATION_DELETED,
-  REDEMPTION_REQUESTED, REDEMPTION_PERFORMED, REDEMPTION_DEFAULT, REDEMPTION_PAYMENT_BLOCKED,
-  REDEMPTION_PAYMENT_FAILED, REDEMPTION_REJECTED, REDEMPTION_REQUEST_INCOMPLETE,
-  LIQUIDATION_STARTED, LIQUIDATION_PERFORMED, LIQUIDATION_ENDED, FULL_LIQUIDATION_STARTED,
-  AGENT_ENTERED_AVAILABLE, AVAILABLE_AGENT_EXITED, AGENT_DESTROYED,
-  COLLATERAL_TYPE_ADDED,
-  COLLATERAL_POOL_ENTER,
-  COLLATERAL_POOL_EXIT,
-  SELF_CLOSE,
-  ERC20_TRANSFER
-} from '../../config/constants'
+import { EVENTS } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Event } from "./event-scraper"
 import type {
@@ -48,7 +36,7 @@ import type {
   FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
   SelfCloseEvent
 } from "../../../chain/typechain/IAssetManagerEvents"
-import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/CollateralPool"
+import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
 
 
@@ -72,79 +60,79 @@ export class EventStorer {
 
   protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
     switch (log.name) {
-      case COLLATERAL_TYPE_ADDED: {
+      case EVENTS.COLLATERAL_TYPE_ADDED: {
         await this.onCollateralTypeAdded(em, evmLog, log.args as CollateralTypeAddedEvent.OutputTuple)
         break
-      } case AGENT_VAULT_CREATED: {
+      } case EVENTS.AGENT_VAULT_CREATED: {
         await this.onAgentVaultCreated(em, evmLog, log.args as AgentVaultCreatedEvent.OutputTuple)
         break
-      } case AGENT_SETTING_CHANGED: {
+      } case EVENTS.AGENT_SETTING_CHANGED: {
         await this.onAgentSettingChanged(em, evmLog, log.args as AgentSettingChangeAnnouncedEvent.OutputTuple)
         break
-      } case AGENT_DESTROYED: {
+      } case EVENTS.AGENT_DESTROYED: {
         await this.onAgentDestroyed(em, log.args as AgentDestroyedEvent.OutputTuple)
         break
-      } case SELF_CLOSE: {
+      } case EVENTS.SELF_CLOSE: {
         await this.onSelfClose(em, evmLog, log.args as SelfCloseEvent.OutputTuple)
         break
-      } case COLLATERAL_RESERVED: {
+      } case EVENTS.COLLATERAL_RESERVED: {
         await this.onCollateralReserved(em, evmLog, log.args as CollateralReservedEvent.OutputTuple)
         break
-      } case MINTING_EXECUTED: {
+      } case EVENTS.MINTING_EXECUTED: {
         await this.onMintingExecuted(em, evmLog, log.args as MintingExecutedEvent.OutputTuple)
         break
-      } case MINTING_PAYMENT_DEFAULT: {
+      } case EVENTS.MINTING_PAYMENT_DEFAULT: {
         await this.onMintingPaymentDefault(em, evmLog, log.args as MintingPaymentDefaultEvent.OutputTuple)
         break
-      } case COLLATERAL_RESERVATION_DELETED: {
+      } case EVENTS.COLLATERAL_RESERVATION_DELETED: {
         await this.onCollateralReservationDeleted(em, evmLog, log.args as CollateralReservationDeletedEvent.OutputTuple)
         break
-      } case REDEMPTION_REQUESTED: {
+      } case EVENTS.REDEMPTION_REQUESTED: {
         await this.onRedemptionRequested(em, evmLog, log.args as RedemptionRequestedEvent.OutputTuple)
         break
-      } case REDEMPTION_PERFORMED: {
+      } case EVENTS.REDEMPTION_PERFORMED: {
         await this.onRedemptionPerformed(em, evmLog, log.args as RedemptionPerformedEvent.OutputTuple)
         break
-      } case REDEMPTION_DEFAULT: {
+      } case EVENTS.REDEMPTION_DEFAULT: {
         await this.onRedemptionDefault(em, evmLog, log.args as RedemptionDefaultEvent.OutputTuple)
         break
-      } case REDEMPTION_PAYMENT_BLOCKED: {
+      } case EVENTS.REDEMPTION_PAYMENT_BLOCKED: {
         await this.onRedemptionPaymentBlocked(em, evmLog, log.args as RedemptionPaymentBlockedEvent.OutputTuple)
         break
-      } case REDEMPTION_PAYMENT_FAILED: {
+      } case EVENTS.REDEMPTION_PAYMENT_FAILED: {
         await this.onRedemptionPaymentFailed(em, evmLog, log.args as RedemptionPaymentFailedEvent.OutputTuple)
         break
-      } case REDEMPTION_REJECTED: {
+      } case EVENTS.REDEMPTION_REJECTED: {
         await this.onRedemptionRejected(em, evmLog, log.args as RedemptionRejectedEvent.OutputTuple)
         break
-      } case REDEMPTION_REQUEST_INCOMPLETE: {
+      } case EVENTS.REDEMPTION_REQUEST_INCOMPLETE: {
         await this.onRedemptionPaymentIncomplete(em, evmLog, log.args as RedemptionRequestIncompleteEvent.OutputTuple)
         break
-      } case LIQUIDATION_STARTED: {
+      } case EVENTS.LIQUIDATION_STARTED: {
         await this.onLiquidationStarted(em, evmLog, log.args as LiquidationStartedEvent.OutputTuple)
         break
-      } case LIQUIDATION_PERFORMED: {
+      } case EVENTS.LIQUIDATION_PERFORMED: {
         await this.onLiquidationPerformed(em, evmLog, log.args as LiquidationPerformedEvent.OutputTuple)
         break
-      } case FULL_LIQUIDATION_STARTED: {
+      } case EVENTS.FULL_LIQUIDATION_STARTED: {
         await this.onFullLiquidationStarted(em, evmLog, log.args as FullLiquidationStartedEvent.OutputTuple)
         break
-      } case LIQUIDATION_ENDED: {
+      } case EVENTS.LIQUIDATION_ENDED: {
         await this.onLiquidationEnded(em, evmLog, log.args as LiquidationEndedEvent.OutputTuple)
         break
-      } case AVAILABLE_AGENT_EXITED: {
+      } case EVENTS.AVAILABLE_AGENT_EXITED: {
         await this.onAvailableAgentExited(em, log.args as AvailableAgentExitAnnouncedEvent.OutputTuple)
         break
-      } case AGENT_ENTERED_AVAILABLE: {
+      } case EVENTS.AGENT_ENTERED_AVAILABLE: {
         await this.onAgentEnteredAvailable(em, log.args as AgentAvailableEvent.OutputTuple)
         break
-      } case COLLATERAL_POOL_ENTER: {
+      } case EVENTS.COLLATERAL_POOL_ENTER: {
         await this.onCollateralPoolEntered(em, evmLog, log.args as EnteredEvent.OutputTuple)
         break
-      } case COLLATERAL_POOL_EXIT: {
+      } case EVENTS.COLLATERAL_POOL_EXIT: {
         await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
         break
-      } case ERC20_TRANSFER: {
+      } case EVENTS.ERC20_TRANSFER: {
         await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
         break
       } default: {
@@ -183,6 +171,7 @@ export class EventStorer {
     const collateralPoolTokenEvmAddress = await findOrCreateEvmAddress(em, collateralPoolToken!, AddressType.AGENT)
     // create agent vault
     const agentVaultEntity = new AgentVault(
+      fasset,
       agentEvmAddress, agentUnderlyingAddress,
       collateralPoolEvmAddress,
       collateralPoolTokenEvmAddress,
@@ -437,20 +426,20 @@ export class EventStorer {
   // collateral pool
 
   protected async onCollateralPoolEntered(em: EntityManager, evmLog: EvmLog, logArgs: EnteredEvent.OutputTuple): Promise<void> {
-    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
     const [ tokenHolder, amountNatWei, receivedTokensWei, addedFAssetFeesUBA, newFAssetFeeDebt, timelockExpiresAt ] = logArgs
     const tokenHolderEvmAddress = await findOrCreateEvmAddress(em, tokenHolder, AddressType.USER)
-    const collateralPoolEntered = new CollateralPoolEntered(evmLog, fasset,
+    const collateralPoolEntered = new CollateralPoolEntered(evmLog, agentVault.fasset,
       tokenHolderEvmAddress, amountNatWei, receivedTokensWei, addedFAssetFeesUBA, newFAssetFeeDebt, Number(timelockExpiresAt)
     )
     em.persist(collateralPoolEntered)
   }
 
   protected async onCollateralPoolExited(em: EntityManager, evmLog: EvmLog, logArgs: ExitedEvent.OutputTuple): Promise<void> {
-    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
     const [ tokenHolder, burnedTokensWei, receivedNatWei, receviedFAssetFeesUBA, closedFAssetsUBA, newFAssetFeeDebt ] = logArgs
     const tokenHolderEvmAddress = await findOrCreateEvmAddress(em, tokenHolder, AddressType.USER)
-    const collateralPoolExited = new CollateralPoolExited(evmLog, fasset,
+    const collateralPoolExited = new CollateralPoolExited(evmLog, agentVault.fasset,
       tokenHolderEvmAddress, burnedTokensWei, receivedNatWei, receviedFAssetFeesUBA, closedFAssetsUBA, newFAssetFeeDebt
     )
     em.persist(collateralPoolExited)

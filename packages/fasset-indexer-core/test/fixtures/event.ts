@@ -30,15 +30,16 @@ import type {
   AvailableAgentExitedEvent,
   AgentAvailableEvent
 } from "../../chain/typechain/IAssetManagerEvents"
-import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/CollateralPool"
+import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/ERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
+import { FAssetType } from "../../src/database/entities/events/_bound"
 
 export class EventFixture {
 
   constructor(public readonly orm: ORM) {}
 
-  async storeInitialAgents(): Promise<void> {
+  async storeInitialAgents(fasset: FAssetType = FAssetType.FXRP): Promise<void> {
     await this.orm.em.fork().transactional(async (em) => {
       const managerAddress = new EvmAddress(randomNativeAddress(), 1)
       em.persist(managerAddress)
@@ -52,6 +53,7 @@ export class EventFixture {
       const collateralPoolAddress = new EvmAddress(randomNativeAddress(), 1)
       const collateralPoolTokenAddress = new EvmAddress(randomNativeAddress(), 1)
       const agentVault = new AgentVault(
+        fasset,
         vaultAddress, underlyingVaultAddress, collateralPoolAddress,
         collateralPoolTokenAddress, agentOwner, false
       )
