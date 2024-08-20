@@ -20,11 +20,11 @@ export class Context {
   agentOwnerRegistryContract: IAgentOwnerRegistry
   erc20Interface: ERC20Interface
   orm: ORM
-
-  addressToFAsset__cache: Map<string, FAssetType> = new Map()
-  fAssetToAddress__cache: Map<FAssetType, string> = new Map()
-  isAssetManager__cache: Set<string> = new Set()
-  isFAssetToken__cache: Set<string> = new Set()
+  // caches
+  private assetManagerToFAsset__cache: Map<string, FAssetType> = new Map()
+  private fAssetToAssetManager__cache: Map<FAssetType, string> = new Map()
+  private isAssetManager__cache: Set<string> = new Set()
+  private isFAssetToken__cache: Set<string> = new Set()
 
   constructor(public config: IConfig, orm: ORM) {
     this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
@@ -34,7 +34,7 @@ export class Context {
     this.erc20Interface = ERC20__factory.createInterface()
     this.orm = orm
     // populate caches for faster lookups
-    this.populateAddressToFAssetCache()
+    this.populateAssetManagerToFAssetCache()
     this.populateIsAssetManagerCache()
     this.populateIsFAssetTokenCache()
   }
@@ -46,13 +46,6 @@ export class Context {
 
   getAssetManagerContract(address: string): IAssetManager {
     return IAssetManager__factory.connect(address, this.provider)
-  }
-
-  ignoreLog(name: string): boolean {
-    for (const ignored of this.config.ignoreEvents ?? []) {
-      if (ignored === name) return true
-    }
-    return false
   }
 
   getERC20(address: string): ERC20 {
@@ -68,16 +61,16 @@ export class Context {
   }
 
   addressToFAssetType(address: string): FAssetType {
-    if (this.addressToFAsset__cache.has(address)) {
-      return this.addressToFAsset__cache.get(address)!
+    if (this.assetManagerToFAsset__cache.has(address)) {
+      return this.assetManagerToFAsset__cache.get(address)!
     } else {
       throw new Error(`No FAsset found for address ${address}`)
     }
   }
 
   fAssetTypeToAssetManagerAddress(type: FAssetType): string {
-    if (this.fAssetToAddress__cache.has(type)) {
-      return this.fAssetToAddress__cache.get(type)!
+    if (this.fAssetToAssetManager__cache.has(type)) {
+      return this.fAssetToAssetManager__cache.get(type)!
     } else {
       throw new Error(`No AssetManager found for type ${type}`)
     }
@@ -91,26 +84,26 @@ export class Context {
     throw new Error(`Contract address not found for ${name}`)
   }
 
-  populateAddressToFAssetCache(): void {
+  protected populateAssetManagerToFAssetCache(): void {
     for (const contract of this.config.contracts.addresses) {
       let fasset = null
-      if (contract.name.includes('FTestXRP')) {
+      if (contract.name === 'AssetManager_FTestXRP') {
         fasset = FAssetType.FXRP
-      } else if (contract.name.includes('FTestBTC')) {
+      } else if (contract.name === 'AssetManager_FTestBTC') {
         fasset = FAssetType.FBTC
-      } else if (contract.name.includes('FTestDOGE')) {
+      } else if (contract.name === 'AssetManager_FTestDOGE') {
         fasset = FAssetType.FDOGE
-      } else if (contract.name.includes('FSimCoinX')) {
+      } else if (contract.name === 'AssetManager_FSimCoinX') {
         fasset = FAssetType.FSIMCOINX
       } else {
         continue
       }
-      this.addressToFAsset__cache.set(contract.address, fasset)
-      this.fAssetToAddress__cache.set(fasset, contract.address)
+      this.assetManagerToFAsset__cache.set(contract.address, fasset)
+      this.fAssetToAssetManager__cache.set(fasset, contract.address)
     }
   }
 
-  populateIsAssetManagerCache(): void {
+  protected populateIsAssetManagerCache(): void {
     for (const contract of this.config.contracts.addresses) {
       if (contract.name.startsWith('AssetManager_')) {
         this.isAssetManager__cache.add(contract.address)
@@ -118,7 +111,7 @@ export class Context {
     }
   }
 
-  populateIsFAssetTokenCache(): void {
+  protected populateIsFAssetTokenCache(): void {
     for (const contract of this.config.contracts.addresses) {
       if (contract.contractName === "FAsset.sol") {
         this.isFAssetToken__cache.add(contract.address)

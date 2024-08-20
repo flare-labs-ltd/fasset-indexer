@@ -74,7 +74,7 @@ export class EventIndexer extends EventParser {
     for (const log of logs) {
       const fullLog = await this.logToEvent(log)
       if (fullLog !== null) {
-        await this.stateUpdater.onNewEvent(fullLog)
+        await this.stateUpdater.processEvent(fullLog)
       }
       if (lastHandledBlock === null || lastHandledBlock < log.blockNumber) {
         lastHandledBlock = log.blockNumber

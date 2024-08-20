@@ -44,18 +44,18 @@ export class EventStorer {
 
   constructor(readonly context: Context) {}
 
-  async processEvent(em: EntityManager, log: Event): Promise<void> {
+  async processEvent(log: Event): Promise<void> {
+    await this.context.orm.em.fork().transactional(async (em) => {
+      await this.processEventUnsafe(em, log)
+    })
+  }
+
+  async processEventUnsafe(em: EntityManager, log: Event): Promise<void> {
     if (!await this.logExists(em, log)) {
       const evmLog = await this.createLogEntity(em, log)
       const processed = await this._processEvent(em, log, evmLog)
       if (processed) em.persist(evmLog)
     }
-  }
-
-  protected async logExists(em: EntityManager, log: Event): Promise<boolean> {
-    const { blockNumber, logIndex } = log
-    const evmLog = await em.findOne(EvmLog, { index: logIndex, block: { index: blockNumber }})
-    return evmLog !== null
   }
 
   protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
@@ -141,6 +141,15 @@ export class EventStorer {
     }
     return true
   }
+
+  protected async logExists(em: EntityManager, log: Event): Promise<boolean> {
+    const { blockNumber, logIndex } = log
+    const evmLog = await em.findOne(EvmLog, { index: logIndex, block: { index: blockNumber }})
+    return evmLog !== null
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // collateral types
 
   protected async onCollateralTypeAdded(em: EntityManager, evmLog: EvmLog, logArgs: CollateralTypeAddedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)

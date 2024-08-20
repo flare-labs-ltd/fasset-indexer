@@ -5,7 +5,6 @@ import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
 import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManagerEvents"
-import type { Event } from "./event-scraper"
 import type { Context } from "../../context"
 import type { EvmLog } from "../../database/entities/evm/log"
 
@@ -15,13 +14,6 @@ export class StateUpdater extends EventStorer {
 
   constructor(public readonly context: Context) {
     super(context)
-  }
-
-  async onNewEvent(log: Event): Promise<void> {
-    if (this.context.ignoreLog(log.name)) return
-    await this.context.orm.em.fork().transactional(async (em) => {
-      await this.processEvent(em, log)
-    })
   }
 
   protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {

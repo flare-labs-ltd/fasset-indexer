@@ -1,7 +1,7 @@
 import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context"
-import { EVENTS } from "../../config/constants"
+import { EVENTS, IGNORE_EVENTS } from "../../config/constants"
 import type { Log, LogDescription } from "ethers"
 import type { Event } from "./event-scraper"
 
@@ -9,11 +9,11 @@ import type { Event } from "./event-scraper"
 export class EventParser {
   supportedEvents: Set<string>
   // cache
-  blockCache: {
+  private blockCache: {
     index: number
     timestamp: number
   } | null = null
-  transactionCache: {
+  private transactionCache: {
     hash: string
     source: string
     target: string | null
@@ -21,12 +21,17 @@ export class EventParser {
 
   constructor(public readonly context: Context) {
     this.supportedEvents = new Set(Object.values(EVENTS))
+    for (const event of IGNORE_EVENTS) {
+      this.supportedEvents.delete(event)
+    }
   }
 
-  protected async logToEvent(log: Log): Promise<Event | null> {
+  async logToEvent(log: Log): Promise<Event | null> {
     const logDescription = await this.parseLog(log)
-    if (logDescription === null) return null
-    if (!this.supportedEvents.has(logDescription.name))
+    if (logDescription === null)
+      return null
+    if (this.ignoreLog(logDescription.name))
+      return null
     await this.updateCachedBlock(log.blockNumber)
     await this.updateCachedTransaction(log.transactionHash)
     return {
@@ -41,6 +46,10 @@ export class EventParser {
       transactionSource: this.transactionCache!.source,
       transactionTarget: this.transactionCache!.target
     }
+  }
+
+  protected ignoreLog(name: string): boolean {
+    return !this.supportedEvents.has(name)
   }
 
   protected async parseLog(log: Log): Promise<LogDescription | null> {
