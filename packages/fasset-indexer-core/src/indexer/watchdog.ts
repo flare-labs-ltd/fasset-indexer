@@ -24,7 +24,8 @@ export class StateWatchdog {
       if (agentUntracked) continue
       try {
         console.log(`updating agent info for agent vault ${agent.address.hex}`)
-        await updateAgentVaultInfo(this.context, em, agent.address.hex)
+        const assetManager = this.context.fAssetTypeToAssetManagerAddress(agent.fasset)
+        await updateAgentVaultInfo(this.context, em, assetManager, agent.address.hex)
       } catch (e: any) {
         console.error(`error updating agent info for ${agent.address}: ${e}`)
       }

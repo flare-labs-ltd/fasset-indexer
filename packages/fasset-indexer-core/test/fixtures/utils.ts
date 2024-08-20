@@ -15,6 +15,10 @@ export function randomHash() {
   return randomHex(BYTES32_LENGTH-2)
 }
 
+export function randomString(n: number) {
+  return randomBase58(n)
+}
+
 export function randomHex(length: number) {
   return '0x' + Array.from({ length }, () => Math.floor(Math.random() * 16).toString(16)).join('')
 }
@@ -27,14 +31,6 @@ export function randomNumber(min: number, max: number) {
   return min + Math.floor(Math.random() * (max - min))
 }
 
-export function randomLog(name: string) {
-  return {
-    blockNumber: randomNumber(0, 100_000),
-    transactionIndex: randomNumber(0, 100),
-    logIndex: randomNumber(0, 10),
-    name: name,
-    address: randomNativeAddress(),
-    transaction: randomHash(),
-    timestamp: Date.now()
-  }
+export function randomChoice<T>(arr: T[]): T {
+  return arr[randomNumber(0, arr.length)]
 }

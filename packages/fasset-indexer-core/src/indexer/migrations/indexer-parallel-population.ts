@@ -6,7 +6,7 @@ import type { Context } from "../../context"
 const BLOCK_INDEX_NUMBER = 92
 const NEW_BLOCKS_BEFORE_INDEX = 15
 
-export class EventIndexerParallelPolulation {
+export class EventIndexerParallelPopulation {
   readonly eventIndexer: EventIndexer
   readonly backIndexer: EventIndexerBackPopulation
 

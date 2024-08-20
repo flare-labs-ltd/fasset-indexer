@@ -2,15 +2,15 @@ import chalk from "chalk"
 import { sleep } from "../../utils"
 import { getVar, setVar } from "../shared"
 import { EventIndexer } from "../indexer"
-import {
-  ERC20_TRANSFER, LOG_FETCH_SLEEP_MS, MIN_BLOCK_NUMBER,
-  END_EVENT_BLOCK_FOR_CURRENT_UPDATE, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE
+import { EVENTS,
+  LOG_FETCH_SLEEP_MS, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
+  FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, MIN_BLOCK_NUMBER
 } from "../../config/constants"
 import type { Log } from "ethers"
 import type { Context } from "../../context"
 
 
-const INSERTION_EVENTS: string[] = [ ERC20_TRANSFER ]
+const INSERTION_EVENTS: string[] = [ EVENTS.ERC20_TRANSFER ]
 
 export class EventIndexerBackPopulation extends EventIndexer {
 
@@ -52,7 +52,7 @@ export class EventIndexerBackPopulation extends EventIndexer {
     await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, blockNumber.toString())
   }
 
-  protected override async storeLogs(logs: Log[]): Promise<void> {
+  override async storeLogs(logs: Log[]): Promise<void> {
     logs = logs.filter(async log => {
       const desc = await this.parseLog(log)
       return desc !== null && INSERTION_EVENTS.includes(desc.name)

@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 import { Contract, Interface, type ContractRunner } from "ethers";
-import type { AssetManager, AssetManagerInterface } from "../AssetManager";
+import type { IAssetManager, IAssetManagerInterface } from "../IAssetManager";
 
 const _abi = [
   {
@@ -129,6 +129,62 @@ const _abi = [
         type: "address",
       },
       {
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "query",
+        type: "uint256",
+      },
+    ],
+    name: "AgentPing",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "query",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "response",
+        type: "string",
+      },
+    ],
+    name: "AgentPingResponse",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
         indexed: false,
         internalType: "string",
         name: "name",
@@ -191,70 +247,77 @@ const _abi = [
         type: "address",
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "collateralPool",
-        type: "address",
-      },
-      {
+        components: [
+          {
+            internalType: "address",
+            name: "collateralPool",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "collateralPoolToken",
+            type: "address",
+          },
+          {
+            internalType: "string",
+            name: "underlyingAddress",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "vaultCollateralToken",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "poolWNatToken",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "feeBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "poolFeeShareBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "mintingVaultCollateralRatioBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "mintingPoolCollateralRatioBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "buyFAssetByAgentFactorBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "poolExitCollateralRatioBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "poolTopupCollateralRatioBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "poolTopupTokenPriceFactorBIPS",
+            type: "uint256",
+          },
+        ],
         indexed: false,
-        internalType: "string",
-        name: "underlyingAddress",
-        type: "string",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "vaultCollateralToken",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "feeBIPS",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "poolFeeShareBIPS",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "mintingVaultCollateralRatioBIPS",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "mintingPoolCollateralRatioBIPS",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "buyFAssetByAgentFactorBIPS",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "poolExitCollateralRatioBIPS",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "poolTopupCollateralRatioBIPS",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "poolTopupTokenPriceFactorBIPS",
-        type: "uint256",
+        internalType: "struct IAssetManagerEvents.AgentVaultCreationData",
+        name: "creationData",
+        type: "tuple",
       },
     ],
     name: "AgentVaultCreated",
@@ -573,6 +636,48 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        components: [
+          {
+            internalType: "address",
+            name: "facetAddress",
+            type: "address",
+          },
+          {
+            internalType: "enum IDiamond.FacetCutAction",
+            name: "action",
+            type: "uint8",
+          },
+          {
+            internalType: "bytes4[]",
+            name: "functionSelectors",
+            type: "bytes4[]",
+          },
+        ],
+        indexed: false,
+        internalType: "struct IDiamond.FacetCut[]",
+        name: "_diamondCut",
+        type: "tuple[]",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "_init",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bytes",
+        name: "_calldata",
+        type: "bytes",
+      },
+    ],
+    name: "DiamondCut",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "agentVault",
@@ -615,6 +720,25 @@ const _abi = [
   },
   {
     anonymous: false,
+    inputs: [],
+    name: "EmergencyPauseCanceled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "pausedUntil",
+        type: "uint256",
+      },
+    ],
+    name: "EmergencyPauseTriggered",
+    type: "event",
+  },
+  {
+    anonymous: false,
     inputs: [
       {
         indexed: true,
@@ -630,6 +754,57 @@ const _abi = [
       },
     ],
     name: "FullLiquidationStarted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "bytes",
+        name: "encodedCall",
+        type: "bytes",
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "encodedCallHash",
+        type: "bytes32",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "allowedAfterTimestamp",
+        type: "uint256",
+      },
+    ],
+    name: "GovernanceCallTimelocked",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "initialGovernance",
+        type: "address",
+      },
+    ],
+    name: "GovernanceInitialised",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "governanceSettings",
+        type: "address",
+      },
+    ],
+    name: "GovernedProductionModeEntered",
     type: "event",
   },
   {
@@ -916,6 +1091,19 @@ const _abi = [
       },
     ],
     name: "RedemptionPaymentBlocked",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
+    name: "RedemptionPaymentExtensionSecondsChanged",
     type: "event",
   },
   {
@@ -1263,6 +1451,32 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: false,
+        internalType: "bytes32",
+        name: "encodedCallHash",
+        type: "bytes32",
+      },
+    ],
+    name: "TimelockedGovernanceCallCanceled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "encodedCallHash",
+        type: "bytes32",
+      },
+    ],
+    name: "TimelockedGovernanceCallExecuted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "agentVault",
@@ -1427,6 +1641,112 @@ const _abi = [
     ],
     name: "VaultCollateralWithdrawalAnnounced",
     type: "event",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "enum CollateralType.Class",
+            name: "collateralClass",
+            type: "uint8",
+          },
+          {
+            internalType: "contract IERC20",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "decimals",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "validUntil",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "directPricePair",
+            type: "bool",
+          },
+          {
+            internalType: "string",
+            name: "assetFtsoSymbol",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "tokenFtsoSymbol",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "minCollateralRatioBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "ccbMinCollateralRatioBIPS",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "safetyMinCollateralRatioBIPS",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct CollateralType.Data",
+        name: "_data",
+        type: "tuple",
+      },
+    ],
+    name: "addCollateralType",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_query",
+        type: "uint256",
+      },
+    ],
+    name: "agentPing",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_query",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "_response",
+        type: "string",
+      },
+    ],
+    name: "agentPingResponse",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
@@ -1596,6 +1916,55 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "assetPriceNatWei",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "_multiplier",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_divisor",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bool",
+        name: "attached",
+        type: "bool",
+      },
+    ],
+    name: "attachController",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "contract IERC20",
+        name: "_token",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_valueNATWei",
+        type: "uint256",
+      },
+    ],
+    name: "beforeCollateralWithdrawal",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -1606,6 +1975,19 @@ const _abi = [
     name: "buybackAgentCollateral",
     outputs: [],
     stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes",
+        name: "_encodedCall",
+        type: "bytes",
+      },
+    ],
+    name: "cancelGovernanceCall",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -2259,6 +2641,29 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "enum CollateralType.Class",
+        name: "_collateralClass",
+        type: "uint8",
+      },
+      {
+        internalType: "contract IERC20",
+        name: "_token",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_invalidationTimeSec",
+        type: "uint256",
+      },
+    ],
+    name: "deprecateCollateralType",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_agentVault",
         type: "address",
@@ -2270,6 +2675,46 @@ const _abi = [
       },
     ],
     name: "destroyAgent",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "facetAddress",
+            type: "address",
+          },
+          {
+            internalType: "enum IDiamond.FacetCutAction",
+            name: "action",
+            type: "uint8",
+          },
+          {
+            internalType: "bytes4[]",
+            name: "functionSelectors",
+            type: "bytes4[]",
+          },
+        ],
+        internalType: "struct IDiamond.FacetCut[]",
+        name: "_diamondCut",
+        type: "tuple[]",
+      },
+      {
+        internalType: "address",
+        name: "_init",
+        type: "address",
+      },
+      {
+        internalType: "bytes",
+        name: "_calldata",
+        type: "bytes",
+      },
+    ],
+    name: "diamondCut",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -2468,6 +2913,73 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bool",
+        name: "_byGovernance",
+        type: "bool",
+      },
+      {
+        internalType: "uint256",
+        name: "_duration",
+        type: "uint256",
+      },
+    ],
+    name: "emergencyPause",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "emergencyPauseDetails",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "_pausedUntil",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_totalPauseDuration",
+        type: "uint256",
+      },
+      {
+        internalType: "bool",
+        name: "_pausedByGovernance",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "emergencyPaused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "emergencyPausedUntil",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_agentVault",
         type: "address",
@@ -2492,6 +3004,19 @@ const _abi = [
       },
     ],
     name: "executeAgentSettingUpdate",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes",
+        name: "_encodedCall",
+        type: "bytes",
+      },
+    ],
+    name: "executeGovernanceCall",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -3008,6 +3533,11 @@ const _abi = [
             type: "address",
           },
           {
+            internalType: "address",
+            name: "collateralPoolToken",
+            type: "address",
+          },
+          {
             internalType: "string",
             name: "underlyingAddressString",
             type: "string",
@@ -3061,6 +3591,11 @@ const _abi = [
             internalType: "uint256",
             name: "vaultCollateralRatioBIPS",
             type: "uint256",
+          },
+          {
+            internalType: "contract IERC20",
+            name: "poolWNatToken",
+            type: "address",
           },
           {
             internalType: "uint256",
@@ -3397,6 +3932,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "getCollateralPoolTokenTimelockSeconds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "enum CollateralType.Class",
@@ -3532,6 +4080,25 @@ const _abi = [
         internalType: "struct CollateralType.Data[]",
         name: "",
         type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+    ],
+    name: "getFAssetsBackedByPool",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -3803,10 +4370,59 @@ const _abi = [
             name: "diamondCutMinTimelockSeconds",
             type: "uint64",
           },
+          {
+            internalType: "uint64",
+            name: "maxEmergencyPauseDurationSeconds",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "emergencyPauseDurationResetAfterSeconds",
+            type: "uint64",
+          },
         ],
         internalType: "struct AssetManagerSettings.Data",
         name: "",
         type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getWNat",
+    outputs: [
+      {
+        internalType: "contract IWNat",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "governance",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "governanceSettings",
+    outputs: [
+      {
+        internalType: "contract IGovernanceSettings",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -3917,6 +4533,73 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_address",
+        type: "address",
+      },
+    ],
+    name: "isAgentVaultOwner",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_address",
+        type: "address",
+      },
+    ],
+    name: "isExecutor",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "contract IERC20",
+        name: "_token",
+        type: "address",
+      },
+    ],
+    name: "isLockedVaultToken",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "string",
         name: "_suffix",
         type: "string",
@@ -3991,6 +4674,38 @@ const _abi = [
     name: "makeAgentAvailable",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+    ],
+    name: "maxRedemptionFromAgent",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "mintingPaused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -4108,15 +4823,9 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "paused",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
+    name: "pauseMinting",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -4127,6 +4836,19 @@ const _abi = [
         internalType: "address",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "productionMode",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -4300,6 +5022,62 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_receiver",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_amountUBA",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "_receiverUnderlyingAddress",
+        type: "string",
+      },
+      {
+        internalType: "address payable",
+        name: "_executor",
+        type: "address",
+      },
+    ],
+    name: "redeemFromAgent",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_receiver",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_amountUBA",
+        type: "uint256",
+      },
+    ],
+    name: "redeemFromAgentInCollateral",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "bytes32[]",
@@ -4408,6 +5186,19 @@ const _abi = [
     name: "redemptionPaymentDefault",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "redemptionPaymentExtensionSeconds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -4522,6 +5313,13 @@ const _abi = [
     name: "reserveCollateral",
     outputs: [],
     stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "resetEmergencyPauseTotalDuration",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -4697,6 +5495,52 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "enum CollateralType.Class",
+        name: "_collateralClass",
+        type: "uint8",
+      },
+      {
+        internalType: "contract IERC20",
+        name: "_token",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_minCollateralRatioBIPS",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_ccbMinCollateralRatioBIPS",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_safetyMinCollateralRatioBIPS",
+        type: "uint256",
+      },
+    ],
+    name: "setCollateralRatiosForToken",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_value",
+        type: "uint256",
+      },
+    ],
+    name: "setRedemptionPaymentExtensionSeconds",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_agentVault",
         type: "address",
@@ -4738,6 +5582,13 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [],
+    name: "switchToProductionMode",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -4757,6 +5608,13 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "terminate",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "terminated",
     outputs: [
       {
@@ -4766,6 +5624,13 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "unpauseMinting",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -4867,6 +5732,24 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "contract IERC20",
+        name: "_token",
+        type: "address",
+      },
+    ],
+    name: "updateCollateral",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "bytes32[]",
@@ -4958,6 +5841,24 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes32",
+        name: "_method",
+        type: "bytes32",
+      },
+      {
+        internalType: "bytes",
+        name: "_params",
+        type: "bytes",
+      },
+    ],
+    name: "updateSettings",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "address",
         name: "_agentVault",
         type: "address",
@@ -4970,15 +5871,15 @@ const _abi = [
   },
 ] as const;
 
-export class AssetManager__factory {
+export class IAssetManager__factory {
   static readonly abi = _abi;
-  static createInterface(): AssetManagerInterface {
-    return new Interface(_abi) as AssetManagerInterface;
+  static createInterface(): IAssetManagerInterface {
+    return new Interface(_abi) as IAssetManagerInterface;
   }
   static connect(
     address: string,
     runner?: ContractRunner | null
-  ): AssetManager {
-    return new Contract(address, _abi, runner) as unknown as AssetManager;
+  ): IAssetManager {
+    return new Contract(address, _abi, runner) as unknown as IAssetManager;
   }
 }

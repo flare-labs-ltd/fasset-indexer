@@ -22,7 +22,7 @@ export interface IConfig {
     apiKey?: string
   }
   contracts: {
-    addresses: { name: string, address: string }[],
+    addresses: { name: string, address: string, contractName: string }[],
     abis: {
       events: InterfaceAbi
       assetManager: InterfaceAbi

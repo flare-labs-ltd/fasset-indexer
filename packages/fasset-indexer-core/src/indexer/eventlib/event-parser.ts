@@ -1,26 +1,37 @@
-import { CollateralType } from "../../database/entities/events/token"
+import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context"
+import { EVENTS, IGNORE_EVENTS } from "../../config/constants"
 import type { Log, LogDescription } from "ethers"
 import type { Event } from "./event-scraper"
 
 
 export class EventParser {
-  blockCache: {
+  supportedEvents: Set<string>
+  // cache
+  private blockCache: {
     index: number
     timestamp: number
   } | null = null
-  transactionCache: {
+  private transactionCache: {
     hash: string
     source: string
     target: string | null
   } | null = null
 
-  constructor(public readonly context: Context) {}
+  constructor(public readonly context: Context) {
+    this.supportedEvents = new Set(Object.values(EVENTS))
+    for (const event of IGNORE_EVENTS) {
+      this.supportedEvents.delete(event)
+    }
+  }
 
-  protected async logToEvent(log: Log): Promise<Event | null> {
+  async logToEvent(log: Log): Promise<Event | null> {
     const logDescription = await this.parseLog(log)
-    if (logDescription === null) return null
+    if (logDescription === null)
+      return null
+    if (this.ignoreLog(logDescription.name))
+      return null
     await this.updateCachedBlock(log.blockNumber)
     await this.updateCachedTransaction(log.transactionHash)
     return {
@@ -37,23 +48,32 @@ export class EventParser {
     }
   }
 
+  protected ignoreLog(name: string): boolean {
+    return !this.supportedEvents.has(name)
+  }
+
   protected async parseLog(log: Log): Promise<LogDescription | null> {
-    if (log.address === this.context.getContractAddress('AssetManager_FTestXRP')) {
+    if (this.context.isAssetManager(log.address)) {
       return this.context.assetManagerEventInterface.parseLog(log)
-    } else if (log.address === this.context.getContractAddress('FTestXRP')) {
+    } else if (this.context.isFAssetToken(log.address)) {
       return this.context.erc20Interface.parseLog(log)
     }
     const em = this.context.orm.em.fork()
-    const collateralType = await em.findOne(CollateralType, { address: { hex: log.address } })
-    if (collateralType !== null && collateralType.collateralClass !== 1) {
-      return this.context.erc20Interface.parseLog(log)
-    } else if (collateralType?.collateralClass === 1) {
-      return null
+    // is collateral token
+    const collateralType = await em.findOne(CollateralTypeAdded, { address: { hex: log.address } })
+    if (collateralType !== null) {
+      if (collateralType.collateralClass !== 1) {
+        return this.context.erc20Interface.parseLog(log)
+      } else {
+        return null
+      }
     }
+    // is collateral pool token
     const collateralPoolToken = await em.findOne(AgentVault, { collateralPoolToken: { hex: log.address }})
     if (collateralPoolToken !== null) {
       return this.context.erc20Interface.parseLog(log)
     }
+    // is collateral pool
     const pool = await em.findOne(AgentVault, { collateralPool: { hex: log.address }})
     if (pool !== null) {
       return this.context.collateralPoolInterface.parseLog(log)

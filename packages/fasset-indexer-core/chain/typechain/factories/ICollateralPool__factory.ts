@@ -4,47 +4,11 @@
 
 import { Contract, Interface, type ContractRunner } from "ethers";
 import type {
-  CollateralPool,
-  CollateralPoolInterface,
-} from "../CollateralPool";
+  ICollateralPool,
+  ICollateralPoolInterface,
+} from "../ICollateralPool";
 
 const _abi = [
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_assetManager",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_fAsset",
-        type: "address",
-      },
-      {
-        internalType: "uint32",
-        name: "_exitCollateralRatioBIPS",
-        type: "uint32",
-      },
-      {
-        internalType: "uint32",
-        name: "_topupCollateralRatioBIPS",
-        type: "uint32",
-      },
-      {
-        internalType: "uint16",
-        name: "_topupTokenPriceFactorBIPS",
-        type: "uint16",
-      },
-    ],
-    stateMutability: "nonpayable",
-    type: "constructor",
-  },
   {
     anonymous: false,
     inputs: [
@@ -152,62 +116,10 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "MIN_NAT_BALANCE_AFTER_EXIT",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "MIN_NAT_TO_ENTER",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "MIN_TOKEN_SUPPLY_AFTER_EXIT",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "agentVault",
     outputs: [
       {
         internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "assetManager",
-    outputs: [
-      {
-        internalType: "contract IIAssetManager",
         name: "",
         type: "address",
       },
@@ -232,7 +144,7 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "_claimedAmount",
         type: "uint256",
       },
     ],
@@ -256,49 +168,11 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "_claimedAmount",
         type: "uint256",
       },
     ],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_account",
-        type: "address",
-      },
-    ],
-    name: "debtFreeTokensOf",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_account",
-        type: "address",
-      },
-    ],
-    name: "debtLockedTokensOf",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -322,46 +196,13 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "_to",
-        type: "address",
-      },
-    ],
-    name: "delegateGovernance",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "depositNat",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address payable",
-        name: "_recipient",
-        type: "address",
-      },
-    ],
-    name: "destroy",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
         name: "_fAssets",
         type: "uint256",
       },
       {
         internalType: "bool",
-        name: "_enterWithFullFAssets",
+        name: "_enterWithFullFassets",
         type: "bool",
       },
     ],
@@ -369,12 +210,12 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "_receivedTokens",
         type: "uint256",
       },
       {
         internalType: "uint256",
-        name: "",
+        name: "_timelockExpiresAt",
         type: "uint256",
       },
     ],
@@ -398,12 +239,12 @@ const _abi = [
     outputs: [
       {
         internalType: "uint256",
-        name: "",
+        name: "_natShare",
         type: "uint256",
       },
       {
         internalType: "uint256",
-        name: "",
+        name: "_fassetShare",
         type: "uint256",
       },
     ],
@@ -418,19 +259,6 @@ const _abi = [
         internalType: "uint32",
         name: "",
         type: "uint32",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "fAsset",
-    outputs: [
-      {
-        internalType: "contract IERC20",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",
@@ -453,19 +281,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_amount",
-        type: "uint256",
-      },
-    ],
-    name: "fAssetFeeDeposited",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -523,34 +338,11 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "_fAssets",
+        name: "_fassets",
         type: "uint256",
       },
     ],
     name: "payFAssetFeeDebt",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_recipient",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_amount",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_agentResponsibilityWei",
-        type: "uint256",
-      },
-    ],
-    name: "payout",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -566,24 +358,6 @@ const _abi = [
       },
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_who",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_blockNumber",
-        type: "uint256",
-      },
-    ],
-    name: "revokeDelegationAt",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -612,90 +386,6 @@ const _abi = [
     name: "selfCloseExit",
     outputs: [],
     stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_exitCollateralRatioBIPS",
-        type: "uint256",
-      },
-    ],
-    name: "setExitCollateralRatioBIPS",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_poolToken",
-        type: "address",
-      },
-    ],
-    name: "setPoolToken",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_topupCollateralRatioBIPS",
-        type: "uint256",
-      },
-    ],
-    name: "setTopupCollateralRatioBIPS",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_topupTokenPriceFactorBIPS",
-        type: "uint256",
-      },
-    ],
-    name: "setTopupTokenPriceFactorBIPS",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bytes4",
-        name: "_interfaceId",
-        type: "bytes4",
-      },
-    ],
-    name: "supportsInterface",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "token",
-    outputs: [
-      {
-        internalType: "contract IICollateralPoolToken",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -772,58 +462,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "undelegateGovernance",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IWNat",
-        name: "_newWNat",
-        type: "address",
-      },
-    ],
-    name: "upgradeWNatContract",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_account",
-        type: "address",
-      },
-    ],
-    name: "virtualFAssetOf",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "wNat",
-    outputs: [
-      {
-        internalType: "contract IWNat",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "withdrawCollateralWhenFAssetTerminated",
     outputs: [],
     stateMutability: "nonpayable",
@@ -833,7 +471,7 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "_fAssets",
+        name: "_amount",
         type: "uint256",
       },
     ],
@@ -842,21 +480,17 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
-  {
-    stateMutability: "payable",
-    type: "receive",
-  },
 ] as const;
 
-export class CollateralPool__factory {
+export class ICollateralPool__factory {
   static readonly abi = _abi;
-  static createInterface(): CollateralPoolInterface {
-    return new Interface(_abi) as CollateralPoolInterface;
+  static createInterface(): ICollateralPoolInterface {
+    return new Interface(_abi) as ICollateralPoolInterface;
   }
   static connect(
     address: string,
     runner?: ContractRunner | null
-  ): CollateralPool {
-    return new Contract(address, _abi, runner) as unknown as CollateralPool;
+  ): ICollateralPool {
+    return new Contract(address, _abi, runner) as unknown as ICollateralPool;
   }
 }

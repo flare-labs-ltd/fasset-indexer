@@ -1,7 +1,9 @@
 import { defineConfig } from "@mikro-orm/core"
 import { UntrackedAgentVault, Var } from "./entities/state/var"
 import { EvmAddress, UnderlyingAddress } from "./entities/address"
-import { EvmLog } from "./entities/logs"
+import { EvmBlock } from "./entities/evm/block"
+import { EvmTransaction } from "./entities/evm/transaction"
+import { EvmLog } from "./entities/evm/log"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "./entities/events/agent"
 import {
   CollateralReserved, MintingExecuted,
@@ -16,7 +18,7 @@ import {
   FullLiquidationStarted, LiquidationEnded,
   LiquidationPerformed, LiquidationStarted
 } from "./entities/events/liquidation"
-import { CollateralType, ERC20Transfer } from "./entities/events/token"
+import { CollateralTypeAdded, ERC20Transfer } from "./entities/events/token"
 import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateralPool"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
@@ -27,14 +29,14 @@ import type { AbstractSqlDriver } from "@mikro-orm/knex"
 
 export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
   entities: [
-    Var, EvmLog, EvmAddress, UnderlyingAddress,
+    Var, EvmBlock, EvmTransaction, EvmLog, EvmAddress, UnderlyingAddress,
     AgentManager, AgentOwner, AgentVault, AgentVaultSettings, AgentVaultInfo,
     AgentVaultCreated, AgentSettingChanged, SelfClose,
     CollateralReserved, MintingExecuted, MintingPaymentDefault, CollateralReservationDeleted,
     RedemptionRequested, RedemptionPerformed, RedemptionDefault,
     RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected, RedemptionRequestIncomplete,
     LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
-    CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralType,
+    CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
     UntrackedAgentVault
   ],
   pool: {

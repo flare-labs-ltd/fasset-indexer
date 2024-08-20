@@ -1,26 +1,24 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from "@mikro-orm/core"
+import { Entity, ManyToOne, OneToOne, Property } from "@mikro-orm/core"
 import { uint256 } from "../../custom/typeUint256"
-import { EvmLog, EventBound } from "../logs"
+import { EvmLog } from "../evm/log"
+import { FAssetEventBound, type FAssetType } from "./_bound"
 import { AgentVault } from "../agent"
 
 
 @Entity()
-export class AgentVaultCreated extends EventBound {
+export class AgentVaultCreated extends FAssetEventBound {
 
-  @OneToOne({ entity: () => AgentVault, primary: true, owner: true })
+  @OneToOne({ entity: () => AgentVault, owner: true })
   agentVault: AgentVault
 
-  constructor(evmLog: EvmLog, agentVault: AgentVault) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault) {
+    super(evmLog, fasset)
     this.agentVault = agentVault
   }
 }
 
 @Entity()
-export class AgentSettingChanged extends EventBound {
-
-  @PrimaryKey({ type: "number", autoincrement: true })
-  id!: number
+export class AgentSettingChanged extends FAssetEventBound {
 
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
@@ -31,8 +29,8 @@ export class AgentSettingChanged extends EventBound {
   @Property({ type: new uint256() })
   value: bigint
 
-  constructor(evmLog: EvmLog, agentVault: AgentVault, name: string, value: bigint) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, name: string, value: bigint) {
+    super(evmLog, fasset)
     this.agentVault = agentVault
     this.name = name
     this.value = value
@@ -40,10 +38,7 @@ export class AgentSettingChanged extends EventBound {
 }
 
 @Entity()
-export class SelfClose extends EventBound {
-
-  @PrimaryKey({ type: 'number', autoincrement: true })
-  id!: number
+export class SelfClose extends FAssetEventBound {
 
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
@@ -51,8 +46,8 @@ export class SelfClose extends EventBound {
   @Property({ type: new uint256() })
   valueUBA: bigint
 
-  constructor(evmLog: EvmLog, agentVault: AgentVault, valueUBA: bigint) {
-    super(evmLog)
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, valueUBA: bigint) {
+    super(evmLog, fasset)
     this.agentVault = agentVault
     this.valueUBA = valueUBA
   }
