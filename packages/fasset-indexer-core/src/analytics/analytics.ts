@@ -41,20 +41,6 @@ export class Analytics {
     return parseInt(end.value) - parseInt(start.value) + 1
   }
 
-  async logsWithoutSenders(): Promise<number> {
-    const qb = this.orm.em.qb(EvmLog, 'o')
-    qb.select('o').where({ transactionSource: null })
-    const result = await qb.count('o.id').execute()
-    return result[0].count
-  }
-
-  async agentsWithoutCPT(): Promise<number> {
-    const qb = this.orm.em.qb(AgentVault, 'o')
-    qb.select('o').where({ collateralPoolToken: null })
-    const result = await qb.count('o.address_id').execute()
-    return result[0].count
-  }
-
   //////////////////////////////////////////////////////////////
   // mintings
 
@@ -134,18 +120,6 @@ export class Analytics {
   async totalLiquidators(): Promise<number> {
     const qb = this.orm.em.qb(LiquidationPerformed, 'o')
     const result = await qb.count('o.liquidator', true).execute()
-    return result[0].count
-  }
-
-  async redemptionRequestFromSecondsAgo(seconds: number): Promise<number> {
-    const timestamp = Date.now() / 1000 - seconds
-    const result = await this.orm.em.getConnection('read').execute(`
-      SELECT COUNT(rr.request_id) AS count
-      FROM redemption_requested rr
-      INNER JOIN evm_log el
-      ON rr.evm_log_id = el.id
-      WHERE el.timestamp >= ${timestamp}
-    `)
     return result[0].count
   }
 
