@@ -21,15 +21,6 @@ export class FAssetIndexerController {
     return apiResponse(this.appService.blocksToBackSync(), 200)
   }
 
-  @Get('/logs-without-senders')
-  getLogsWithoutSenders(): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.logsWithoutSenders(), 200)
-  }
-
-  @Get('/agents-without-cpt')
-  getAgentsWithoutCPT(): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.agentsWithoutCPT(), 200)
-  }
 
   @Get('/total-minted')
   getTotalMinted(): Promise<ApiResponse<string>> {
@@ -39,11 +30,6 @@ export class FAssetIndexerController {
   @Get('/total-reserved')
   getTotalReserved(): Promise<ApiResponse<string>> {
     return apiResponse(this.appService.totalReserved().then(String), 200)
-  }
-
-  @Get('/redemption-requests?:seconds')
-  getRedemptionRequests(@Param('seconds') seconds: number): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.redemptionRequestFromSecondsAgo(seconds), 200)
   }
 
   @Get('/total-minting-defaulted')
