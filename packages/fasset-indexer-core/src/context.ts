@@ -113,7 +113,7 @@ export class Context {
 
   protected populateIsFAssetTokenCache(): void {
     for (const contract of this.config.contracts.addresses) {
-      if (contract.contractName === "FAsset.sol") {
+      if (contract.contractName === "FAssetProxy.sol") {
         this.isFAssetToken__cache.add(contract.address)
       }
     }

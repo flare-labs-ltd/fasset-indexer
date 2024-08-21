@@ -21,8 +21,8 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
 export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockFixCollateralPoolTokenTransfers"
-export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockFixCollateralPoolTokenTransfers"
+export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockFixFAssetTransfers"
+export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockFixFAssetTransfers"
 
 // event names
 // agent
