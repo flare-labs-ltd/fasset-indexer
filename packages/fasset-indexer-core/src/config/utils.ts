@@ -29,13 +29,24 @@ export function validateEnvVar(name: string, options: ValidationOptions): void {
   }
 }
 
-export function validateEnv(): void {
-  validateEnvVar('RPC_URL', { required: true })
+export function validateDatabaseEnv(): void {
   validateEnvVar('DB_TYPE', { isOneOf: ['sqlite', 'postgres'] })
   validateEnvVar('DB_NAME', { required: true })
+  if (process.env.DB_TYPE !== "sqlite") {
+    validateEnvVar('DB_HOST', { required: true })
+    validateEnvVar('DB_PORT', { required: true })
+    validateEnvVar('DB_USER', { required: true })
+    validateEnvVar('DB_PASSWORD', { required: true })
+  }
+}
+
+export function validateEnv(): void {
+  validateDatabaseEnv()
+  validateEnvVar('RPC_URL', { required: true })
 }
 
 export function getUserDatabaseConfig(): IUserDatabaseConfig {
+  validateDatabaseEnv()
   let dbName = process.env.DB_NAME!
   if (process.env.DB_TYPE === "sqlite") {
     dbName = resolve(dbName)
