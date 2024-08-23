@@ -43,6 +43,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     min: MIN_DATABASE_POOL_CONNECTIONS,
     max: MAX_DATABASE_POOL_CONNECTIONS
   },
+  migrations: { disableForeignKeys: false },
   debug: false
 })
 
