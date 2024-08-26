@@ -21,32 +21,6 @@ export class FAssetIndexerController {
     return apiResponse(this.appService.blocksToBackSync(), 200)
   }
 
-
-  @Get('/total-minted')
-  getTotalMinted(): Promise<ApiResponse<string>> {
-    return apiResponse(this.appService.totalMinted().then(String), 200)
-  }
-
-  @Get('/total-reserved')
-  getTotalReserved(): Promise<ApiResponse<string>> {
-    return apiResponse(this.appService.totalReserved().then(String), 200)
-  }
-
-  @Get('/total-minting-defaulted')
-  getTotalMintingDefaulted(): Promise<ApiResponse<string>> {
-    return apiResponse(this.appService.totalMintingDefaulted().then(String), 200)
-  }
-
-  @Get('/total-redemption-requested')
-  getTotalRedemptionRequested(): Promise<ApiResponse<string>> {
-    return apiResponse(this.appService.totalRedemptionRequested().then(String), 200)
-  }
-
-  @Get('/total-redeemed')
-  getTotalRedeemed(): Promise<ApiResponse<string>> {
-    return apiResponse(this.appService.totalRedeemed().then(String), 200)
-  }
-
   @Get('/total-redemption-requesters')
   getTotalRedemptionRequesters(): Promise<ApiResponse<number>> {
     return apiResponse(this.appService.totalRedemptionRequesters(), 200)
@@ -79,7 +53,6 @@ export class FAssetIndexerController {
 
   @Get('/agent-minting-executed-count?')
   getAgentMintingExecutedCount(@Query('agent') agent: string): Promise<ApiResponse<number>> {
-    console.log(agent)
     return apiResponse(this.appService.agentMintingExecutedCount(agent), 200)
   }
 
