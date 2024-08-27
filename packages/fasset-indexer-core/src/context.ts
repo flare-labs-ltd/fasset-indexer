@@ -2,10 +2,11 @@ import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "./database/utils"
 import {
   IAssetManager__factory, IAssetManagerEvents__factory, ERC20__factory,
-  IAgentOwnerRegistry__factory, ICollateralPool__factory
+  IAgentOwnerRegistry__factory, ICollateralPool__factory,
+  IPriceReader__factory
 } from "../chain/typechain"
 import { FAssetType } from "./database/entities/events/_bound"
-import type { IAssetManager, ERC20, IAgentOwnerRegistry } from "../chain/typechain"
+import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../chain/typechain"
 import type { IAssetManagerEventsInterface } from "../chain/typechain/IAssetManagerEvents"
 import type { ICollateralPoolInterface } from "../chain/typechain/ICollateralPool"
 import type { ERC20Interface } from "../chain/typechain/ERC20"
@@ -46,6 +47,10 @@ export class Context {
 
   getAssetManagerContract(address: string): IAssetManager {
     return IAssetManager__factory.connect(address, this.provider)
+  }
+
+  getPriceReaderContract(address: string): IPriceReader {
+    return IPriceReader__factory.connect(address, this.provider)
   }
 
   getERC20(address: string): ERC20 {

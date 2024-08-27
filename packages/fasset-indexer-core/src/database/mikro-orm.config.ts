@@ -22,6 +22,7 @@ import { CollateralTypeAdded, ERC20Transfer } from "./entities/events/token"
 import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateralPool"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
+import { FtsoPrice } from "./entities/state/price"
 import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
 import type { Options } from "@mikro-orm/core"
 import type { AbstractSqlDriver } from "@mikro-orm/knex"
@@ -37,7 +38,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected, RedemptionRequestIncomplete,
     LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
     CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
-    UntrackedAgentVault
+    FtsoPrice, UntrackedAgentVault
   ],
   pool: {
     min: MIN_DATABASE_POOL_CONNECTIONS,

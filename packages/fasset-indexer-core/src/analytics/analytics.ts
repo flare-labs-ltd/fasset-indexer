@@ -108,7 +108,7 @@ export class Analytics {
   }
 
   async agentLiquidationCount(agentAddress: string): Promise<number> {
-    const qb = this.orm.em.fork().qb(LiquidationPerformed, 'o')
+    const qb = this.orm.em.fork().qb(LiquidationPerformed)
     qb.count().where({ agentVault: { address: { hex: agentAddress }}, valueUBA: { $gt: 0 } })
     const result = await qb.execute()
     return result[0].count
@@ -175,6 +175,8 @@ export class Analytics {
   async eventsPerInterval(seconds: number = 60): Promise<number> {
     return this.orm.em.fork().count(EvmLog, { block: { timestamp: { $gt: Date.now() / 1000 - seconds }}})
   }
+
+  // security
 
 }
 

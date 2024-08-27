@@ -6,3 +6,4 @@ export { IAgentOwnerRegistry__factory } from "./IAgentOwnerRegistry__factory";
 export { IAssetManager__factory } from "./IAssetManager__factory";
 export { IAssetManagerEvents__factory } from "./IAssetManagerEvents__factory";
 export { ICollateralPool__factory } from "./ICollateralPool__factory";
+export { IPriceReader__factory } from "./IPriceReader__factory";
