@@ -32,7 +32,7 @@ export class StateWatchdog {
       const agentUntracked = await isUntrackedAgentVault(em, agent.address.hex)
       if (agentUntracked) continue
       try {
-        console.log(`updating agent info for agent vault ${agent.address.hex}`)
+        console.log(`updating agent ${agent.address.hex} info for agent vault`)
         const assetManager = this.context.fAssetTypeToAssetManagerAddress(agent.fasset)
         await updateAgentVaultInfo(this.context, em, assetManager, agent.address.hex)
       } catch (e: any) {
@@ -48,6 +48,7 @@ export class StateWatchdog {
     for (const collateralType of collateralTypes) {
       if (wasUpdated.has(collateralType.tokenFtsoSymbol)) continue
       try {
+        console.log(`updating ${collateralType.tokenFtsoSymbol} price`)
         const assetManagerAddress = this.context.fAssetTypeToAssetManagerAddress(collateralType.fasset)
         const assetManager = this.context.getAssetManagerContract(assetManagerAddress)
         const priceReaderAddress = await assetManager.priceReader()
