@@ -55,6 +55,7 @@ export class EventParser {
   protected async parseLog(log: Log): Promise<LogDescription | null> {
     if (this.context.isAssetManager(log.address)) {
       return this.context.assetManagerEventInterface.parseLog(log)
+        || this.context.agentPingInterface.parseLog(log)
     } else if (this.context.isFAssetToken(log.address)) {
       return this.context.erc20Interface.parseLog(log)
     }

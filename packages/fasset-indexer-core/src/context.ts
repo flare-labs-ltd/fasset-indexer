@@ -3,11 +3,12 @@ import { createOrm } from "./database/utils"
 import {
   IAssetManager__factory, IAssetManagerEvents__factory, ERC20__factory,
   IAgentOwnerRegistry__factory, ICollateralPool__factory,
-  IPriceReader__factory
+  IPriceReader__factory, IAgentPing__factory
 } from "../chain/typechain"
 import { FAssetType } from "./database/entities/events/_bound"
 import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../chain/typechain"
 import type { IAssetManagerEventsInterface } from "../chain/typechain/IAssetManagerEvents"
+import type { IAgentPingInterface } from "../chain/typechain/IAgentPing"
 import type { ICollateralPoolInterface } from "../chain/typechain/ICollateralPool"
 import type { ERC20Interface } from "../chain/typechain/ERC20"
 import type { ORM } from "./database/interface"
@@ -17,6 +18,7 @@ import type { IConfig } from "./config/interface"
 export class Context {
   provider: JsonRpcProvider
   assetManagerEventInterface: IAssetManagerEventsInterface
+  agentPingInterface: IAgentPingInterface
   collateralPoolInterface: ICollateralPoolInterface
   agentOwnerRegistryContract: IAgentOwnerRegistry
   erc20Interface: ERC20Interface
@@ -30,6 +32,7 @@ export class Context {
   constructor(public config: IConfig, orm: ORM) {
     this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
     this.assetManagerEventInterface = IAssetManagerEvents__factory.createInterface()
+    this.agentPingInterface = IAgentPing__factory.createInterface()
     this.agentOwnerRegistryContract = this.getAgentOwnerRegistryContract()
     this.collateralPoolInterface = ICollateralPool__factory.createInterface()
     this.erc20Interface = ERC20__factory.createInterface()
