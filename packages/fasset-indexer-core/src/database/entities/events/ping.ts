@@ -1,14 +1,15 @@
-import { Entity, Property, ManyToOne, OneToOne } from '@mikro-orm/core'
+import { Entity, Property, ManyToOne } from '@mikro-orm/core'
 import { uint256 } from '../../custom/typeUint256'
 import { AgentVault } from '../agent'
 import { EvmAddress } from '../address'
 import { FAssetEventBound, type FAssetType } from './_bound'
 import type { EvmLog } from '../evm/log'
 
+
 @Entity()
 export class AgentPing extends FAssetEventBound {
 
-  @ManyToOne({ entity: () => AgentVault })
+  @ManyToOne(() => AgentVault)
   agentVault: AgentVault
 
   @ManyToOne(() => EvmAddress)
@@ -34,7 +35,7 @@ export class AgentPing extends FAssetEventBound {
 @Entity()
 export class AgentPingResponse extends FAssetEventBound {
 
-    @ManyToOne({ entity: () => AgentVault })
+    @ManyToOne(() => AgentVault)
     agentVault: AgentVault
 
     @Property({ type: new uint256() })
