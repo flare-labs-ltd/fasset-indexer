@@ -24,6 +24,7 @@ import { EventStorer } from "../src/indexer/eventlib/event-storer"
 import { Context } from "../src/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
+import { AgentPing, AgentPingResponse } from "../src/database/entities/events/ping"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -230,11 +231,49 @@ describe("ORM: Agent", () => {
     expect(redemptionPaymentFailed.failureReason).to.equal(redemptionPaymentFailedEvent.args[5])
   })
 
+  it("should store agent ping", async () => {
+    const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+    await fixture.storeInitialAgents(FAssetType.FXRP)
+    const em = context.orm.em.fork()
+    // agent ping
+    const agentPingEvent = await fixture.generateEvent(EVENTS.AGENT_PING, assetManagerXrp)
+    await storer.processEventUnsafe(em, agentPingEvent)
+    const agentPing = await em.findOneOrFail(AgentPing,
+      { evmLog: { index: agentPingEvent.logIndex, block: { index: agentPingEvent.blockNumber }}},
+      { populate: ['evmLog.block', 'agentVault.address', 'sender'] }
+    )
+    expect(agentPing).to.exist
+    expect(agentPing.evmLog.index).to.equal(agentPingEvent.logIndex)
+    expect(agentPing.evmLog.block.index).to.equal(agentPingEvent.blockNumber)
+    expect(agentPing.agentVault.address.hex).to.equal(agentPingEvent.args[0])
+    expect(agentPing.sender.hex).to.equal(agentPingEvent.args[1])
+    expect(agentPing.query).to.equal(agentPingEvent.args[2])
+  })
+
+  it("should store agent ping response", async () => {
+    const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+    await fixture.storeInitialAgents(FAssetType.FXRP)
+    const em = context.orm.em.fork()
+    // agent pong
+    const agentPingResponseEvent = await fixture.generateEvent(EVENTS.AGENT_PING_RESPONSE, assetManagerXrp)
+    await storer.processEventUnsafe(em, agentPingResponseEvent)
+    const agentPingResponse = await em.findOneOrFail(AgentPingResponse,
+      { evmLog: { index: agentPingResponseEvent.logIndex, block: { index: agentPingResponseEvent.blockNumber }}},
+      { populate: ['evmLog.block', 'agentVault.address'] }
+    )
+    expect(agentPingResponse).to.exist
+    expect(agentPingResponse.evmLog.index).to.equal(agentPingResponseEvent.logIndex)
+    expect(agentPingResponse.evmLog.block.index).to.equal(agentPingResponseEvent.blockNumber)
+    expect(agentPingResponse.agentVault.address.hex).to.equal(agentPingResponseEvent.args[0])
+    expect(agentPingResponse.query).to.equal(agentPingResponseEvent.args[2])
+    expect(agentPingResponse.response).to.equal(agentPingResponseEvent.args[3])
+  })
+
   describe("liquidations", () => {
 
     it("should store all liquidation started events", async () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
-      await fixture.storeInitialAgents()
+      await fixture.storeInitialAgents(FAssetType.FXRP)
       const em = context.orm.em.fork()
       const liquidationStartedEvent = await fixture.generateEvent(EVENTS.LIQUIDATION_STARTED, assetManagerXrp)
       await storer.processEventUnsafe(em, liquidationStartedEvent)

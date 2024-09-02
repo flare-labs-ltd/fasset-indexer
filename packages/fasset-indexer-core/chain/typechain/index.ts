@@ -3,6 +3,7 @@
 /* eslint-disable */
 export type { ERC20 } from "./ERC20";
 export type { IAgentOwnerRegistry } from "./IAgentOwnerRegistry";
+export type { IAgentPing } from "./IAgentPing";
 export type { IAssetManager } from "./IAssetManager";
 export type { IAssetManagerEvents } from "./IAssetManagerEvents";
 export type { ICollateralPool } from "./ICollateralPool";
@@ -10,6 +11,7 @@ export type { IPriceReader } from "./IPriceReader";
 export * as factories from "./factories";
 export { ERC20__factory } from "./factories/ERC20__factory";
 export { IAgentOwnerRegistry__factory } from "./factories/IAgentOwnerRegistry__factory";
+export { IAgentPing__factory } from "./factories/IAgentPing__factory";
 export { IAssetManager__factory } from "./factories/IAssetManager__factory";
 export { IAssetManagerEvents__factory } from "./factories/IAssetManagerEvents__factory";
 export { ICollateralPool__factory } from "./factories/ICollateralPool__factory";

@@ -34,6 +34,7 @@ import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollatera
 import type { TransferEvent } from "../../chain/typechain/ERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
 import { FAssetType } from "../../src/database/entities/events/_bound"
+import { AgentPingEvent, AgentPingResponseEvent } from "../../chain/typechain/IAssetManager"
 
 export class EventFixture {
 
@@ -334,6 +335,25 @@ export class EventFixture {
       randomNativeAddress(),
       randomNativeAddress(),
       BigInt(randomNumber(1, 1e6))
+    ]
+  }
+
+  protected async generateAgentPing(): Promise<AgentPingEvent.OutputTuple> {
+    const agentVault = await this.getRandomAgentVault()
+    return [
+      agentVault,
+      randomNativeAddress(),
+      BigInt(randomNumber(1, 1e6))
+    ]
+  }
+
+  protected async generateAgentPingResponse(): Promise<AgentPingResponseEvent.OutputTuple> {
+    const agentVault = await this.getRandomAgentVault()
+    return [
+      agentVault,
+      '',
+      BigInt(randomNumber(1, 1e6)),
+      randomString(100)
     ]
   }
 

@@ -38,6 +38,8 @@ import type {
 } from "../../../chain/typechain/IAssetManagerEvents"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
+import type { AgentPingEvent, AgentPingResponseEvent } from "../../../chain/typechain/IAgentPing"
+import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 
 
 export class EventStorer {
@@ -134,6 +136,12 @@ export class EventStorer {
         break
       } case EVENTS.ERC20_TRANSFER: {
         await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
+        break
+      } case EVENTS.AGENT_PING: {
+        await this.onAgentPing(em, evmLog, log.args as AgentPingEvent.OutputTuple)
+        break
+      } case EVENTS.AGENT_PING_RESPONSE: {
+        await this.onAgentPingResponse(em, evmLog, log.args as AgentPingResponseEvent.OutputTuple)
         break
       } default: {
         return false
@@ -463,6 +471,24 @@ export class EventStorer {
     const toEvmAddress = await findOrCreateEvmAddress(em, to, AddressType.USER)
     const erc20Transfer = new ERC20Transfer(evmLog, fromEvmAddress, toEvmAddress, value)
     em.persist(erc20Transfer)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // agent ping
+
+  protected async onAgentPing(em: EntityManager, evmLog: EvmLog, logArgs: AgentPingEvent.OutputTuple): Promise<void> {
+    const [ agentVault, sender, query ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const senderEvmAddress = await findOrCreateEvmAddress(em, sender, AddressType.USER)
+    const agentPing = new AgentPing(evmLog, agentVaultEntity.fasset, agentVaultEntity, senderEvmAddress, query)
+    em.persist(agentPing)
+  }
+
+  protected async onAgentPingResponse(em: EntityManager, evmLog: EvmLog, logArgs: AgentPingResponseEvent.OutputTuple): Promise<void> {
+    const [ agentVault,, query, response ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const agentPingResponse = new AgentPingResponse(evmLog, agentVaultEntity.fasset, agentVaultEntity, query, response)
+    em.persist(agentPingResponse)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

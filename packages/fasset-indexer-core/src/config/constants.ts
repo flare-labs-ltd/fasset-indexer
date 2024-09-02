@@ -60,7 +60,10 @@ export const EVENTS = {
     COLLATERAL_POOL_ENTER: "Entered",
     COLLATERAL_POOL_EXIT: "Exited",
     // erc20
-    ERC20_TRANSFER: "Transfer"
+    ERC20_TRANSFER: "Transfer",
+    // pings
+    AGENT_PING: "AgentPing",
+    AGENT_PING_RESPONSE: "AgentPingResponse",
 }
 
 // metadata
