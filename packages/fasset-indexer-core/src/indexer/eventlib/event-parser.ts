@@ -2,6 +2,7 @@ import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context"
 import { EVENTS, IGNORE_EVENTS } from "../../config/constants"
+import type { EntityManager } from "@mikro-orm/knex"
 import type { Log, LogDescription } from "ethers"
 import type { Event } from "./event-scraper"
 
@@ -60,29 +61,47 @@ export class EventParser {
       return this.context.erc20Interface.parseLog(log)
     }
     const em = this.context.orm.em.fork()
-    // is collateral token
+    // collateral types
     const collateralType = await em.findOne(CollateralTypeAdded, { address: { hex: log.address } })
     if (collateralType !== null) {
+      const parsed = this.context.erc20Interface.parseLog(log)
       if (collateralType.collateralClass !== 1) {
-        return this.context.erc20Interface.parseLog(log)
+        return parsed
+      } else if (parsed !== null) {
+        // track WNAT transfers from collateral pools and asset managers
+        const fromAddr = parsed.args[0]
+        if (await this.isCollateralPool(em, fromAddr)) {
+          return parsed
+        } else if (this.context.isAssetManager(fromAddr)) {
+          return parsed
+        }
+        return null
       } else {
         return null
       }
     }
-    // is collateral pool token
-    const collateralPoolToken = await em.findOne(AgentVault, { collateralPoolToken: { hex: log.address }})
-    if (collateralPoolToken !== null) {
+    // collateral pool token
+    if (await this.isCollateralPoolToken(em, log.address)) {
       return this.context.erc20Interface.parseLog(log)
     }
-    // is collateral pool
-    const pool = await em.findOne(AgentVault, { collateralPool: { hex: log.address }})
-    if (pool !== null) {
+    // collateral pool
+    if (await this.isCollateralPool(em, log.address)) {
       return this.context.collateralPoolInterface.parseLog(log)
     }
     return null
   }
 
-  protected async updateCachedBlock(blockNumber: number): Promise<void> {
+  protected async isCollateralPool(em: EntityManager, address: string): Promise<boolean> {
+    const pool = await em.findOne(AgentVault, { collateralPool: { hex: address } })
+    return pool !== null
+  }
+
+  protected async isCollateralPoolToken(em: EntityManager, address: string): Promise<boolean> {
+    const pool = await em.findOne(AgentVault, { collateralPoolToken: { hex: address } })
+    return pool !== null
+  }
+
+  private async updateCachedBlock(blockNumber: number): Promise<void> {
     if (this.blockCache === null || this.blockCache.index !== blockNumber) {
       const block = await this.context.provider.getBlock(blockNumber)
       if (block === null) {
@@ -95,7 +114,7 @@ export class EventParser {
     }
   }
 
-  protected async updateCachedTransaction(transactionHash: string): Promise<void> {
+  private async updateCachedTransaction(transactionHash: string): Promise<void> {
     if (this.transactionCache === null || this.transactionCache.hash !== transactionHash) {
       const transaction = await this.context.provider.getTransaction(transactionHash)
       if (transaction === null) {
