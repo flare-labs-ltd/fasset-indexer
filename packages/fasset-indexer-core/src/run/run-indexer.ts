@@ -1,11 +1,11 @@
 import { Context } from "../context"
 import { config } from "../config/config"
-import { EventIndexer } from "../indexer/indexer"
+import { EventIndexerParallelPopulation } from "../indexer/migrations/indexer-parallel-population"
 
 
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
-  const indexer = new EventIndexer(context)
+  const indexer = new EventIndexerParallelPopulation(context)
 
   process.on("SIGINT", async () => {
     console.log("Stopping indexer...")
