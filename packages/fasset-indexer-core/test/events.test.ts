@@ -13,6 +13,7 @@ import {
   MintingExecuted, MintingPaymentDefault
 } from "../src/database/entities/events/minting"
 import {
+  RedeemedInCollateral,
   RedemptionDefault, RedemptionPaymentBlocked, RedemptionPaymentFailed,
   RedemptionPerformed, RedemptionRejected, RedemptionRequested
 } from "../src/database/entities/events/redemption"
@@ -229,6 +230,25 @@ describe("ORM: Agent", () => {
     expect(redemptionPaymentFailed.transactionHash).to.equal(redemptionPaymentFailedEvent.args[3])
     expect(redemptionPaymentFailed.spentUnderlyingUBA).to.equal(redemptionPaymentFailedEvent.args[4])
     expect(redemptionPaymentFailed.failureReason).to.equal(redemptionPaymentFailedEvent.args[5])
+  })
+
+  it("should store redeemed in collateral event", async () => {
+    const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
+    await fixture.storeInitialAgents()
+    const em = context.orm.em.fork()
+    // redemption requested event
+    const redeemedInCollateralEvent = await fixture.generateEvent(EVENTS.REDEEMED_IN_COLLATERAL, assetManager)
+    await storer.processEventUnsafe(em, redeemedInCollateralEvent)
+    const redeemedInCollateral = await em.findOneOrFail(RedeemedInCollateral,
+      { evmLog: { index: redeemedInCollateralEvent.logIndex, block: { index: redeemedInCollateralEvent.blockNumber }}},
+      { populate: ['evmLog.block', 'agentVault.address', 'redeemer'] })
+    expect(redeemedInCollateral).to.exist
+    expect(redeemedInCollateral.evmLog.index).to.equal(redeemedInCollateralEvent.logIndex)
+    expect(redeemedInCollateral.evmLog.block.index).to.equal(redeemedInCollateralEvent.blockNumber)
+    expect(redeemedInCollateral.agentVault.address.hex).to.equal(redeemedInCollateralEvent.args[0])
+    expect(redeemedInCollateral.redeemer.hex).to.equal(redeemedInCollateralEvent.args[1])
+    expect(redeemedInCollateral.redemptionAmountUBA).to.equal(redeemedInCollateralEvent.args[2])
+    expect(redeemedInCollateral.paidVaultCollateralWei).to.equal(redeemedInCollateralEvent.args[3])
   })
 
   it("should store agent ping", async () => {

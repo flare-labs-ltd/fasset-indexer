@@ -47,6 +47,7 @@ export const EVENTS = {
     REDEMPTION_PAYMENT_FAILED: "RedemptionPaymentFailed",
     REDEMPTION_REJECTED: "RedemptionRejected",
     REDEMPTION_REQUEST_INCOMPLETE: "RedemptionRequestIncomplete",
+    REDEEMED_IN_COLLATERAL: "RedeemedInCollateral",
     // liquidation
     LIQUIDATION_STARTED: "LiquidationStarted",
     FULL_LIQUIDATION_STARTED: "FullLiquidationStarted",
@@ -63,7 +64,7 @@ export const EVENTS = {
     ERC20_TRANSFER: "Transfer",
     // pings
     AGENT_PING: "AgentPing",
-    AGENT_PING_RESPONSE: "AgentPingResponse",
+    AGENT_PING_RESPONSE: "AgentPingResponse"
 }
 
 // metadata

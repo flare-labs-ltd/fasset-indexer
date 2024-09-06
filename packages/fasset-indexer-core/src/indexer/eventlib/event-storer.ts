@@ -16,12 +16,14 @@ import {
 import {
   RedemptionRequested, RedemptionPerformed, RedemptionDefault,
   RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
-  RedemptionRequestIncomplete
+  RedemptionRequestIncomplete,
+  RedeemedInCollateral
 } from "../../database/entities/events/redemption"
 import {
   FullLiquidationStarted, LiquidationEnded, LiquidationPerformed, LiquidationStarted
 } from "../../database/entities/events/liquidation"
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
+import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 import { Context } from "../../context"
 import { EVENTS } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
@@ -39,7 +41,7 @@ import type {
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
 import type { AgentPingEvent, AgentPingResponseEvent } from "../../../chain/typechain/IAgentPing"
-import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
+import type { RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 
 
 export class EventStorer {
@@ -106,6 +108,9 @@ export class EventStorer {
         break
       } case EVENTS.REDEMPTION_REJECTED: {
         await this.onRedemptionRejected(em, evmLog, log.args as RedemptionRejectedEvent.OutputTuple)
+        break
+      } case EVENTS.REDEEMED_IN_COLLATERAL: {
+        await this.onRedeemedInCollateral(em, evmLog, log.args as RedeemedInCollateralEvent.OutputTuple)
         break
       } case EVENTS.REDEMPTION_REQUEST_INCOMPLETE: {
         await this.onRedemptionPaymentIncomplete(em, evmLog, log.args as RedemptionRequestIncompleteEvent.OutputTuple)
@@ -390,6 +395,18 @@ export class EventStorer {
     const redemptionRequested = await em.findOneOrFail(RedemptionRequested, { requestId: Number(requestId), fasset })
     const redemptionRejected = new RedemptionRejected(evmLog, fasset, redemptionRequested)
     em.persist(redemptionRejected)
+  }
+
+  protected async onRedeemedInCollateral(em: EntityManager, evmLog: EvmLog, logArgs: RedeemedInCollateralEvent.OutputTuple): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ agentVault, redeemer, redemptionAmountUBA, paidVaultCollateralWei ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const redeemerEvmAddress = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
+    const redeemedInCollateral = new RedeemedInCollateral(
+      evmLog, fasset, agentVaultEntity, redeemerEvmAddress,
+      redemptionAmountUBA, paidVaultCollateralWei
+    )
+    em.persist(redeemedInCollateral)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

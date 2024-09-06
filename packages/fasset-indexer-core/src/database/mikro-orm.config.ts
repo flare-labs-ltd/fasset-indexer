@@ -12,7 +12,8 @@ import {
 import {
   RedemptionRequested, RedemptionPerformed, RedemptionDefault,
   RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
-  RedemptionRequestIncomplete
+  RedemptionRequestIncomplete,
+  RedeemedInCollateral
 } from "./entities/events/redemption"
 import {
   FullLiquidationStarted, LiquidationEnded,
@@ -36,7 +37,8 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     AgentVaultCreated, AgentSettingChanged, SelfClose,
     CollateralReserved, MintingExecuted, MintingPaymentDefault, CollateralReservationDeleted,
     RedemptionRequested, RedemptionPerformed, RedemptionDefault,
-    RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected, RedemptionRequestIncomplete,
+    RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
+    RedeemedInCollateral, RedemptionRequestIncomplete,
     LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
     CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
     AgentPing, AgentPingResponse,

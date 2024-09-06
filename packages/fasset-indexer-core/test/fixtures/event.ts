@@ -34,7 +34,7 @@ import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollatera
 import type { TransferEvent } from "../../chain/typechain/ERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
 import { FAssetType } from "../../src/database/entities/events/_bound"
-import { AgentPingEvent, AgentPingResponseEvent } from "../../chain/typechain/IAssetManager"
+import { AgentPingEvent, AgentPingResponseEvent, RedeemedInCollateralEvent } from "../../chain/typechain/IAssetManager"
 
 export class EventFixture {
 
@@ -267,6 +267,16 @@ export class EventFixture {
       redemptionRequested.redeemer.hex,
       BigInt(redemptionRequested.requestId),
       redemptionRequested.valueUBA
+    ]
+  }
+
+  protected async generateRedeemedInCollateral(): Promise<RedeemedInCollateralEvent.OutputTuple> {
+    const agentVault = await this.getRandomAgentVault()
+    return [
+      agentVault,
+      randomNativeAddress(),
+      BigInt(randomNumber(1e6, 1e12)),
+      BigInt(randomNumber(1e6, 1e18))
     ]
   }
 
