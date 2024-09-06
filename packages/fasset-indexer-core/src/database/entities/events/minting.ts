@@ -119,3 +119,20 @@ export class CollateralReservationDeleted extends FAssetEventBound {
     this.collateralReserved = collateralReserved
   }
 }
+
+@Entity()
+export class SelfMint extends FAssetEventBound {
+
+  @ManyToOne({ entity: () => AgentVault })
+  agentVault: AgentVault
+
+  @Property({ type: new uint256() })
+  valueUBA: bigint
+
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, valueUBA: bigint) {
+    super(evmLog, fasset)
+    this.agentVault = agentVault
+    this.valueUBA = valueUBA
+  }
+
+}

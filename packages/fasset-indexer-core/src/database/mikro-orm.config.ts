@@ -7,7 +7,8 @@ import { EvmLog } from "./entities/evm/log"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "./entities/events/agent"
 import {
   CollateralReserved, MintingExecuted,
-  MintingPaymentDefault, CollateralReservationDeleted
+  MintingPaymentDefault, CollateralReservationDeleted,
+  SelfMint
 } from "./entities/events/minting"
 import {
   RedemptionRequested, RedemptionPerformed, RedemptionDefault,
@@ -34,7 +35,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
   entities: [
     Var, EvmBlock, EvmTransaction, EvmLog, EvmAddress, UnderlyingAddress,
     AgentManager, AgentOwner, AgentVault, AgentVaultSettings, AgentVaultInfo,
-    AgentVaultCreated, AgentSettingChanged, SelfClose,
+    AgentVaultCreated, AgentSettingChanged, SelfClose, SelfMint,
     CollateralReserved, MintingExecuted, MintingPaymentDefault, CollateralReservationDeleted,
     RedemptionRequested, RedemptionPerformed, RedemptionDefault,
     RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,

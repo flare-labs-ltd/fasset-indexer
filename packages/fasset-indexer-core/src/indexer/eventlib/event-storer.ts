@@ -11,7 +11,8 @@ import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/stat
 import {
   CollateralReservationDeleted,
   CollateralReserved, MintingExecuted,
-  MintingPaymentDefault
+  MintingPaymentDefault,
+  SelfMint
 } from "../../database/entities/events/minting"
 import {
   RedemptionRequested, RedemptionPerformed, RedemptionDefault,
@@ -312,6 +313,8 @@ export class EventStorer {
   }
 
   protected async onMintingExecuted(em: EntityManager, evmLog: EvmLog, logArgs: MintingExecutedEvent.OutputTuple): Promise<void> {
+    if (logArgs[1] === BigInt(0))
+        return this.onSelfMint(em, evmLog, [logArgs[0], logArgs[3]]) // todo: replace index 3 -> 2 when bug is fixed in fasset contract
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ , collateralReservationId,,, poolFeeUBA ] = logArgs
     const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId), fasset })
@@ -333,6 +336,14 @@ export class EventStorer {
     const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId), fasset })
     const collateralReservationDeleted = new CollateralReservationDeleted(evmLog, fasset, collateralReserved)
     em.persist(collateralReservationDeleted)
+  }
+
+  protected async onSelfMint(em: EntityManager, evmLog: EvmLog, logArgs: [string, bigint]): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ agentVault, amountUBA ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const selfMint = new SelfMint(evmLog, fasset, agentVaultEntity, amountUBA)
+    em.persist(selfMint)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
