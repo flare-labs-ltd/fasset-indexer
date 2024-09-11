@@ -34,7 +34,8 @@ import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollatera
 import type { TransferEvent } from "../../chain/typechain/ERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
 import { FAssetType } from "../../src/database/entities/events/_bound"
-import { AgentPingEvent, AgentPingResponseEvent, RedeemedInCollateralEvent } from "../../chain/typechain/IAssetManager"
+import { AgentPingEvent, AgentPingResponseEvent, CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../chain/typechain/IAssetManager"
+import { CurrentUnderlyingBlockUpdated } from "../../src/database/entities/events/system"
 
 export class EventFixture {
 
@@ -364,6 +365,14 @@ export class EventFixture {
       '',
       BigInt(randomNumber(1, 1e6)),
       randomString(100)
+    ]
+  }
+
+  protected async generateCurrentUnderlyingBlockUpdated(): Promise<CurrentUnderlyingBlockUpdatedEvent.OutputTuple> {
+    return [
+      BigInt(randomNumber(1, 1e8)),
+      BigInt(randomNumber(1, 1e8)),
+      BigInt(randomNumber(1, 1e8))
     ]
   }
 

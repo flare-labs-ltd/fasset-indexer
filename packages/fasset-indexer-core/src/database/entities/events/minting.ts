@@ -127,12 +127,21 @@ export class SelfMint extends FAssetEventBound {
   agentVault: AgentVault
 
   @Property({ type: new uint256() })
-  valueUBA: bigint
+  mintedUBA: bigint
 
-  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, valueUBA: bigint) {
+  @Property({ type: new uint256() })
+  agentFeeUBA: bigint
+
+  @Property({ type: new uint256() })
+  poolFeeUBA: bigint
+
+
+  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, mintedUBA: bigint, agentFeeUBA: bigint, poolFeeUBA: bigint) {
     super(evmLog, fasset)
     this.agentVault = agentVault
-    this.valueUBA = valueUBA
+    this.mintedUBA = mintedUBA
+    this.agentFeeUBA = agentFeeUBA
+    this.poolFeeUBA = poolFeeUBA
   }
 
 }

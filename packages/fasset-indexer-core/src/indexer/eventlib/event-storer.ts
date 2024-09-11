@@ -42,7 +42,8 @@ import type {
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
 import type { AgentPingEvent, AgentPingResponseEvent } from "../../../chain/typechain/IAgentPing"
-import type { RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
+import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
+import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
 
 
 export class EventStorer {
@@ -148,6 +149,9 @@ export class EventStorer {
         break
       } case EVENTS.AGENT_PING_RESPONSE: {
         await this.onAgentPingResponse(em, evmLog, log.args as AgentPingResponseEvent.OutputTuple)
+        break
+      } case EVENTS.CURRENT_UNDERLYING_BLOCK_UPDATED: {
+        await this.onCurrentUnderlyingBlockUpdated(em, evmLog, log.args as CurrentUnderlyingBlockUpdatedEvent.OutputTuple)
         break
       } default: {
         return false
@@ -314,7 +318,7 @@ export class EventStorer {
 
   protected async onMintingExecuted(em: EntityManager, evmLog: EvmLog, logArgs: MintingExecutedEvent.OutputTuple): Promise<void> {
     if (logArgs[1] === BigInt(0))
-        return this.onSelfMint(em, evmLog, [logArgs[0], logArgs[3]]) // todo: replace index 3 -> 2 when bug is fixed in fasset contract
+      return this.onSelfMint(em, evmLog, [logArgs[0], logArgs[2], logArgs[3], logArgs[4]])
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ , collateralReservationId,,, poolFeeUBA ] = logArgs
     const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId), fasset })
@@ -338,11 +342,13 @@ export class EventStorer {
     em.persist(collateralReservationDeleted)
   }
 
-  protected async onSelfMint(em: EntityManager, evmLog: EvmLog, logArgs: [string, bigint]): Promise<void> {
+  protected async onSelfMint(em: EntityManager, evmLog: EvmLog, logArgs: [
+    agentVault: string, amountUBA: bigint, agentFeeUBA: bigint, poolFeeUBA: bigint
+  ]): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
-    const [ agentVault, amountUBA ] = logArgs
+    const [ agentVault, amountUBA, agentFeeUBA, poolFeeUBA ] = logArgs
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
-    const selfMint = new SelfMint(evmLog, fasset, agentVaultEntity, amountUBA)
+    const selfMint = new SelfMint(evmLog, fasset, agentVaultEntity, amountUBA, agentFeeUBA, poolFeeUBA)
     em.persist(selfMint)
   }
 
@@ -517,6 +523,16 @@ export class EventStorer {
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
     const agentPingResponse = new AgentPingResponse(evmLog, agentVaultEntity.fasset, agentVaultEntity, query, response)
     em.persist(agentPingResponse)
+  }
+
+  // system
+
+  protected async onCurrentUnderlyingBlockUpdated(em: EntityManager, evmLog: EvmLog, logArgs: CurrentUnderlyingBlockUpdatedEvent.OutputTuple): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ underlyingBlockNumber, underlyingBlockTimestamp, updatedAt ] = logArgs
+    const currentUnderlyingBlockUpdated = new CurrentUnderlyingBlockUpdated(evmLog, fasset,
+      Number(underlyingBlockNumber), Number(underlyingBlockTimestamp), Number(updatedAt))
+    em.persist(currentUnderlyingBlockUpdated)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

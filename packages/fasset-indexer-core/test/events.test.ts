@@ -26,6 +26,7 @@ import { Context } from "../src/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
 import { AgentPing, AgentPingResponse } from "../src/database/entities/events/ping"
+import { CurrentUnderlyingBlockUpdated } from "../src/database/entities/events/system"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -287,6 +288,22 @@ describe("ORM: Agent", () => {
     expect(agentPingResponse.agentVault.address.hex).to.equal(agentPingResponseEvent.args[0])
     expect(agentPingResponse.query).to.equal(agentPingResponseEvent.args[2])
     expect(agentPingResponse.response).to.equal(agentPingResponseEvent.args[3])
+  })
+
+  it("should store current underlying block updated event", async () => {
+    const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+    const currentUnderlyingBlockUpdatedEvent = await fixture.generateEvent(EVENTS.CURRENT_UNDERLYING_BLOCK_UPDATED, assetManagerXrp)
+    const em = context.orm.em.fork()
+    await storer.processEventUnsafe(em, currentUnderlyingBlockUpdatedEvent)
+    const currentUnderlyingBlockUpdated = await em.findOneOrFail(CurrentUnderlyingBlockUpdated,
+      { evmLog: { index: currentUnderlyingBlockUpdatedEvent.logIndex, block: { index: currentUnderlyingBlockUpdatedEvent.blockNumber }}},
+      { populate: ['evmLog.block'] })
+    expect(currentUnderlyingBlockUpdated).to.exist
+    expect(currentUnderlyingBlockUpdated.evmLog.index).to.equal(currentUnderlyingBlockUpdatedEvent.logIndex)
+    expect(currentUnderlyingBlockUpdated.evmLog.block.index).to.equal(currentUnderlyingBlockUpdatedEvent.blockNumber)
+    expect(currentUnderlyingBlockUpdated.underlyingBlockNumber).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[0]))
+    expect(currentUnderlyingBlockUpdated.underlyingBlockTimestamp).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[1]))
+    expect(currentUnderlyingBlockUpdated.updatedAt).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[2]))
   })
 
   describe("liquidations", () => {
