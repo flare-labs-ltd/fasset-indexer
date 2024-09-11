@@ -7,6 +7,9 @@ import { BYTES32_LENGTH } from "../../../config/constants"
 import { EvmLog } from "../evm/log"
 
 
+import { RedeemedInCollateralEvent } from "../../../../chain/typechain/IAssetManager"
+
+
 @Entity()
 @Unique({ properties: ['fasset', 'requestId'] })
 @Unique({ properties: ['fasset', 'paymentReference'] })
@@ -214,5 +217,36 @@ export class RedemptionRequestIncomplete extends FAssetEventBound {
     super(evmLog, fasset)
     this.redeemer = redeemer
     this.remainingLots = remainingLots
+  }
+}
+
+@Entity()
+export class RedeemedInCollateral extends FAssetEventBound {
+
+  @ManyToOne({ entity: () => AgentVault })
+  agentVault: AgentVault
+
+  @ManyToOne({ entity: () => EvmAddress })
+  redeemer: EvmAddress
+
+  @Property({ type: new uint256() })
+  redemptionAmountUBA: bigint
+
+  @Property({ type: new uint256() })
+  paidVaultCollateralWei: bigint
+
+  constructor(
+    evmLog: EvmLog,
+    fasset: FAssetType,
+    agentVault: AgentVault,
+    redeemer: EvmAddress,
+    redemptionAmountUBA: bigint,
+    paidVaultCollateralWei: bigint
+  ) {
+    super(evmLog, fasset)
+    this.agentVault = agentVault
+    this.redeemer = redeemer
+    this.redemptionAmountUBA = redemptionAmountUBA
+    this.paidVaultCollateralWei = paidVaultCollateralWei
   }
 }

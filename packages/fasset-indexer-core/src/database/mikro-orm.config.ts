@@ -7,12 +7,14 @@ import { EvmLog } from "./entities/evm/log"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "./entities/events/agent"
 import {
   CollateralReserved, MintingExecuted,
-  MintingPaymentDefault, CollateralReservationDeleted
+  MintingPaymentDefault, CollateralReservationDeleted,
+  SelfMint
 } from "./entities/events/minting"
 import {
   RedemptionRequested, RedemptionPerformed, RedemptionDefault,
   RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
-  RedemptionRequestIncomplete
+  RedemptionRequestIncomplete,
+  RedeemedInCollateral
 } from "./entities/events/redemption"
 import {
   FullLiquidationStarted, LiquidationEnded,
@@ -21,6 +23,7 @@ import {
 import { CollateralTypeAdded, ERC20Transfer } from "./entities/events/token"
 import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateralPool"
 import { AgentPing, AgentPingResponse } from "./entities/events/ping"
+import { CurrentUnderlyingBlockUpdated } from "./entities/events/system"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
@@ -33,13 +36,14 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
   entities: [
     Var, EvmBlock, EvmTransaction, EvmLog, EvmAddress, UnderlyingAddress,
     AgentManager, AgentOwner, AgentVault, AgentVaultSettings, AgentVaultInfo,
-    AgentVaultCreated, AgentSettingChanged, SelfClose,
+    AgentVaultCreated, AgentSettingChanged, SelfClose, SelfMint,
     CollateralReserved, MintingExecuted, MintingPaymentDefault, CollateralReservationDeleted,
     RedemptionRequested, RedemptionPerformed, RedemptionDefault,
-    RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected, RedemptionRequestIncomplete,
+    RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
+    RedeemedInCollateral, RedemptionRequestIncomplete,
     LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
     CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
-    AgentPing, AgentPingResponse,
+    AgentPing, AgentPingResponse, CurrentUnderlyingBlockUpdated,
     FtsoPrice, UntrackedAgentVault
   ],
   pool: {

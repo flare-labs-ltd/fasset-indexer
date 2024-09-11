@@ -7,9 +7,7 @@ export const MIN_BLOCK_NUMBER = 20234651 // asset manager controller contract de
 export const LOG_FETCH_SLEEP_MS = 30 * 1000 // collect logs every 30 seconds
 export const BLOCK_HEIGHT_OFFSET = 10 // log collection offset from the current block height
 export const LOG_FETCH_SIZE = 30
-export const IGNORE_EVENTS = [
-    'CurrentUnderlyingBlockUpdated'
-]
+export const IGNORE_EVENTS = [] // add events to ignore
 
 // update state config
 export const STATE_UPDATE_SLEEP_MS = 60 * 1000 // collect state every one minute
@@ -21,8 +19,8 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
 export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockExpandFAssetTransfers"
-export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockExpandFAssetTransfers"
+export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddUnderlyingBlockUpdated"
+export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddUnderlyingBlockUpdated"
 
 // event names
 // agent
@@ -47,6 +45,7 @@ export const EVENTS = {
     REDEMPTION_PAYMENT_FAILED: "RedemptionPaymentFailed",
     REDEMPTION_REJECTED: "RedemptionRejected",
     REDEMPTION_REQUEST_INCOMPLETE: "RedemptionRequestIncomplete",
+    REDEEMED_IN_COLLATERAL: "RedeemedInCollateral",
     // liquidation
     LIQUIDATION_STARTED: "LiquidationStarted",
     FULL_LIQUIDATION_STARTED: "FullLiquidationStarted",
@@ -64,6 +63,8 @@ export const EVENTS = {
     // pings
     AGENT_PING: "AgentPing",
     AGENT_PING_RESPONSE: "AgentPingResponse",
+    // system
+    CURRENT_UNDERLYING_BLOCK_UPDATED: 'CurrentUnderlyingBlockUpdated'
 }
 
 // metadata

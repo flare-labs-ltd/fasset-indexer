@@ -13,6 +13,7 @@ import {
   MintingExecuted, MintingPaymentDefault
 } from "../src/database/entities/events/minting"
 import {
+  RedeemedInCollateral,
   RedemptionDefault, RedemptionPaymentBlocked, RedemptionPaymentFailed,
   RedemptionPerformed, RedemptionRejected, RedemptionRequested
 } from "../src/database/entities/events/redemption"
@@ -25,6 +26,7 @@ import { Context } from "../src/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
 import { AgentPing, AgentPingResponse } from "../src/database/entities/events/ping"
+import { CurrentUnderlyingBlockUpdated } from "../src/database/entities/events/system"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -231,6 +233,25 @@ describe("ORM: Agent", () => {
     expect(redemptionPaymentFailed.failureReason).to.equal(redemptionPaymentFailedEvent.args[5])
   })
 
+  it("should store redeemed in collateral event", async () => {
+    const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
+    await fixture.storeInitialAgents()
+    const em = context.orm.em.fork()
+    // redemption requested event
+    const redeemedInCollateralEvent = await fixture.generateEvent(EVENTS.REDEEMED_IN_COLLATERAL, assetManager)
+    await storer.processEventUnsafe(em, redeemedInCollateralEvent)
+    const redeemedInCollateral = await em.findOneOrFail(RedeemedInCollateral,
+      { evmLog: { index: redeemedInCollateralEvent.logIndex, block: { index: redeemedInCollateralEvent.blockNumber }}},
+      { populate: ['evmLog.block', 'agentVault.address', 'redeemer'] })
+    expect(redeemedInCollateral).to.exist
+    expect(redeemedInCollateral.evmLog.index).to.equal(redeemedInCollateralEvent.logIndex)
+    expect(redeemedInCollateral.evmLog.block.index).to.equal(redeemedInCollateralEvent.blockNumber)
+    expect(redeemedInCollateral.agentVault.address.hex).to.equal(redeemedInCollateralEvent.args[0])
+    expect(redeemedInCollateral.redeemer.hex).to.equal(redeemedInCollateralEvent.args[1])
+    expect(redeemedInCollateral.redemptionAmountUBA).to.equal(redeemedInCollateralEvent.args[2])
+    expect(redeemedInCollateral.paidVaultCollateralWei).to.equal(redeemedInCollateralEvent.args[3])
+  })
+
   it("should store agent ping", async () => {
     const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
     await fixture.storeInitialAgents(FAssetType.FXRP)
@@ -267,6 +288,22 @@ describe("ORM: Agent", () => {
     expect(agentPingResponse.agentVault.address.hex).to.equal(agentPingResponseEvent.args[0])
     expect(agentPingResponse.query).to.equal(agentPingResponseEvent.args[2])
     expect(agentPingResponse.response).to.equal(agentPingResponseEvent.args[3])
+  })
+
+  it("should store current underlying block updated event", async () => {
+    const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+    const currentUnderlyingBlockUpdatedEvent = await fixture.generateEvent(EVENTS.CURRENT_UNDERLYING_BLOCK_UPDATED, assetManagerXrp)
+    const em = context.orm.em.fork()
+    await storer.processEventUnsafe(em, currentUnderlyingBlockUpdatedEvent)
+    const currentUnderlyingBlockUpdated = await em.findOneOrFail(CurrentUnderlyingBlockUpdated,
+      { evmLog: { index: currentUnderlyingBlockUpdatedEvent.logIndex, block: { index: currentUnderlyingBlockUpdatedEvent.blockNumber }}},
+      { populate: ['evmLog.block'] })
+    expect(currentUnderlyingBlockUpdated).to.exist
+    expect(currentUnderlyingBlockUpdated.evmLog.index).to.equal(currentUnderlyingBlockUpdatedEvent.logIndex)
+    expect(currentUnderlyingBlockUpdated.evmLog.block.index).to.equal(currentUnderlyingBlockUpdatedEvent.blockNumber)
+    expect(currentUnderlyingBlockUpdated.underlyingBlockNumber).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[0]))
+    expect(currentUnderlyingBlockUpdated.underlyingBlockTimestamp).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[1]))
+    expect(currentUnderlyingBlockUpdated.updatedAt).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[2]))
   })
 
   describe("liquidations", () => {

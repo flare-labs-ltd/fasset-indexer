@@ -10,7 +10,7 @@ import type { Log } from "ethers"
 import type { Context } from "../../context"
 
 
-const INSERTION_EVENTS: string[] = [ EVENTS.ERC20_TRANSFER ]
+const INSERTION_EVENTS: string[] = [ EVENTS.CURRENT_UNDERLYING_BLOCK_UPDATED ]
 
 export class EventIndexerBackPopulation extends EventIndexer {
 
