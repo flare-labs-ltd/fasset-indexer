@@ -28,9 +28,29 @@ export class ApiResponse<T> {
   }
 }
 
+function replaceBigInts(obj: any): any {
+  if (obj === null || obj === undefined) return obj
+  if (typeof obj === 'bigint') return obj.toString()
+  if (typeof obj !== 'object') return obj
+  if (Array.isArray(obj)) {
+    return obj.map(replaceBigInts)
+  }
+  const newObj: any = {}
+  Object.keys(obj).forEach(key => {
+    newObj[key] = replaceBigInts(obj[key])
+  })
+  return newObj
+}
+
 export async function apiResponse<T>(action: Promise<T>, status: number, sanitize = true): Promise<ApiResponse<T>> {
   try {
-    return new ApiResponse<T>(await action, status)
+    let resp = await action
+    //@ts-ignore
+    if (typeof resp.toJSON === 'function') {
+      // @ts-ignore
+      resp = replaceBigInts(resp.toJSON())
+    }
+    return new ApiResponse<T>(resp, status)
   } catch (reason) {
     if (sanitize) {
       const message = reason instanceof Error && reason.message ? reason.message : "Server error"

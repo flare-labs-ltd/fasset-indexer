@@ -4,7 +4,7 @@ import { getVar } from "../indexer/shared"
 import { EvmLog } from "../database/entities/evm/log"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
-import { RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
+import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
 import {
   FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
@@ -12,6 +12,7 @@ import {
 } from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
+import { FAssetType } from "../database/entities/events/_bound"
 
 
 export class Analytics {
@@ -40,6 +41,9 @@ export class Analytics {
     return parseInt(end.value) - parseInt(start.value) + 1
   }
 
+  //////////////////////////////////////////////////////////////////////
+  // aggregators
+
   async totalRedemptionRequesters(): Promise<number> {
     const qb = this.orm.em.qb(RedemptionRequested, 'r')
     const result = await qb.count('r.redeemer', true).execute()
@@ -58,6 +62,9 @@ export class Analytics {
     return result[0].count
   }
 
+  //////////////////////////////////////////////////////////////////////
+  // liquidation data
+
   async fullLiquidations(): Promise<FullLiquidationStarted[]> {
     return this.orm.em.fork().findAll(FullLiquidationStarted,
       { populate: ['agentVault'], limit: MAX_DATABASE_ENTRIES_FETCH })
@@ -68,6 +75,18 @@ export class Analytics {
       { valueUBA: { $gt: 0 } },
       { populate: ['agentVault'], limit: MAX_DATABASE_ENTRIES_FETCH }
     )
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // selectors
+
+  async redemptionDefault(id: number, fasset: FAssetType): Promise<RedemptionDefault | null> {
+    const em = this.orm.em.fork()
+    const redemptionDefault = await em.findOne(RedemptionDefault,
+      { fasset: fasset, redemptionRequested: { requestId: id }},
+      { populate: ['redemptionRequested'] }
+    )
+    return redemptionDefault
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -185,7 +204,7 @@ import { config } from "../config/config"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  console.log(await analytics.totalRedemptionRequesters())
+  console.log(await analytics.redemptionDefault(910, FAssetType.FXRP))
   await context.orm.close()
 }
 

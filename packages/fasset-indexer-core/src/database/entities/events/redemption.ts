@@ -7,9 +7,6 @@ import { BYTES32_LENGTH } from "../../../config/constants"
 import { EvmLog } from "../evm/log"
 
 
-import { RedeemedInCollateralEvent } from "../../../../chain/typechain/IAssetManager"
-
-
 @Entity()
 @Unique({ properties: ['fasset', 'requestId'] })
 @Unique({ properties: ['fasset', 'paymentReference'] })

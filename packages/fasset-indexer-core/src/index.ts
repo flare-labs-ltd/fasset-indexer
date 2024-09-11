@@ -1,5 +1,7 @@
 export { OrmOptions, ORM } from "./database/interface"
 export { createOrm } from "./database/utils"
 export { FullLiquidationStarted, LiquidationPerformed } from "./database/entities/events/liquidation"
+export { RedemptionDefault } from "./database/entities/events/redemption"
 export { Analytics } from "./analytics/analytics"
 export { getOrmConfig, getUserDatabaseConfig } from "./config/utils"
+export { FAssetType } from "./database/entities/events/_bound"
