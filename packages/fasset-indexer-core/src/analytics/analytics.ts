@@ -84,7 +84,13 @@ export class Analytics {
     const em = this.orm.em.fork()
     const redemptionDefault = await em.findOne(RedemptionDefault,
       { fasset: fasset, redemptionRequested: { requestId: id }},
-      { populate: ['redemptionRequested'] }
+      { populate: [
+        'redemptionRequested.redeemer',
+        'redemptionRequested.paymentAddress',
+        'redemptionRequested.agentVault.address',
+        'redemptionRequested.agentVault.underlyingAddress',
+        'redemptionRequested.executor'
+      ]}
     )
     return redemptionDefault
   }
@@ -204,7 +210,10 @@ import { config } from "../config/config"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  console.log(await analytics.redemptionDefault(910, FAssetType.FXRP))
+  const resp = await analytics.redemptionDefault(910, FAssetType.FXRP)
+  //@ts-ignore
+  const json = await resp.toJSON()
+  console.log(JSON.stringify(json, (key, value) => { if (typeof value === 'bigint') return value.toString(); return value }))
   await context.orm.close()
 }
 
