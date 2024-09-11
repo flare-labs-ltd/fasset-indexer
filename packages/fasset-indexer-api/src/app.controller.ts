@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from './app.service'
 import { apiResponse, type ApiResponse } from './common/api-response'
-import type { LiquidationPerformed, FullLiquidationStarted } from 'fasset-indexer-core'
+import { LiquidationPerformed, FullLiquidationStarted, RedemptionDefault, FAssetType } from 'fasset-indexer-core'
 
 
 @ApiTags("Indexer")
@@ -107,5 +107,10 @@ export class FAssetIndexerController {
   @Get('/total-minting-executions?')
   totalMintingExecutions(): Promise<ApiResponse<number>> {
     return apiResponse(this.appService.totalMintingExecutions(), 200)
+  }
+
+  @Get('/redemption-default?')
+  redemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string, ): Promise<ApiResponse<RedemptionDefault>> {
+    return apiResponse(this.appService.redemptionDefault(id, FAssetType[fasset]), 200)
   }
 }
