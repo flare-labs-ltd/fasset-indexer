@@ -25,6 +25,7 @@ import {
 } from "../../database/entities/events/liquidation"
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
 import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
+import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
 import { Context } from "../../context"
 import { EVENTS } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
@@ -37,13 +38,11 @@ import type {
   RedemptionDefaultEvent, RedemptionPaymentBlockedEvent, RedemptionPaymentFailedEvent, RedemptionPerformedEvent,
   RedemptionRejectedEvent, RedemptionRequestIncompleteEvent, RedemptionRequestedEvent,
   FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
-  SelfCloseEvent
-} from "../../../chain/typechain/IAssetManagerEvents"
+  SelfCloseEvent, AgentPingEvent, AgentPingResponseEvent
+} from "../../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
-import type { AgentPingEvent, AgentPingResponseEvent } from "../../../chain/typechain/IAgentPing"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
-import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
 
 
 export class EventStorer {

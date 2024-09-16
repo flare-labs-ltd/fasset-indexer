@@ -46,7 +46,7 @@ describe("ORM: Agent", () => {
   })
 
   afterEach(async () => {
-    await context.orm.close()
+    await context.orm.close(true)
     unlink(CONFIG.db.dbName!, () => {})
   })
 

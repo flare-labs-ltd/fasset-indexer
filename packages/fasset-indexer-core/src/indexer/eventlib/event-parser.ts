@@ -55,8 +55,7 @@ export class EventParser {
 
   protected async parseLog(log: Log): Promise<LogDescription | null> {
     if (this.context.isAssetManager(log.address)) {
-      return this.context.assetManagerEventInterface.parseLog(log)
-        || this.context.agentPingInterface.parseLog(log)
+      return this.context.assetManagerInterface.parseLog(log)
     } else if (this.context.isFAssetToken(log.address)) {
       return this.context.erc20Interface.parseLog(log)
     }
@@ -72,13 +71,9 @@ export class EventParser {
         const fromAddr = parsed.args[0]
         if (await this.isCollateralPool(em, fromAddr)) {
           return parsed
-        } else if (this.context.isAssetManager(fromAddr)) {
-          return parsed
         }
-        return null
-      } else {
-        return null
       }
+      return null
     }
     // collateral pool token
     if (await this.isCollateralPoolToken(em, log.address)) {

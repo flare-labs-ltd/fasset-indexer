@@ -24,7 +24,6 @@ export interface IConfig {
   contracts: {
     addresses: { name: string, address: string, contractName: string }[],
     abis: {
-      events: InterfaceAbi
       assetManager: InterfaceAbi
     }
   }
