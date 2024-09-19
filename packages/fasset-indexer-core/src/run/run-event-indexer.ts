@@ -1,6 +1,6 @@
 import { Context } from "../context"
 import { config } from "../config/config"
-import { EventIndexerParallelPopulation } from "../indexer/migrations/indexer-parallel-population"
+import { EventIndexerParallelPopulation } from "../indexer-evm/migrations/indexer-parallel-population"
 
 
 async function runIndexer(start?: number) {

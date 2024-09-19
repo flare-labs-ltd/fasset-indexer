@@ -28,7 +28,7 @@ export class Context {
   private isFAssetToken__cache: Set<string> = new Set()
 
   constructor(public config: IConfig, orm: ORM) {
-    this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
+    this.provider = this.getEthersApiProvider(config.flrRpc.url, config.flrRpc.apiKey)
     this.assetManagerInterface = IAssetManager__factory.createInterface()
     this.agentOwnerRegistryContract = this.getAgentOwnerRegistryContract()
     this.collateralPoolInterface = ICollateralPool__factory.createInterface()

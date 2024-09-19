@@ -1,10 +1,10 @@
 import chalk from "chalk"
 import { sleep } from "../../utils"
 import { getVar, setVar } from "../shared"
-import { EventIndexer } from "../indexer"
+import { EventIndexer } from "../evm-indexer"
 import { EVENTS,
-  LOG_FETCH_SLEEP_MS, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
-  FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, MIN_BLOCK_NUMBER
+  EVM_LOG_FETCH_SLEEP_MS, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
+  FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, MIN_EVM_BLOCK_NUMBER
 } from "../../config/constants"
 import type { Log } from "ethers"
 import type { Context } from "../../context"
@@ -29,7 +29,7 @@ export class EventIndexerBackPopulation extends EventIndexer {
       } catch (e: any) {
         console.error(`Error running indexer insertion: ${e}`)
       }
-      await sleep(LOG_FETCH_SLEEP_MS)
+      await sleep(EVM_LOG_FETCH_SLEEP_MS)
     }
   }
 
@@ -45,7 +45,7 @@ export class EventIndexerBackPopulation extends EventIndexer {
 
   override async getFirstUnhandledBlock(): Promise<number> {
     const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE)
-    return firstUnhandled !== null ? parseInt(firstUnhandled!.value!) : MIN_BLOCK_NUMBER
+    return firstUnhandled !== null ? parseInt(firstUnhandled!.value!) : MIN_EVM_BLOCK_NUMBER
   }
 
   override async setFirstUnhandledBlock(blockNumber: number): Promise<void> {

@@ -64,8 +64,10 @@ export function getUserConfig(): IUserConfig {
   validateEnv()
   return {
     ...getUserDatabaseConfig(),
-    rpcUrl: process.env.RPC_URL!,
-    apiKey: process.env.RPC_API_KEY
+    flrRpcUrl: process.env.RPC_URL!,
+    flrApiKey: process.env.RPC_API_KEY,
+    btcRpcUrl: process.env.BTC_RPC_URL!,
+    btcApiKey: process.env.BTC_RPC_API_KEY
   }
 }
 
@@ -82,9 +84,13 @@ export function getOrmConfig(config: IUserDatabaseConfig): OrmOptions {
 
 export function expandUserConfig(config: IUserConfig): IConfig {
   return {
-    rpc: {
-      url: config.rpcUrl,
-      apiKey: config.apiKey,
+    flrRpc: {
+      url: config.flrRpcUrl,
+      apiKey: config.flrApiKey,
+    },
+    btcRpc: {
+      url: config.btcRpcUrl,
+      apiKey: config.btcApiKey,
     },
     contracts: {
       addresses: CONTRACTS,

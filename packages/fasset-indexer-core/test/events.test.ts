@@ -21,7 +21,7 @@ import {
   FullLiquidationStarted, LiquidationEnded,
   LiquidationPerformed, LiquidationStarted
 } from "../src/database/entities/events/liquidation"
-import { EventStorer } from "../src/indexer/eventlib/event-storer"
+import { EventStorer } from "../src/indexer-evm/eventlib/event-storer"
 import { Context } from "../src/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"

@@ -23,7 +23,7 @@ export class AgentSettingChanged extends FAssetEventBound {
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
 
-  @Property({ type: 'string' })
+  @Property({ type: 'text' })
   name: string
 
   @Property({ type: new uint256() })
