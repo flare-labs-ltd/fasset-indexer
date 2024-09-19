@@ -1,6 +1,5 @@
 import chalk from "chalk"
-import { sleep } from "../../utils"
-import { getVar, setVar } from "../shared"
+import { sleep, getVar, setVar } from "../../utils"
 import { EventIndexer } from "../evm-indexer"
 import { EVENTS,
   EVM_LOG_FETCH_SLEEP_MS, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,

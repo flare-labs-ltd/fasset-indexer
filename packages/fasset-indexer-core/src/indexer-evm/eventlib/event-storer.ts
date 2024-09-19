@@ -1,6 +1,7 @@
+import { findOrCreateUnderlyingAddress } from "../../utils"
 import {
   isUntrackedAgentVault, findOrCreateEvmAddress,
-  findOrCreateUnderlyingAddress, findOrCreateEvmBlock, findOrCreateEvmTransaction
+  findOrCreateEvmBlock, findOrCreateEvmTransaction
 } from "../shared"
 import { EvmLog } from "../../database/entities/evm/log"
 import { CollateralTypeAdded, ERC20Transfer } from "../../database/entities/events/token"

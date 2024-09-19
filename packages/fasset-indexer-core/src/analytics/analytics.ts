@@ -1,6 +1,6 @@
 import { getOrmConfig } from "../config/utils"
 import { createOrm } from "../database/utils"
-import { getVar } from "../indexer-evm/shared"
+import { getVar } from "../utils"
 import { EvmLog } from "../database/entities/evm/log"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
