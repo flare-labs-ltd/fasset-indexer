@@ -10,17 +10,7 @@ export class Blockbook {
     return data.blockbook.bestHeight
   }
 
-  async txsFromBlock(height: number): Promise<BlockbookBlock> {
-    const block = await this._txsFromBlock(height, 1)
-    while (block.page < block.totalPages) {
-      const _block = await this._txsFromBlock(height, block.page + 1)
-      block.txs.push(..._block.txs)
-      block.page = _block.page
-    }
-    return block
-  }
-
-  async txsFromAddress(address: string): Promise<BlockbookTx[]> {
+  async addressTxs(address: string): Promise<BlockbookTx[]> {
     const addressInfo = await this.addressInfo(address)
     const txs = []
     for (const txid of addressInfo.txids) {
@@ -38,6 +28,16 @@ export class Blockbook {
       addressInfo.page = _addressInfo.page
     }
     return addressInfo
+  }
+
+  async block(height: number): Promise<BlockbookBlock> {
+    const block = await this._txsFromBlock(height, 1)
+    while (block.page < block.totalPages) {
+      const _block = await this._txsFromBlock(height, block.page + 1)
+      block.txs.push(..._block.txs)
+      block.page = _block.page
+    }
+    return block
   }
 
   async tx(txid: string): Promise<BlockbookTx> {

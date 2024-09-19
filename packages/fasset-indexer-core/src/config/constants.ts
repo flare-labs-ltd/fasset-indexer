@@ -7,7 +7,7 @@ export const MIN_EVM_BLOCK_NUMBER = 20234651 // asset manager controller contrac
 export const EVM_LOG_FETCH_SLEEP_MS = 30 * 1000 // collect logs every 30 seconds
 export const EVM_STATE_UPDATE_SLEEP_MS = 60 * 1000 // collect state every one minute
 export const EVM_BLOCK_HEIGHT_OFFSET = 10 // log collection offset from the current block height
-export const EVM_LOG_FETCH_SIZE = 30
+export const EVM_LOG_FETCH_SIZE = 30 // number of logs fetched from an evm chain (max is 30)
 export const IGNORE_EVENTS = [] // add events to ignore
 
 // btc scrape config

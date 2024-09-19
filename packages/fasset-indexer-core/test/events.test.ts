@@ -34,7 +34,7 @@ const ASSET_MANAGER_FBTC = "AssetManager_FTestBTC"
 
 use(chaiAsPromised)
 
-describe("ORM: Agent", () => {
+describe("FAsset evm events", () => {
   let context: Context
   let fixture: EventFixture
   let storer: EventStorer

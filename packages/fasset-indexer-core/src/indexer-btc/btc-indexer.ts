@@ -46,7 +46,7 @@ export class BtcIndexer {
       endBlock = lastBlockToHandle
     }
     for (let i = startBlock; i <= endBlock; i += 1) {
-      const block = await this.blockbook.txsFromBlock(i)
+      const block = await this.blockbook.block(i)
       await this.storeTransactions(block)
       await this.setFirstUnhandledBlock(i + 1)
       console.log(this.color(`Processed Bitcoin transactions from block ${i}`))

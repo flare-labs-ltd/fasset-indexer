@@ -11,7 +11,7 @@ export interface BlockbookTxOutput extends BlockbookMetadata {
 }
 
 export interface BlockbookTxInput extends BlockbookTxOutput {
-  spentTxId: string
+  txid?: string
   vout?: number
 }
 
