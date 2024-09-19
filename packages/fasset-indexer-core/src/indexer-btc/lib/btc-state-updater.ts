@@ -70,7 +70,8 @@ export class BtcStateUpdater {
         const outputTx = new BtcTxOutput(btcTx, address, BigInt(_outputTx.value), _outputTx.n)
         em.persist(outputTx)
       } else if (this.isOpReturnOutput(_outputTx)) {
-        const opReturn = new OpReturn(btcTx, _outputTx.n, _outputTx.addresses[0], BigInt(_outputTx.value))
+        const _opReturn = Buffer.from(_outputTx.addresses[0]).toString('base64')
+        const opReturn = new OpReturn(btcTx, _outputTx.n, _opReturn, BigInt(_outputTx.value))
         em.persist(opReturn)
       }
     }
