@@ -31,6 +31,7 @@ export class BtcStateWatchdog {
     )
     for (const vault of vaults) {
       try {
+        console.log(`updating Bitcoin txs for ${vault.underlyingAddress.text}`)
         await this.stateUpdater.processAddress(vault.underlyingAddress.text)
       } catch (e: any) {
         console.error(`error updating Bitcoin txs for ${vault.underlyingAddress.text} agent: ${e}`)

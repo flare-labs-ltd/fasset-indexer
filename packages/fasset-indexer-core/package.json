@@ -13,8 +13,8 @@
     "scripts": {
         "build": "rm -rf dist && tsc --build",
         "-------- runners -----------": "---------- runners ----------",
-        "run-indexer": "node dist/src/run/run-indexer.js",
-        "run-watchdog": "node dist/src/run/run-watchdog.js",
+        "run-indexer": "node dist/src/run/run-event-indexer.js",
+        "run-watchdog": "node dist/src/run/run-evm-watchdog.js",
         "run-btc-watchdog": "node dist/src/run/run-btc-watchdog.js",
         "--------- tests -----------": "----------- tests -----------",
         "test": "yarn mocha test --timeout 100000",

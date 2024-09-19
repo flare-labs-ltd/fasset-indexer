@@ -5,6 +5,43 @@ import { BtcBlock } from "./block"
 
 
 @Entity()
+export class BtcTx {
+
+  @PrimaryKey({ type: 'number', autoincrement: true })
+  id!: number
+
+  @ManyToOne(() => BtcBlock)
+  block: BtcBlock
+
+  @Property({ type: 'text', unique: true })
+  txid: string
+
+  @OneToMany(() => BtcTxInput, input => input.tx, { cascade: [Cascade.ALL] })
+  inputs = new Collection<BtcTxInput>(this)
+
+  @OneToMany(() => BtcTxOutput, output => output.tx, { cascade: [Cascade.ALL] })
+  outputs = new Collection<BtcTxOutput>(this)
+
+  @Property({ type: new uint256() })
+  value: bigint
+
+  @Property({ type: new uint256() })
+  valueIn: bigint
+
+  @Property({ type: new uint256() })
+  fees: bigint
+
+  constructor(block: BtcBlock, txid: string, value: bigint, valueIn: bigint, fees: bigint) {
+    this.block = block
+    this.txid = txid
+    this.value = value
+    this.valueIn = valueIn
+    this.fees = fees
+  }
+
+}
+
+@Entity()
 @Unique({ properties: ['tx', 'index'] })
 export class OpReturn {
 
@@ -76,41 +113,4 @@ export class BtcTxInput extends BtcTxIO {
     this.spentTxId = spentTxId
     this.vout = vout
   }
-}
-
-@Entity()
-export class BtcTx {
-
-  @PrimaryKey({ type: 'number', autoincrement: true })
-  id!: number
-
-  @ManyToOne(() => BtcBlock)
-  block: BtcBlock
-
-  @Property({ type: 'text', unique: true })
-  txid: string
-
-  @OneToMany(() => BtcTxInput, input => input.tx, { cascade: [Cascade.ALL] })
-  inputs = new Collection<BtcTxInput>(this)
-
-  @OneToMany(() => BtcTxOutput, output => output.tx, { cascade: [Cascade.ALL] })
-  outputs = new Collection<BtcTxOutput>(this)
-
-  @Property({ type: new uint256() })
-  value: bigint
-
-  @Property({ type: new uint256() })
-  valueIn: bigint
-
-  @Property({ type: new uint256() })
-  fees: bigint
-
-  constructor(block: BtcBlock, txid: string, value: bigint, valueIn: bigint, fees: bigint) {
-    this.block = block
-    this.txid = txid
-    this.value = value
-    this.valueIn = valueIn
-    this.fees = fees
-  }
-
 }
