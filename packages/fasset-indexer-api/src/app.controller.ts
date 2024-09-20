@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from './app.service'
 import { apiResponse, type ApiResponse } from './common/api-response'
