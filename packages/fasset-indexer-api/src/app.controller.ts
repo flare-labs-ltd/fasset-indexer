@@ -16,6 +16,11 @@ export class FAssetIndexerController {
     return apiResponse(this.appService.currentBlock(), 200)
   }
 
+  @Get('/current-btc-block')
+  getCurrentBtcBlock(): Promise<ApiResponse<number | null>> {
+    return apiResponse(this.appService.currentBtcBlock(), 200)
+  }
+
   @Get('/blocks-to-back-sync')
   getBlocksToBackSync(): Promise<ApiResponse<number | null>> {
     return apiResponse(this.appService.blocksToBackSync(), 200)

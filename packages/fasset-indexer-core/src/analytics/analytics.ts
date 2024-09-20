@@ -8,7 +8,8 @@ import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
 import {
   FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
-  MAX_DATABASE_ENTRIES_FETCH
+  MAX_DATABASE_ENTRIES_FETCH,
+  FIRST_UNHANDLED_BTC_BLOCK
 } from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
@@ -30,6 +31,11 @@ export class Analytics {
 
   async currentBlock(): Promise<number | null> {
     const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK)
+    return (v && v.value) ? parseInt(v.value) : null
+  }
+
+  async currentBtcBlock(): Promise<number | null> {
+    const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_BTC_BLOCK)
     return (v && v.value) ? parseInt(v.value) : null
   }
 
