@@ -9,29 +9,6 @@ import type { Context } from "../context"
 import type { AgentInfo } from "../../chain/typechain/IAssetManager"
 
 
-export async function setVar(em: EntityManager, key: string, value?: string): Promise<void> {
-  const vr = await em.findOne(Var, { key })
-  if (!vr) {
-    const vr = new Var(key, value)
-    em.persist(vr)
-  } else {
-    vr.value = value
-  }
-  await em.flush()
-}
-
-export async function getVar(em: EntityManager, key: string): Promise<Var | null> {
-  return await em.findOne(Var, { key })
-}
-
-export async function deleteVar(em: EntityManager, key: string): Promise<void> {
-  const vr = await em.findOne(Var, { key })
-  if (vr) {
-    em.remove(vr)
-    await em.flush()
-  }
-}
-
 export async function findOrCreateEvmAddress(em: EntityManager, address: string, type: AddressType): Promise<EvmAddress> {
   let evmAddress = await em.findOne(EvmAddress, { hex: address})
   if (!evmAddress) {
@@ -39,15 +16,6 @@ export async function findOrCreateEvmAddress(em: EntityManager, address: string,
     em.persist(evmAddress)
   }
   return evmAddress
-}
-
-export async function findOrCreateUnderlyingAddress(em: EntityManager, address: string, type: AddressType): Promise<UnderlyingAddress> {
-  let underlyingAddress = await em.findOne(UnderlyingAddress, { text: address })
-  if (!underlyingAddress) {
-    underlyingAddress = new UnderlyingAddress(address, type)
-    em.persist(underlyingAddress)
-  }
-  return underlyingAddress
 }
 
 export async function findOrCreateEvmBlock(em: EntityManager, index: number, timestamp: number): Promise<EvmBlock> {

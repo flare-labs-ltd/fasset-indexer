@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from './app.service'
 import { apiResponse, type ApiResponse } from './common/api-response'
@@ -14,6 +14,11 @@ export class FAssetIndexerController {
   @Get('/current-block')
   getCurrentBlock(): Promise<ApiResponse<number | null>> {
     return apiResponse(this.appService.currentBlock(), 200)
+  }
+
+  @Get('/current-btc-block')
+  getCurrentBtcBlock(): Promise<ApiResponse<number | null>> {
+    return apiResponse(this.appService.currentBtcBlock(), 200)
   }
 
   @Get('/blocks-to-back-sync')

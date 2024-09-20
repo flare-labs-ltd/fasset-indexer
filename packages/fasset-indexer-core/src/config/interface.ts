@@ -12,19 +12,24 @@ export interface IUserDatabaseConfig {
 }
 
 export interface IUserConfig extends IUserDatabaseConfig {
-  rpcUrl: string
-  apiKey?: string
+  flrRpcUrl: string
+  btcRpcUrl: string
+  flrApiKey?: string
+  btcApiKey?: string
 }
 
 export interface IConfig {
-  rpc: {
+  flrRpc: {
+    url: string
+    apiKey?: string
+  }
+  btcRpc: {
     url: string
     apiKey?: string
   }
   contracts: {
     addresses: { name: string, address: string, contractName: string }[],
     abis: {
-      events: InterfaceAbi
       assetManager: InterfaceAbi
     }
   }

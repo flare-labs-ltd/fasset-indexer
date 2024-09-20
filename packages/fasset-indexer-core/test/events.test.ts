@@ -21,7 +21,7 @@ import {
   FullLiquidationStarted, LiquidationEnded,
   LiquidationPerformed, LiquidationStarted
 } from "../src/database/entities/events/liquidation"
-import { EventStorer } from "../src/indexer/eventlib/event-storer"
+import { EventStorer } from "../src/indexer-evm/eventlib/event-storer"
 import { Context } from "../src/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
@@ -34,7 +34,7 @@ const ASSET_MANAGER_FBTC = "AssetManager_FTestBTC"
 
 use(chaiAsPromised)
 
-describe("ORM: Agent", () => {
+describe("FAsset evm events", () => {
   let context: Context
   let fixture: EventFixture
   let storer: EventStorer
@@ -46,7 +46,7 @@ describe("ORM: Agent", () => {
   })
 
   afterEach(async () => {
-    await context.orm.close()
+    await context.orm.close(true)
     unlink(CONFIG.db.dbName!, () => {})
   })
 

@@ -5,7 +5,6 @@ import { SqliteDriver } from '@mikro-orm/sqlite'
 import { PostgreSqlDriver } from "@mikro-orm/postgresql"
 import { IGNORE_EVENTS } from "./constants"
 import { abi as ASSET_MANAGER_ABI } from '../../chain/artifacts/IAssetManager.json'
-import { abi as ASSET_MANAGER_EVENTS_ABI } from '../../chain/artifacts/IAssetManagerEvents.json'
 import CONTRACTS from '../../chain/coston.json'
 import type { OrmOptions } from '../database/interface'
 import type { IUserConfig, IUserDatabaseConfig, IConfig } from "./interface"
@@ -65,8 +64,10 @@ export function getUserConfig(): IUserConfig {
   validateEnv()
   return {
     ...getUserDatabaseConfig(),
-    rpcUrl: process.env.RPC_URL!,
-    apiKey: process.env.RPC_API_KEY
+    flrRpcUrl: process.env.RPC_URL!,
+    flrApiKey: process.env.RPC_API_KEY,
+    btcRpcUrl: process.env.BTC_RPC_URL!,
+    btcApiKey: process.env.BTC_RPC_API_KEY
   }
 }
 
@@ -83,14 +84,17 @@ export function getOrmConfig(config: IUserDatabaseConfig): OrmOptions {
 
 export function expandUserConfig(config: IUserConfig): IConfig {
   return {
-    rpc: {
-      url: config.rpcUrl,
-      apiKey: config.apiKey,
+    flrRpc: {
+      url: config.flrRpcUrl,
+      apiKey: config.flrApiKey,
+    },
+    btcRpc: {
+      url: config.btcRpcUrl,
+      apiKey: config.btcApiKey,
     },
     contracts: {
       addresses: CONTRACTS,
       abis: {
-        events: ASSET_MANAGER_EVENTS_ABI,
         assetManager: ASSET_MANAGER_ABI,
       }
     },

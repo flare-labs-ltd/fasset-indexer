@@ -6,10 +6,10 @@ import { AgentVault } from "../database/entities/agent"
 import { FtsoPrice } from "../database/entities/state/price"
 import { isUntrackedAgentVault, updateAgentVaultInfo } from "./shared"
 import { Context } from "../context"
-import { MID_CHAIN_FETCH_SLEEP_MS, STATE_UPDATE_SLEEP_MS } from "../config/constants"
+import { MID_CHAIN_FETCH_SLEEP_MS, EVM_STATE_UPDATE_SLEEP_MS } from "../config/constants"
 
 
-export class StateWatchdog {
+export class EvmStateWatchdog {
 
   constructor(public readonly context: Context) {}
 
@@ -21,9 +21,9 @@ export class StateWatchdog {
           await this.watchFtsoPrices(em)
         })
       } catch (e: any) {
-        console.error(`error in top-level watchdog: ${e}`)
+        console.error(`error in top-level Flare watchdog: ${e}`)
       }
-      await sleep(STATE_UPDATE_SLEEP_MS)
+      await sleep(EVM_STATE_UPDATE_SLEEP_MS)
     }
   }
 

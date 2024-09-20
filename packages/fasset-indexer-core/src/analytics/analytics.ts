@@ -1,6 +1,6 @@
 import { getOrmConfig } from "../config/utils"
 import { createOrm } from "../database/utils"
-import { getVar } from "../indexer/shared"
+import { getVar } from "../utils"
 import { EvmLog } from "../database/entities/evm/log"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
@@ -8,7 +8,8 @@ import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
 import {
   FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
-  MAX_DATABASE_ENTRIES_FETCH
+  MAX_DATABASE_ENTRIES_FETCH,
+  FIRST_UNHANDLED_BTC_BLOCK
 } from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
@@ -30,6 +31,11 @@ export class Analytics {
 
   async currentBlock(): Promise<number | null> {
     const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK)
+    return (v && v.value) ? parseInt(v.value) : null
+  }
+
+  async currentBtcBlock(): Promise<number | null> {
+    const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_BTC_BLOCK)
     return (v && v.value) ? parseInt(v.value) : null
   }
 

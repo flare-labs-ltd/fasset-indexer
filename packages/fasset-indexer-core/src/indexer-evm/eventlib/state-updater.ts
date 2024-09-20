@@ -4,7 +4,7 @@ import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/ag
 import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
-import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManagerEvents"
+import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManager"
 import type { Context } from "../../context"
 import type { EvmLog } from "../../database/entities/evm/log"
 
