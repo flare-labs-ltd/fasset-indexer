@@ -1,2 +1,2 @@
 .yarn
-fasset-indexer-core/.env.production
+packages/fasset-indexer-core/.env.production
