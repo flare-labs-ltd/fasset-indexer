@@ -1,8 +1,13 @@
 import type { BlockbookAddressInfo, BlockbookBlock, BlockbookTx } from "./interface"
 
 export class Blockbook {
+  headers: any
 
-  constructor(private readonly url: string) { }
+  constructor(private readonly url: string, private readonly key?: string) {
+    this.headers = (key !== undefined) ? {
+      'x-api-key': key
+    } : {}
+  }
 
   async blockHeight(): Promise<number> {
     const response = await fetch(`${this.url}/api/v2`)
@@ -42,17 +47,17 @@ export class Blockbook {
 
   async tx(txid: string): Promise<BlockbookTx> {
     // assume one page is enough
-    const response = await fetch(`${this.url}/api/v2/tx/${txid}`)
+    const response = await fetch(`${this.url}/api/v2/tx/${txid}`, this.headers)
     return response.json()
   }
 
   protected async _txsFromBlock(height: number, page: number): Promise<BlockbookBlock> {
-    const response = await fetch(`${this.url}/api/v2/block/${height}?page=${page}`)
+    const response = await fetch(`${this.url}/api/v2/block/${height}?page=${page}`, this.headers)
     return response.json()
   }
 
   protected async _addressInfo(address: string, page: number): Promise<BlockbookAddressInfo> {
-    const response = await fetch(`${this.url}/api/v2/address/${address}?page=${page}`)
+    const response = await fetch(`${this.url}/api/v2/address/${address}?page=${page}`, this.headers)
     return response.json()
   }
 

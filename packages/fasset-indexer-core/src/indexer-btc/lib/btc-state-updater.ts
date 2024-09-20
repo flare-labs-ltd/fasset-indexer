@@ -12,7 +12,7 @@ export class BtcStateUpdater {
   blockbook: Blockbook
 
   constructor(public readonly context: Context) {
-    this.blockbook = new Blockbook(context.config.btcRpc.url)
+    this.blockbook = new Blockbook(context.config.btcRpc.url, context.config.btcRpc.apiKey)
   }
 
   async processAddress(_address: string): Promise<void> {

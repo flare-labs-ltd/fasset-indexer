@@ -20,7 +20,7 @@ export class BtcIndexer {
   private btcTxStorer: BtcStateUpdater
 
   constructor(public readonly context: Context) {
-    this.blockbook = new Blockbook(context.config.btcRpc.url)
+    this.blockbook = new Blockbook(context.config.btcRpc.url, context.config.btcRpc.apiKey)
     this.btcTxStorer = new BtcStateUpdater(context)
   }
 
