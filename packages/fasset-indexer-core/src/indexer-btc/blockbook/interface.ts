@@ -35,5 +35,5 @@ export interface BlockbookBlock extends BlockbookMetadata {
 }
 
 export interface BlockbookAddressInfo extends BlockbookMetadata {
-  txids: string[]
+  txids?: string[]
 }

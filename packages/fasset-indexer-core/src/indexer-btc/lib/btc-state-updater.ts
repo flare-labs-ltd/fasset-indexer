@@ -18,7 +18,7 @@ export class BtcStateUpdater {
   async processAddress(_address: string): Promise<void> {
     const em = this.context.orm.em.fork()
     const txs = await this.blockbook.addressInfo(_address)
-    for (const txid of txs.txids) {
+    for (const txid of txs.txids ?? []) {
       if (!await this.txExists(em, txid)) {
         const tx = await this.blockbook.tx(txid)
         await this.processTx(tx)
