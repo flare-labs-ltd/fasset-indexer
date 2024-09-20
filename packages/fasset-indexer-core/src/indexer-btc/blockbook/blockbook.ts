@@ -18,7 +18,7 @@ export class Blockbook {
   async addressTxs(address: string): Promise<BlockbookTx[]> {
     const addressInfo = await this.addressInfo(address)
     const txs = []
-    for (const txid of addressInfo.txids) {
+    for (const txid of addressInfo.txids ?? []) {
       const tx = await this.tx(txid)
       txs.push(tx)
     }
@@ -27,8 +27,10 @@ export class Blockbook {
 
   async addressInfo(address: string): Promise<BlockbookAddressInfo> {
     const addressInfo = await this._addressInfo(address, 1)
+    addressInfo.txids = addressInfo.txids ?? []
     while (addressInfo.page < addressInfo.totalPages) {
       const _addressInfo = await this._addressInfo(address, addressInfo.page + 1)
+      if (_addressInfo.txids === undefined) continue
       addressInfo.txids.push(..._addressInfo.txids)
       addressInfo.page = _addressInfo.page
     }
