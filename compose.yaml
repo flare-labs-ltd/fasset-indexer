@@ -19,7 +19,7 @@ services:
   core: &core-svc
     image: ${CI_REGISTRY_IMAGE}:${DEPLOY_IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}-core
-    command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-indexer.js"]
+    command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-event-indexer.js"]
     environment:
       DB_TYPE: postgres
       DB_NAME: ${POSTGRES_DB}
@@ -34,7 +34,7 @@ services:
   watchdog:
     <<: *core-svc
     container_name: ${COMPOSE_PROJECT_NAME}-watchdog
-    command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-watchdog.js"]
+    command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-evm-watchdog.js"]
   btc-wathcdog:
     <<: *core-svc
     container_name: ${COMPOSE_PROJECT_NAME}-btc-watchdog
