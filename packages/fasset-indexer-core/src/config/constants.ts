@@ -11,8 +11,8 @@ export const EVM_LOG_FETCH_SIZE = 30 // number of logs fetched from an evm chain
 export const IGNORE_EVENTS = [] // add events to ignore
 
 // btc scrape config
-export const MIN_BTC_BLOCK_NUMBER = 2871454
-export const BTC_BLOCK_HEIGHT_OFFSET = 0 // tx collection offset from the current block height
+export const MIN_BTC_BLOCK_NUMBER = 2874425
+export const BTC_BLOCK_HEIGHT_OFFSET = 2 // tx collection offset from the current block height
 export const BTC_BLOCK_FETCH_SLEEP_MS = 60 * 1000 // collect new btc blocks every 1 minute
 export const BTC_STATE_UPDATE_SLEEP_MS = 60 * 1000
 

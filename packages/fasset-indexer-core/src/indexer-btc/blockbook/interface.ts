@@ -3,16 +3,20 @@ interface BlockbookMetadata {
   totalPages: number
 }
 
-export interface BlockbookTxOutput extends BlockbookMetadata {
+export interface BlockbookTxIO extends BlockbookMetadata {
   value: string
   n: number
   addresses: string[]
   isAddress: boolean
 }
 
-export interface BlockbookTxInput extends BlockbookTxOutput {
+export interface BlockbookTxInput extends BlockbookTxIO {
   txid?: string
   vout?: number
+}
+
+export interface BlockbookTxOutput extends BlockbookTxIO {
+  hex?: string
 }
 
 export interface BlockbookTx extends BlockbookMetadata {

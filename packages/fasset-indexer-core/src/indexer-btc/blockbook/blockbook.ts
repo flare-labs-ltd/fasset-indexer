@@ -50,6 +50,7 @@ export class Blockbook {
   async tx(txid: string): Promise<BlockbookTx> {
     // assume one page is enough
     const response = await fetch(`${this.url}/api/v2/tx/${txid}`, this.headers)
+    console.log(txid)
     return response.json()
   }
 
