@@ -19,6 +19,7 @@ async function fixOpReturnCodes() {
       }
     }
   }
+  await em.flush()
   await context.orm.close()
 }
 
