@@ -8,6 +8,7 @@ export interface BlockbookTxOutput extends BlockbookMetadata {
   n: number
   addresses: string[]
   isAddress: boolean
+  hex?: string
 }
 
 export interface BlockbookTxInput extends BlockbookTxOutput {

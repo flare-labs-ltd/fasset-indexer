@@ -70,8 +70,8 @@ export class BtcStateUpdater {
         const outputTx = new BtcTxOutput(btcTx, address, BigInt(_outputTx.value), _outputTx.n)
         em.persist(outputTx)
       } else if (this.isOpReturnOutput(_outputTx)) {
-        const _opReturn = Buffer.from(_outputTx.addresses[0]).toString('base64')
-        const opReturn = new OpReturn(btcTx, _outputTx.n, _opReturn, BigInt(_outputTx.value))
+        const formatted = '0x' + _outputTx.hex!.substring(3)
+        const opReturn = new OpReturn(btcTx, _outputTx.n, formatted, BigInt(_outputTx.value))
         em.persist(opReturn)
       }
     }
@@ -81,6 +81,7 @@ export class BtcStateUpdater {
     return output.isAddress === false
       && output.addresses.length > 0
       && output.addresses[0].startsWith("OP_RETURN")
+      && output.hex?.startsWith("6a") === true
   }
 
   private async txExists(em: EntityManager, txid: string): Promise<boolean> {
