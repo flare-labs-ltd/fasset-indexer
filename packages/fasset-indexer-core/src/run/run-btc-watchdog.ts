@@ -11,9 +11,9 @@ async function fixOpReturnCodes() {
   const opReturns = await em.find(OpReturn, {}, { populate: ['tx'] })
   for (const opReturn of opReturns) {
     const tx = await blockbook.tx(opReturn.tx.txid)
-    for (const vin of tx.vin) {
-      if (vin.txid === opReturn.tx.txid) {
-        opReturn.data = "0x" + vin.hex!.substring(3)
+    for (const vout of tx.vout) {
+      if (vout.n === opReturn.index) {
+        opReturn.data = "0x" + vout.hex!.substring(3)
         em.persist(opReturn)
         break
       }
