@@ -13,7 +13,7 @@ async function fixOpReturnCodes() {
     const tx = await blockbook.tx(opReturn.tx.txid)
     for (const vin of tx.vin) {
       if (vin.txid === opReturn.tx.txid) {
-        opReturn.data = vin.hex!
+        opReturn.data = "0x" + vin.hex!.substring(3)
         em.persist(opReturn)
         break
       }
