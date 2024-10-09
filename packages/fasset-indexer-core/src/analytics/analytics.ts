@@ -9,7 +9,8 @@ import { FullLiquidationStarted, LiquidationPerformed } from "../database/entiti
 import {
   FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
   MAX_DATABASE_ENTRIES_FETCH,
-  FIRST_UNHANDLED_BTC_BLOCK
+  FIRST_UNHANDLED_BTC_BLOCK,
+  EVENTS
 } from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
@@ -49,6 +50,19 @@ export class Analytics {
 
   //////////////////////////////////////////////////////////////////////
   // aggregators
+
+  async totalUiRelevantTransactions(): Promise<number> {
+    const qb = this.orm.em.qb(EvmLog)
+    const result = await qb.count().where({ name: {
+      $in: [
+        EVENTS.COLLATERAL_POOL_EXIT,
+        EVENTS.COLLATERAL_POOL_ENTER,
+        EVENTS.REDEMPTION_REQUESTED,
+        EVENTS.COLLATERAL_RESERVED
+      ]
+    }}).execute()
+    return result[0].count
+  }
 
   async totalRedemptionRequesters(): Promise<number> {
     const qb = this.orm.em.qb(RedemptionRequested, 'r')
@@ -216,10 +230,9 @@ import { config } from "../config/config"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  const resp = await analytics.redemptionDefault(910, FAssetType.FXRP)
+  const resp = await analytics.totalUiRelevantTransactions()
   //@ts-ignore
-  const json = await resp.toJSON()
-  console.log(JSON.stringify(json, (key, value) => { if (typeof value === 'bigint') return value.toString(); return value }))
+  console.log(resp)
   await context.orm.close()
 }
 
