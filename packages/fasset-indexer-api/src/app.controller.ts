@@ -36,6 +36,11 @@ export class FAssetIndexerController {
     return apiResponse(this.appService.totalCollateralReservers(), 200)
   }
 
+  @Get('/total-ui-relevant-transactions')
+  getTotalUiRelevantTransactions(): Promise<ApiResponse<number>> {
+    return apiResponse(this.appService.totalUiRelevantTransactions(), 200)
+  }
+
   // Liquidations
 
   @Get('/liquidations')
