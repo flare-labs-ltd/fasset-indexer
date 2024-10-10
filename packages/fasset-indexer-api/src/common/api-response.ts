@@ -49,6 +49,8 @@ export async function apiResponse<T>(action: Promise<T>, status: number, sanitiz
     if (typeof resp.toJSON === 'function') {
       // @ts-ignore
       resp = replaceBigInts(resp.toJSON())
+    } else {
+      resp = replaceBigInts(resp)
     }
     return new ApiResponse<T>(resp, status)
   } catch (reason) {

@@ -15,15 +15,15 @@ import {
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
 import { FAssetType } from "../database/entities/events/_bound"
+import { CollateralPoolExited } from "../database/entities/events/collateralPool"
 
 
 export class Analytics {
 
   constructor(public readonly orm: ORM) {}
 
-  static async create(config: IUserDatabaseConfig): Promise<Analytics> {
-    const ormOptions = getOrmConfig(config)
-    const orm = await createOrm(ormOptions, "safe")
+  async create(config: IUserDatabaseConfig): Promise<Analytics> {
+    const orm = await createOrm(config, 'safe')
     return new Analytics(orm)
   }
 
@@ -62,6 +62,26 @@ export class Analytics {
       ]
     }}).execute()
     return result[0].count
+  }
+
+  async totalClaimedFAssetFeesByUser(user: string): Promise<{
+    fXrp: bigint, fBtc: bigint
+  }> {
+    const fXrp = await this.totalClaimedFAssetFeesByUserAndFAsset(user, FAssetType.FXRP)
+    const fBtc = await this.totalClaimedFAssetFeesByUserAndFAsset(user, FAssetType.FBTC)
+    return { fXrp, fBtc }
+  }
+
+  async totalClaimedFAssetFeesByUserAndFAsset(user: string, fasset: FAssetType): Promise<bigint> {
+    await this.orm.em.fork().find(CollateralPoolExited, { tokenHolder: { hex: user }}, )
+    const qb = this.orm.em.getConnection('read')
+    const result = await qb.execute(`
+      SELECT SUM(cpe.received_fasset_fees_uba) as total
+      FROM collateral_pool_exited cpe
+      INNER JOIN evm_address ea ON cpe.token_holder_id = ea.id
+      WHERE ea.hex = '${user}' AND fasset = ${fasset}
+    `)
+    return result[0].total || BigInt(0)
   }
 
   async totalRedemptionRequesters(): Promise<number> {
@@ -227,10 +247,12 @@ export class Analytics {
 
 /* import { Context } from "../context"
 import { config } from "../config/config"
+import { FtsoPrice } from "../database/entities/state/price"
+import { CollateralTypeAdded } from "../database/entities/events/token"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  const resp = await analytics.totalUiRelevantTransactions()
+  const resp = await analytics.totalClaimedFAssetFeesByUserAndFAsset('0x0000000000000000000000000000000000000000', FAssetType.FXRP)
   //@ts-ignore
   console.log(resp)
   await context.orm.close()

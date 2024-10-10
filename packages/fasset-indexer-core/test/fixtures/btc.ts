@@ -6,7 +6,7 @@ export class BtcFixture {
     private blockbook: Blockbook
 
     constructor(context: Context) {
-        this.blockbook = new Blockbook(context.config.btcRpc.url)
+        this.blockbook = new Blockbook(context.config.btcRpc!.url)
     }
 
     async generateTx(): Promise<BlockbookTx> {
