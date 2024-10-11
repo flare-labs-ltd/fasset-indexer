@@ -6,7 +6,7 @@ import { config } from "../config/config"
 
 async function fixOpReturnCodes() {
   const context = await Context.create(config)
-  const blockbook = new Blockbook(context.config.btcRpc.url, context.config.btcRpc.apiKey)
+  const blockbook = new Blockbook(context.config.btcRpc!.url, context.config.btcRpc!.apiKey)
   const em = context.orm.em.fork()
   const opReturns = await em.find(OpReturn, {}, { populate: ['tx'] })
   for (const opReturn of opReturns) {

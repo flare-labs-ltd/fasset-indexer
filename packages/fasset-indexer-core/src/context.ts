@@ -24,6 +24,8 @@ export class Context {
   // caches
   private assetManagerToFAsset__cache: Map<string, FAssetType> = new Map()
   private fAssetToAssetManager__cache: Map<FAssetType, string> = new Map()
+  private fAssetTokenToFAsset__cache: Map<string, FAssetType> = new Map()
+  private fAssetToFAssetToken__cache: Map<FAssetType, string> = new Map()
   private isAssetManager__cache: Set<string> = new Set()
   private isFAssetToken__cache: Set<string> = new Set()
 
@@ -35,7 +37,7 @@ export class Context {
     this.erc20Interface = ERC20__factory.createInterface()
     this.orm = orm
     // populate caches for faster lookups
-    this.populateAssetManagerToFAssetCache()
+    this.populateFAssetTypeToAssetManagerCache()
     this.populateIsAssetManagerCache()
     this.populateIsFAssetTokenCache()
   }
@@ -81,6 +83,14 @@ export class Context {
     }
   }
 
+  fAssetTypeToFAssetAddress(type: FAssetType): string {
+    if (this.fAssetToFAssetToken__cache.has(type)) {
+      return this.fAssetToFAssetToken__cache.get(type)!
+    } else {
+      throw new Error(`No FAssetToken found for type ${type}`)
+    }
+  }
+
   getContractAddress(name: string): string {
     for (const contract of this.config.contracts.addresses) {
       if (contract.name === name)
@@ -89,7 +99,7 @@ export class Context {
     throw new Error(`Contract address not found for ${name}`)
   }
 
-  protected populateAssetManagerToFAssetCache(): void {
+  protected populateFAssetTypeToAssetManagerCache(): void {
     for (const contract of this.config.contracts.addresses) {
       let fasset = null
       if (contract.name === 'AssetManager_FTestXRP') {
@@ -105,6 +115,25 @@ export class Context {
       }
       this.assetManagerToFAsset__cache.set(contract.address, fasset)
       this.fAssetToAssetManager__cache.set(fasset, contract.address)
+    }
+  }
+
+  protected populateFAssetTypeToFAssetTokenCache(): void {
+    for (const contract of this.config.contracts.addresses) {
+      let fasset = null
+      if (contract.name === 'FTestXRP') {
+        fasset = FAssetType.FXRP
+      } else if (contract.name === 'FTestBTC') {
+        fasset = FAssetType.FBTC
+      } else if (contract.name === 'FTestDOGE') {
+        fasset = FAssetType.FDOGE
+      } else if (contract.name === 'FSimCoinX') {
+        fasset = FAssetType.FSIMCOINX
+      } else {
+        continue
+      }
+      this.fAssetTokenToFAsset__cache.set(contract.address, fasset)
+      this.fAssetToFAssetToken__cache.set(fasset, contract.address)
     }
   }
 

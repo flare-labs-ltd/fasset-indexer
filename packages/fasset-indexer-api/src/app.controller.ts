@@ -36,11 +36,6 @@ export class FAssetIndexerController {
     return apiResponse(this.appService.totalCollateralReservers(), 200)
   }
 
-  @Get('/total-ui-relevant-transactions')
-  getTotalUiRelevantTransactions(): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.totalUiRelevantTransactions(), 200)
-  }
-
   // Liquidations
 
   @Get('/liquidations')
@@ -120,7 +115,23 @@ export class FAssetIndexerController {
   }
 
   @Get('/redemption-default?')
-  redemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string, ): Promise<ApiResponse<RedemptionDefault>> {
+  redemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string): Promise<ApiResponse<RedemptionDefault>> {
     return apiResponse(this.appService.redemptionDefault(id, FAssetType[fasset]), 200)
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // UI relevant data
+
+  @Get('/total-ui-relevant-transactions')
+  getTotalUiRelevantTransactions(): Promise<ApiResponse<number>> {
+    return apiResponse(this.appService.totalUiRelevantTransactions(), 200)
+  }
+
+  @Get('/total-claimed-fasset-fees?')
+  getTotalFAssetClaimed(@Query('user') user: string): Promise<ApiResponse<{
+    fBtc: bigint, fXrp: bigint
+  }>> {
+    return apiResponse(this.appService.totalClaimedFAssetFeesByUser(user), 200)
+  }
+
 }
