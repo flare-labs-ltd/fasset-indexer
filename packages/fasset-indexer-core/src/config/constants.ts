@@ -23,8 +23,8 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
 export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddUnderlyingBlockUpdated"
-export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddUnderlyingBlockUpdated"
+export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddChallengerEvents"
+export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddChallengerEvents"
 export const FIRST_UNHANDLED_BTC_BLOCK = "firstUnhandledBtcBlock"
 
 // event names
@@ -56,6 +56,10 @@ export const EVENTS = {
     FULL_LIQUIDATION_STARTED: "FullLiquidationStarted",
     LIQUIDATION_PERFORMED: "LiquidationPerformed",
     LIQUIDATION_ENDED: "LiquidationEnded",
+    // challenges
+    ILLEGAL_PAYMENT_CONFIRMED: "IllegalPaymentConfirmed",
+    DUPLICATE_PAYMENT_CONFIRMED: "DuplicatePaymentConfirmed",
+    UNDERLYING_BALANCE_TOO_LOW: "UnderlyingBalanceTooLow",
     // collateral types
     COLLATERAL_TYPE_ADDED: "CollateralTypeAdded",
     COLLATERAL_TYPE_DEPRECATED: "CollateralTypeDeprecated",

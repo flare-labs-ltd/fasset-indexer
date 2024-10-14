@@ -24,6 +24,9 @@ import {
 import {
   FullLiquidationStarted, LiquidationEnded, LiquidationPerformed, LiquidationStarted
 } from "../../database/entities/events/liquidation"
+import {
+  DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow
+} from "../../database/entities/events/challenge"
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
 import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
@@ -39,7 +42,8 @@ import type {
   RedemptionDefaultEvent, RedemptionPaymentBlockedEvent, RedemptionPaymentFailedEvent, RedemptionPerformedEvent,
   RedemptionRejectedEvent, RedemptionRequestIncompleteEvent, RedemptionRequestedEvent,
   FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
-  SelfCloseEvent, AgentPingEvent, AgentPingResponseEvent
+  SelfCloseEvent, AgentPingEvent, AgentPingResponseEvent,
+  IllegalPaymentConfirmedEvent, DuplicatePaymentConfirmedEvent, UnderlyingBalanceTooLowEvent
 } from "../../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
@@ -128,6 +132,15 @@ export class EventStorer {
         break
       } case EVENTS.LIQUIDATION_ENDED: {
         await this.onLiquidationEnded(em, evmLog, log.args as LiquidationEndedEvent.OutputTuple)
+        break
+      } case EVENTS.ILLEGAL_PAYMENT_CONFIRMED: {
+        await this.onIllegalPaymentConfirmed(em, evmLog, log.args as IllegalPaymentConfirmedEvent.OutputTuple)
+        break
+      } case EVENTS.DUPLICATE_PAYMENT_CONFIRMED: {
+        await this.onDuplicatePaymentConfirmed(em, evmLog, log.args as DuplicatePaymentConfirmedEvent.OutputTuple)
+        break
+      } case EVENTS.UNDERLYING_BALANCE_TOO_LOW: {
+        await this.onUnderlyingBalanceTooLow(em, evmLog, log.args as UnderlyingBalanceTooLowEvent.OutputTuple)
         break
       } case EVENTS.AVAILABLE_AGENT_EXITED: {
         await this.onAvailableAgentExited(em, log.args as AvailableAgentExitAnnouncedEvent.OutputTuple)
@@ -463,6 +476,17 @@ export class EventStorer {
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // challenges
+
+  protected async onIllegalPaymentConfirmed(em: EntityManager, evmLog: EvmLog, logArgs: IllegalPaymentConfirmedEvent.OutputTuple): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ agentVault, transactionHash ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const illegalPaymentConfirmed = new IllegalPaymentConfirmed(evmLog, fasset, agentVaultEntity, transactionHash)
+    em.persist(illegalPaymentConfirmed)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
   // dangerous events
 
   protected async onRedemptionPaymentIncomplete(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionRequestIncompleteEvent.OutputTuple): Promise<void> {
@@ -471,6 +495,22 @@ export class EventStorer {
     const redeemerEvmAddress = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
     const redemptionRequestIncomplete = new RedemptionRequestIncomplete(evmLog, fasset, redeemerEvmAddress, remainingLots)
     em.persist(redemptionRequestIncomplete)
+  }
+
+  protected async onDuplicatePaymentConfirmed(em: EntityManager, evmLog: EvmLog, logArgs: DuplicatePaymentConfirmedEvent.OutputTuple): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ agentVault, transactionHash1, transactionHash2 ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const duplicatePaymentConfirmed = new DuplicatePaymentConfirmed(evmLog, fasset, agentVaultEntity, transactionHash1, transactionHash2)
+    em.persist(duplicatePaymentConfirmed)
+  }
+
+  protected async onUnderlyingBalanceTooLow(em: EntityManager, evmLog: EvmLog, logArgs: UnderlyingBalanceTooLowEvent.OutputTuple): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ agentVault, balance, requiredBalance ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const underlyingBalanceTooLow = new UnderlyingBalanceTooLow(evmLog, fasset, agentVaultEntity, balance, requiredBalance)
+    em.persist(underlyingBalanceTooLow)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
