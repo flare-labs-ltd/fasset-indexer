@@ -9,7 +9,11 @@ import type { Log } from "ethers"
 import type { Context } from "../../context"
 
 
-const INSERTION_EVENTS: string[] = [ EVENTS.CURRENT_UNDERLYING_BLOCK_UPDATED ]
+const INSERTION_EVENTS: string[] = [
+  EVENTS.ILLEGAL_PAYMENT_CONFIRMED,
+  EVENTS.DUPLICATE_PAYMENT_CONFIRMED,
+  EVENTS.UNDERLYING_BALANCE_TOO_LOW
+]
 
 export class EventIndexerBackPopulation extends EventIndexer {
 

@@ -23,8 +23,8 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
 export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddUnderlyingBlockUpdated"
-export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddUnderlyingBlockUpdated"
+export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddChallengerEvents"
+export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddChallengerEvents"
 export const FIRST_UNHANDLED_BTC_BLOCK = "firstUnhandledBtcBlock"
 
 // event names
