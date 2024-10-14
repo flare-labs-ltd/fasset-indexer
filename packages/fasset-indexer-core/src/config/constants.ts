@@ -56,6 +56,10 @@ export const EVENTS = {
     FULL_LIQUIDATION_STARTED: "FullLiquidationStarted",
     LIQUIDATION_PERFORMED: "LiquidationPerformed",
     LIQUIDATION_ENDED: "LiquidationEnded",
+    // challenges
+    ILLEGAL_PAYMENT_CONFIRMED: "IllegalPaymentConfirmed",
+    DUPLICATE_PAYMENT_CONFIRMED: "DuplicatePaymentConfirmed",
+    UNDERLYING_BALANCE_TOO_LOW: "UnderlyingBalanceTooLow",
     // collateral types
     COLLATERAL_TYPE_ADDED: "CollateralTypeAdded",
     COLLATERAL_TYPE_DEPRECATED: "CollateralTypeDeprecated",

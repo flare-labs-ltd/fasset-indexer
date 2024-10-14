@@ -20,6 +20,10 @@ import {
   FullLiquidationStarted, LiquidationEnded,
   LiquidationPerformed, LiquidationStarted
 } from "./entities/events/liquidation"
+import {
+  DuplicatePaymentConfirmed, IllegalPaymentConfirmed,
+  UnderlyingBalanceTooLow
+} from "./entities/events/challenge"
 import { CollateralTypeAdded, ERC20Transfer } from "./entities/events/token"
 import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateralPool"
 import { AgentPing, AgentPingResponse } from "./entities/events/ping"
@@ -44,6 +48,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
     RedeemedInCollateral, RedemptionRequestIncomplete,
     LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
+    IllegalPaymentConfirmed, DuplicatePaymentConfirmed, UnderlyingBalanceTooLow,
     CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
     AgentPing, AgentPingResponse, CurrentUnderlyingBlockUpdated,
     FtsoPrice, UntrackedAgentVault,
