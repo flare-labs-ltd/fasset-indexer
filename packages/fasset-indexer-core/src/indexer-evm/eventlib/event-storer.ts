@@ -486,17 +486,6 @@ export class EventStorer {
     em.persist(illegalPaymentConfirmed)
   }
 
-  //////////////////////////////////////////////////////////////////////////////////////////////////////
-  // dangerous events
-
-  protected async onRedemptionPaymentIncomplete(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionRequestIncompleteEvent.OutputTuple): Promise<void> {
-    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
-    const [ redeemer, remainingLots ] = logArgs
-    const redeemerEvmAddress = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
-    const redemptionRequestIncomplete = new RedemptionRequestIncomplete(evmLog, fasset, redeemerEvmAddress, remainingLots)
-    em.persist(redemptionRequestIncomplete)
-  }
-
   protected async onDuplicatePaymentConfirmed(em: EntityManager, evmLog: EvmLog, logArgs: DuplicatePaymentConfirmedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)
     const [ agentVault, transactionHash1, transactionHash2 ] = logArgs
@@ -511,6 +500,17 @@ export class EventStorer {
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
     const underlyingBalanceTooLow = new UnderlyingBalanceTooLow(evmLog, fasset, agentVaultEntity, balance, requiredBalance)
     em.persist(underlyingBalanceTooLow)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // dangerous events
+
+  protected async onRedemptionPaymentIncomplete(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionRequestIncompleteEvent.OutputTuple): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ redeemer, remainingLots ] = logArgs
+    const redeemerEvmAddress = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
+    const redemptionRequestIncomplete = new RedemptionRequestIncomplete(evmLog, fasset, redeemerEvmAddress, remainingLots)
+    em.persist(redemptionRequestIncomplete)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -44,15 +44,10 @@ function replaceBigInts(obj: any): any {
 
 export async function apiResponse<T>(action: Promise<T>, status: number, sanitize = true): Promise<ApiResponse<T>> {
   try {
-    let resp = await action
-    //@ts-ignore
-    if (typeof resp.toJSON === 'function') {
-      // @ts-ignore
-      resp = replaceBigInts(resp.toJSON())
-    } else {
-      resp = replaceBigInts(resp)
-    }
-    return new ApiResponse<T>(resp, status)
+    const resp = await action
+    // @ts-ignore
+    const respStringsToBigints = replaceBigInts(typeof resp.toJSON === 'function' ? resp.toJSON() : resp)
+    return new ApiResponse<T>(respStringsToBigints, status)
   } catch (reason) {
     if (sanitize) {
       const message = reason instanceof Error && reason.message ? reason.message : "Server error"
