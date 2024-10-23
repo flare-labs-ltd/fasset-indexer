@@ -1,4 +1,3 @@
-import { getOrmConfig } from "../config/utils"
 import { createOrm } from "../database/utils"
 import { getVar } from "../utils"
 import { EvmLog } from "../database/entities/evm/log"
@@ -6,6 +5,7 @@ import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
+import { DashboardAnalytics } from "./dashboard"
 import {
   FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
   MAX_DATABASE_ENTRIES_FETCH,
@@ -15,12 +15,13 @@ import {
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
 import { FAssetType } from "../database/entities/events/_bound"
-import { CollateralPoolExited } from "../database/entities/events/collateralPool"
 
 
-export class Analytics {
+export class Analytics extends DashboardAnalytics {
 
-  constructor(public readonly orm: ORM) {}
+  constructor(public readonly orm: ORM) {
+    super(orm)
+  }
 
   async create(config: IUserDatabaseConfig): Promise<Analytics> {
     const orm = await createOrm(config, 'safe')
@@ -62,26 +63,6 @@ export class Analytics {
       ]
     }}).execute()
     return result[0].count
-  }
-
-  async totalClaimedFAssetFeesByUser(user: string): Promise<{
-    fXrp: bigint, fBtc: bigint
-  }> {
-    const fXrp = await this.totalClaimedFAssetFeesByUserAndFAsset(user, FAssetType.FXRP)
-    const fBtc = await this.totalClaimedFAssetFeesByUserAndFAsset(user, FAssetType.FBTC)
-    return { fXrp, fBtc }
-  }
-
-  async totalClaimedFAssetFeesByUserAndFAsset(user: string, fasset: FAssetType): Promise<bigint> {
-    await this.orm.em.fork().find(CollateralPoolExited, { tokenHolder: { hex: user }}, )
-    const qb = this.orm.em.getConnection('read')
-    const result = await qb.execute(`
-      SELECT SUM(cpe.received_fasset_fees_uba) as total
-      FROM collateral_pool_exited cpe
-      INNER JOIN evm_address ea ON cpe.token_holder_id = ea.id
-      WHERE ea.hex = '${user}' AND fasset = ${fasset}
-    `)
-    return result[0].total || BigInt(0)
   }
 
   async totalRedemptionRequesters(): Promise<number> {
@@ -241,21 +222,21 @@ export class Analytics {
     return this.orm.em.fork().count(EvmLog, { block: { timestamp: { $gt: Date.now() / 1000 - seconds }}})
   }
 
-  // security
-
 }
 
-/* import { Context } from "../context"
+import { Context } from "../context"
 import { config } from "../config/config"
-import { FtsoPrice } from "../database/entities/state/price"
-import { CollateralTypeAdded } from "../database/entities/events/token"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  const resp = await analytics.totalClaimedFAssetFeesByUserAndFAsset('0x0000000000000000000000000000000000000000', FAssetType.FXRP)
-  //@ts-ignore
+  const resp = await analytics.totalClaimedPoolFeesByPoolAndUser(
+    '0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E',
+    '0x28637E84DeeB3499BCE0c3dA7C708823f354eF9C'
+  )
   console.log(resp)
+  const resp2 = await analytics.userCollateralPoolTokenPortfolio('0xded754459e83981176A5E6c0c39c397b945B7a8A')
+  console.log(resp2)
   await context.orm.close()
 }
 
-main() */
+main()
