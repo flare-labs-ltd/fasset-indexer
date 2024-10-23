@@ -23,8 +23,8 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
 export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddChallengerEvents"
-export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddChallengerEvents"
+export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddCCBs"
+export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddCCBs"
 export const FIRST_UNHANDLED_BTC_BLOCK = "firstUnhandledBtcBlock"
 
 // event names
@@ -52,6 +52,7 @@ export const EVENTS = {
     REDEMPTION_REQUEST_INCOMPLETE: "RedemptionRequestIncomplete",
     REDEEMED_IN_COLLATERAL: "RedeemedInCollateral",
     // liquidation
+    AGENT_IN_CCB: "AgentInCCB",
     LIQUIDATION_STARTED: "LiquidationStarted",
     FULL_LIQUIDATION_STARTED: "FullLiquidationStarted",
     LIQUIDATION_PERFORMED: "LiquidationPerformed",
