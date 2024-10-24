@@ -55,3 +55,4 @@ secrets.json
 /**/node_modules
 
 *tsbuildinfo
+*.dump

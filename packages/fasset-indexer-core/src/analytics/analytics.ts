@@ -224,6 +224,7 @@ export class Analytics extends DashboardAnalytics {
 
 }
 
+/*
 import { Context } from "../context"
 import { config } from "../config/config"
 async function main() {
@@ -239,4 +240,4 @@ async function main() {
   await context.orm.close()
 }
 
-main()
+main() */

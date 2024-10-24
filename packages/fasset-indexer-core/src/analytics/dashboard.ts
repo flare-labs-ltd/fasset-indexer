@@ -2,6 +2,7 @@ import { raw } from "@mikro-orm/core";
 import { FAssetType } from "../database/entities/events/_bound";
 import { CollateralPoolEntered, CollateralPoolExited } from "../database/entities/events/collateralPool";
 import type { ORM } from "../database/interface"
+import { COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql";
 
 
 /**
@@ -23,16 +24,10 @@ export abstract class DashboardAnalytics {
   async userCollateralPoolTokenPortfolio(user: string): Promise<
     { collateralPoolToken: string, balance: bigint }[]
   > {
-    const collateralPools = await this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
-      .select(['ela.hex'])
-      .join('cpe.tokenHolder', 'th')
-      .join('cpe.evmLog', 'el')
-      .join('el.address', 'ela')
-      .where({ 'th.hex': user })
-      .groupBy('ela.hex')
-      .execute()
-    // @ts-ignore - string[]
-    return collateralPools.map((cp => cp.hex))
+    const con = this.orm.em.getConnection('read')
+    const res = await con.execute(COLLATERAL_POOL_PORTFOLIO_SQL(user))
+    // @ts-ignore
+    return res.map(x => ({ collateralPoolToken: x.cpt_address, balance: x.balance }))
   }
 
   async totalClaimedPoolFees(): Promise<
@@ -68,5 +63,12 @@ export abstract class DashboardAnalytics {
       .execute()
     // @ts-ignore - bigint
     return resp[0]?.claimedUBA || BigInt(0)
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // price graphs
+
+  async mintValueGraph(period: number): Promise<{ timestamp: number, value: bigint }[]> {
+
   }
 }
