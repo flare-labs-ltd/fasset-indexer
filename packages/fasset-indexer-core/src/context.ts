@@ -1,11 +1,11 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
+import { FAssetType } from "./shared"
 import { createOrm } from "./database/utils"
 import {
   IAssetManager__factory, ERC20__factory,
   IAgentOwnerRegistry__factory, ICollateralPool__factory,
   IPriceReader__factory
 } from "../chain/typechain"
-import { FAssetType } from "./database/entities/events/_bound"
 import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../chain/typechain"
 import type { IAssetManagerInterface } from "../chain/typechain/IAssetManager"
 import type { ICollateralPoolInterface } from "../chain/typechain/ICollateralPool"

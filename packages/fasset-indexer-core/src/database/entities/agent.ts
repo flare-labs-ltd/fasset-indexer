@@ -1,6 +1,6 @@
 import { Cascade, Collection, Entity, OneToMany, OneToOne, ManyToOne, PrimaryKey, Property, Enum } from "@mikro-orm/core"
 import { EvmAddress, UnderlyingAddress } from "./address"
-import { FAssetType } from "./events/_bound"
+import { FAssetType } from "../../shared"
 
 
 @Entity()

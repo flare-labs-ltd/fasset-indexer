@@ -1,6 +1,6 @@
 import { EntityManager } from "@mikro-orm/knex"
 import { sleep } from "../utils"
-import { FAssetType } from "../database/entities/events/_bound"
+import { FAssetType } from "../shared"
 import { CollateralTypeAdded } from "../database/entities/events/token"
 import { AgentVault } from "../database/entities/agent"
 import { FtsoPrice } from "../database/entities/state/price"

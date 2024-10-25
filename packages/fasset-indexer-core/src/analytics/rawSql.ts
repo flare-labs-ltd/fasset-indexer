@@ -39,3 +39,21 @@ from (
 ) as cpt_tokens
 where balance != 0
 `
+
+export const BEST_COLLATERAL_POOLS = (n: number, minLots: number) => `
+SELECT grouped.fasset, grouped.hex, grouped.fee_score
+FROM (
+    SELECT
+        av.fasset,
+        cpa.hex,
+        avs.fee_bips * avs.pool_fee_share_bips AS fee_score
+    FROM agent_vault av
+    INNER JOIN evm_address cpa ON av.collateral_pool_id = cpa.id
+    INNER JOIN agent_vault_info avi ON av.address_id = avi.agent_vault_address_id
+    INNER JOIN agent_vault_settings avs ON av.address_id = avs.agent_vault_address_id
+    WHERE avi.status = 0 AND avi.free_collateral_lots > ${minLots}
+    GROUP BY av.fasset, cpa.hex, avs.fee_bips, avs.pool_fee_share_bips
+) AS grouped
+ORDER BY fee_score DESC
+LIMIT ${n};
+`

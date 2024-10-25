@@ -1,13 +1,16 @@
 import { raw } from "@mikro-orm/core"
-import { FAssetEventBound, FAssetType } from "../database/entities/events/_bound"
+import { FAsset, FAssetType } from "../shared"
+import { FAssetEventBound } from "../database/entities/events/_bound"
 import { MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionRequested } from "../database/entities/events/redemption"
 import { CollateralPoolExited } from "../database/entities/events/collateralPool"
-import { COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
-import { MIN_EVM_BLOCK_TIMESTAMP } from "../config/constants"
+import { fassetToUsdPrice } from "./utils"
+import { MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
+import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
 import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
-import type { TimeSeries } from "./interface"
+import type { AggregateTimeSeries, PoolScore, TimeSeries } from "./interface"
+import { AgentVaultInfo } from "../database/entities/state/agent"
 
 
 /**
@@ -17,8 +20,11 @@ import type { TimeSeries } from "./interface"
 export abstract class DashboardAnalytics {
   constructor(public readonly orm: ORM) { }
 
+  ///////////////////////////////////////////////////////////////
+  // diffs
+
   //////////////////////////////////////////////////////////////////////
-  // collateral pool activity
+  // collateral pools
 
   async poolTransactionCount(): Promise<number> {
     const entered = await this.orm.em.count(CollateralPoolExited)
@@ -26,12 +32,25 @@ export abstract class DashboardAnalytics {
     return entered + exited
   }
 
+  async bestCollateralPools(n: number, minLots: number): Promise<PoolScore> {
+    const con = this.orm.em.getConnection('read')
+    const res = await con.execute(BEST_COLLATERAL_POOLS(n, minLots))
+    const ret = {} as PoolScore
+    for (const r of res) {
+      const fasset = FAssetType[r.fasset] as FAsset
+      if (ret[fasset] === undefined) {
+        ret[fasset] = []
+      }
+      ret[fasset].push({ pool: r.hex, score: r.fee_score })
+    }
+    return ret
+  }
+
   async userCollateralPoolTokenPortfolio(user: string): Promise<
     { collateralPoolToken: string, balance: bigint }[]
   > {
     const con = this.orm.em.getConnection('read')
     const res = await con.execute(COLLATERAL_POOL_PORTFOLIO_SQL(user))
-    // @ts-ignore
     return res.map(x => ({ collateralPoolToken: x.cpt_address, balance: x.balance }))
   }
 
@@ -73,6 +92,16 @@ export abstract class DashboardAnalytics {
   //////////////////////////////////////////////////////////////////////
   // price graphs
 
+  async mintedAggregateTimeSeries(end: number, npoints: number, start?: number): Promise<AggregateTimeSeries> {
+    const timeseries = await this.mintedTimeSeries(end, npoints, start)
+    return this.aggregateTimeSeries(timeseries)
+  }
+
+  async redeemedAggregateTimeSeries(end: number, npoints: number, start?: number): Promise<AggregateTimeSeries> {
+    const timeseries = await this.redeemedTimeSeries(end, npoints, start)
+    return this.aggregateTimeSeries(timeseries)
+  }
+
   async mintedTimeSeries(end: number, npoints: number, start?: number): Promise<TimeSeries> {
     const em = this.orm.em.fork()
     return this.getTimeSeries(
@@ -87,7 +116,7 @@ export abstract class DashboardAnalytics {
     )
   }
 
-  async redeemedTimeSeries(_start: number, end: number, npoints: number): Promise<TimeSeries> {
+  async redeemedTimeSeries(end: number, npoints: number, start?: number): Promise<TimeSeries> {
     const em = this.orm.em.fork()
     return this.getTimeSeries(
       ($gt, $lt) => em.createQueryBuilder(RedemptionRequested, 'rr')
@@ -96,11 +125,11 @@ export abstract class DashboardAnalytics {
         .join('log.block', 'block')
         .where({ 'block.timestamp': { $gt, $lt }})
         .groupBy('fasset'),
-      end, npoints
+      end, npoints, start
     )
   }
 
-  private async getTimeSeries<T extends FAssetEventBound>(
+  protected async getTimeSeries<T extends FAssetEventBound>(
     query: (si: number, ei: number) => SelectQueryBuilder<T>,
     end: number, npoints: number, start?: number
   ): Promise<TimeSeries> {
@@ -108,28 +137,41 @@ export abstract class DashboardAnalytics {
       start = MIN_EVM_BLOCK_TIMESTAMP
     }
     const interval = (end - start) / npoints
-    const data = this.timeSeriesTemplate()
+    const data = {} as TimeSeries
     for (let i = 0; i < npoints; i++) {
       const si = start + i * interval
       const ei = start + (i + 1) * interval
       const results = await query(si, ei).execute()
       for (const result of results) {
         // @ts-ignore - minted_uba
-        const value = result.value
-        data[result.fasset].push({ start: si, end: ei, value })
+        const value = BigInt(result.value)
+        const fasset = FAssetType[result.fasset] as FAsset
+        if (data[fasset] === undefined) {
+          data[fasset] = []
+        }
+        data[fasset].push({ index: i, start: si, end: ei, value })
       }
     }
     return data
   }
 
-  private timeSeriesTemplate(): TimeSeries {
-    return {
-      [FAssetType.FXRP]: [],
-      [FAssetType.FBTC]: [],
-      [FAssetType.FDOGE]: [],
-      [FAssetType.FLTC]: [],
-      [FAssetType.FALG]: [],
-      [FAssetType.FSIMCOINX]: [],
+  protected async aggregateTimeSeries(timeseries: TimeSeries): Promise<AggregateTimeSeries> {
+    const em = this.orm.em.fork()
+    const agg = {} as { [index: number]: { start: number, end: number, value: bigint } }
+    for (const fasset in timeseries) {
+      const [priceMul, priceDiv] = await fassetToUsdPrice(em, FAssetType[fasset as FAsset])
+      for (const point of timeseries[fasset as FAsset]) {
+        const value = PRICE_FACTOR * point.value * priceMul / priceDiv
+        if (agg[point.index] === undefined) {
+          agg[point.index] = { start: point.start, end: point.end, value }
+          continue
+        }
+        agg[point.index].value += value
+      }
     }
+    return Object.keys(agg).map(_index => {
+      const index = parseInt(_index)
+      return { index, ...agg[index] }
+    })
   }
 }

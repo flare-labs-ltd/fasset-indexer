@@ -1,5 +1,6 @@
 import { Entity, Property } from "@mikro-orm/core"
-import { FAssetEventBound, type FAssetType } from "./_bound"
+import { FAssetEventBound } from "./_bound"
+import type { FAssetType } from "../../../shared"
 import type { EvmLog } from "../evm/log"
 
 

@@ -1,5 +1,5 @@
 import { sleep } from "../utils"
-import { FAssetType } from "../database/entities/events/_bound"
+import { FAssetType } from "../shared"
 import { AgentVault } from "../database/entities/agent"
 import { BtcStateUpdater } from "./lib/btc-state-updater"
 import { Context } from "../context"

@@ -14,7 +14,7 @@ import {
 } from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
-import { FAssetType } from "../database/entities/events/_bound"
+import type { FAssetType } from "../shared"
 
 
 export class Analytics extends DashboardAnalytics {
@@ -237,9 +237,11 @@ async function main() {
   console.log(resp)
   const resp2 = await analytics.userCollateralPoolTokenPortfolio('0xded754459e83981176A5E6c0c39c397b945B7a8A')
   console.log(resp2) */
-  const resp3 = await analytics.mintedTimeSeries(Date.now() / 1000, 10)
-  console.log(resp3)
+  /* const resp3 = await analytics.mintedTimeSeries(Date.now() / 1000, 10)
+  console.log(resp3) */
+  const resp4 = await analytics.mintedAggregateTimeSeries(Date.now() / 1000, 10)
+  console.log(resp4)
   await context.orm.close()
 }
 
-//main()
+main()

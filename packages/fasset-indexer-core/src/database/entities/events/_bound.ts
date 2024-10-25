@@ -1,8 +1,6 @@
 import { OneToOne, Enum } from "@mikro-orm/core"
+import { FAssetType } from "../../../shared"
 import { EvmLog } from "../evm/log"
-
-
-export enum FAssetType { FXRP, FBTC, FDOGE, FLTC, FALG, FSIMCOINX }
 
 export class EventBound {
 

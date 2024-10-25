@@ -1,4 +1,4 @@
-import { FAssetType } from "../database/entities/events/_bound"
+import { FAssetType } from "../shared"
 import { CollateralTypeAdded } from "../database/entities/events/token"
 import { FtsoPrice } from "../database/entities/state/price"
 import type { EntityManager } from "@mikro-orm/core"
@@ -14,12 +14,9 @@ export function fassetDecimals(fasset: FAssetType): number {
   }
 }
 
-export async function fassetToUsd(em: EntityManager, amountUBA: bigint, fasset: FAssetType): Promise<[bigint, bigint]> {
+export async function fassetToUsdPrice(em: EntityManager, fasset: FAssetType): Promise<[mul: bigint, div: bigint]> {
   const fassetToken = await em.findOneOrFail(CollateralTypeAdded, { fasset: fasset })
   const fassetPrice = await em.findOneOrFail(FtsoPrice, { symbol: fassetToken.assetFtsoSymbol })
   const fassetTokenDecimals = fassetDecimals(fasset)
-  return [
-    amountUBA * fassetPrice.price,
-    BigInt(10) ** BigInt(fassetPrice.decimals + fassetTokenDecimals)
-  ]
+  return [ fassetPrice.price, BigInt(10) ** BigInt(fassetPrice.decimals + fassetTokenDecimals) ]
 }
