@@ -22,6 +22,7 @@ import {
   RedeemedInCollateral
 } from "../../database/entities/events/redemption"
 import {
+  AgentInCCB,
   FullLiquidationStarted, LiquidationEnded, LiquidationPerformed, LiquidationStarted
 } from "../../database/entities/events/liquidation"
 import {
@@ -43,7 +44,8 @@ import type {
   RedemptionRejectedEvent, RedemptionRequestIncompleteEvent, RedemptionRequestedEvent,
   FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
   SelfCloseEvent, AgentPingEvent, AgentPingResponseEvent,
-  IllegalPaymentConfirmedEvent, DuplicatePaymentConfirmedEvent, UnderlyingBalanceTooLowEvent
+  IllegalPaymentConfirmedEvent, DuplicatePaymentConfirmedEvent, UnderlyingBalanceTooLowEvent,
+  AgentInCCBEvent
 } from "../../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
@@ -120,6 +122,9 @@ export class EventStorer {
         break
       } case EVENTS.REDEMPTION_REQUEST_INCOMPLETE: {
         await this.onRedemptionPaymentIncomplete(em, evmLog, log.args as RedemptionRequestIncompleteEvent.OutputTuple)
+        break
+      } case EVENTS.AGENT_IN_CCB: {
+        await this.onAgentInCCB(em, evmLog, log.args as AgentInCCBEvent.OutputTuple)
         break
       } case EVENTS.LIQUIDATION_STARTED: {
         await this.onLiquidationStarted(em, evmLog, log.args as LiquidationStartedEvent.OutputTuple)
@@ -441,6 +446,14 @@ export class EventStorer {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // liquidations
+
+  protected async onAgentInCCB(em: EntityManager, evmLog: EvmLog, logArgs: AgentInCCBEvent.OutputTuple): Promise<void> {
+    const fasset = this.context.addressToFAssetType(evmLog.address.hex)
+    const [ agentVault, timestamp ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const agentInCCB = new AgentInCCB(evmLog, fasset, agentVaultEntity, Number(timestamp))
+    em.persist(agentInCCB)
+  }
 
   protected async onLiquidationStarted(em: EntityManager, evmLog: EvmLog, logArgs: LiquidationStartedEvent.OutputTuple): Promise<void> {
     const fasset = this.context.addressToFAssetType(evmLog.address.hex)

@@ -224,20 +224,22 @@ export class Analytics extends DashboardAnalytics {
 
 }
 
-/*
+
 import { Context } from "../context"
 import { config } from "../config/config"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  const resp = await analytics.totalClaimedPoolFeesByPoolAndUser(
+  /* const resp = await analytics.totalClaimedPoolFeesByPoolAndUser(
     '0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E',
     '0x28637E84DeeB3499BCE0c3dA7C708823f354eF9C'
   )
   console.log(resp)
   const resp2 = await analytics.userCollateralPoolTokenPortfolio('0xded754459e83981176A5E6c0c39c397b945B7a8A')
-  console.log(resp2)
+  console.log(resp2) */
+  const resp3 = await analytics.mintedTimeSeries(Date.now() / 1000, 10)
+  console.log(resp3)
   await context.orm.close()
 }
 
-main() */
+//main()

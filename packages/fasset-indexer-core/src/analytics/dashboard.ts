@@ -1,8 +1,13 @@
-import { raw } from "@mikro-orm/core";
-import { FAssetType } from "../database/entities/events/_bound";
-import { CollateralPoolEntered, CollateralPoolExited } from "../database/entities/events/collateralPool";
+import { raw } from "@mikro-orm/core"
+import { FAssetEventBound, FAssetType } from "../database/entities/events/_bound"
+import { MintingExecuted } from "../database/entities/events/minting"
+import { RedemptionRequested } from "../database/entities/events/redemption"
+import { CollateralPoolExited } from "../database/entities/events/collateralPool"
+import { COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
+import { MIN_EVM_BLOCK_TIMESTAMP } from "../config/constants"
+import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
-import { COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql";
+import type { TimeSeries } from "./interface"
 
 
 /**
@@ -68,7 +73,63 @@ export abstract class DashboardAnalytics {
   //////////////////////////////////////////////////////////////////////
   // price graphs
 
-  async mintValueGraph(period: number): Promise<{ timestamp: number, value: bigint }[]> {
+  async mintedTimeSeries(end: number, npoints: number, start?: number): Promise<TimeSeries> {
+    const em = this.orm.em.fork()
+    return this.getTimeSeries(
+      ($gt, $lt) => em.createQueryBuilder(MintingExecuted, 'me')
+        .select(['me.fasset', raw('SUM(cr.value_uba) as value')])
+        .join('me.collateralReserved', 'cr')
+        .join('me.evmLog', 'el')
+        .join('el.block', 'block')
+        .where({ 'block.timestamp': { $gt, $lt }})
+        .groupBy('fasset'),
+      end, npoints, start
+    )
+  }
 
+  async redeemedTimeSeries(_start: number, end: number, npoints: number): Promise<TimeSeries> {
+    const em = this.orm.em.fork()
+    return this.getTimeSeries(
+      ($gt, $lt) => em.createQueryBuilder(RedemptionRequested, 'rr')
+        .select(['rr.fasset', raw('SUM(rr.value_uba) as value')])
+        .join('me.evmLog', 'log')
+        .join('log.block', 'block')
+        .where({ 'block.timestamp': { $gt, $lt }})
+        .groupBy('fasset'),
+      end, npoints
+    )
+  }
+
+  private async getTimeSeries<T extends FAssetEventBound>(
+    query: (si: number, ei: number) => SelectQueryBuilder<T>,
+    end: number, npoints: number, start?: number
+  ): Promise<TimeSeries> {
+    if (start === undefined) {
+      start = MIN_EVM_BLOCK_TIMESTAMP
+    }
+    const interval = (end - start) / npoints
+    const data = this.timeSeriesTemplate()
+    for (let i = 0; i < npoints; i++) {
+      const si = start + i * interval
+      const ei = start + (i + 1) * interval
+      const results = await query(si, ei).execute()
+      for (const result of results) {
+        // @ts-ignore - minted_uba
+        const value = result.value
+        data[result.fasset].push({ start: si, end: ei, value })
+      }
+    }
+    return data
+  }
+
+  private timeSeriesTemplate(): TimeSeries {
+    return {
+      [FAssetType.FXRP]: [],
+      [FAssetType.FBTC]: [],
+      [FAssetType.FDOGE]: [],
+      [FAssetType.FLTC]: [],
+      [FAssetType.FALG]: [],
+      [FAssetType.FSIMCOINX]: [],
+    }
   }
 }

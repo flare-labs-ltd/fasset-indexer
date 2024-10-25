@@ -22,6 +22,9 @@ class LiquidationStartedBase extends FAssetEventBound {
 }
 
 @Entity()
+export class AgentInCCB extends LiquidationStartedBase { }
+
+@Entity()
 export class LiquidationStarted extends LiquidationStartedBase { }
 
 @Entity()

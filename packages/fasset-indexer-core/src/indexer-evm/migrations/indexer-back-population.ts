@@ -10,9 +10,7 @@ import type { Context } from "../../context"
 
 
 const INSERTION_EVENTS: string[] = [
-  EVENTS.ILLEGAL_PAYMENT_CONFIRMED,
-  EVENTS.DUPLICATE_PAYMENT_CONFIRMED,
-  EVENTS.UNDERLYING_BALANCE_TOO_LOW
+  EVENTS.AGENT_IN_CCB
 ]
 
 export class EventIndexerBackPopulation extends EventIndexer {
