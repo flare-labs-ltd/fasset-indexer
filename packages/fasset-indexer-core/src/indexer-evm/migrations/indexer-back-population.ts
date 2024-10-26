@@ -55,7 +55,7 @@ export class EventIndexerBackPopulation extends EventIndexer {
 
   override async storeLogs(logs: Log[]): Promise<void> {
     logs = logs.filter(async log => {
-      const desc = await this.parseLog(log)
+      const desc = await this.eventParser.parseLog(log)
       return desc !== null && INSERTION_EVENTS.includes(desc.name)
     })
     await super.storeLogs(logs)

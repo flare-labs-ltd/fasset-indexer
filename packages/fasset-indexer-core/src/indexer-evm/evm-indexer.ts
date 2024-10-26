@@ -13,14 +13,15 @@ import type { Log } from 'ethers'
 import type { Context } from '../context/context'
 
 
-export class EventIndexer extends EventParser {
-  readonly eventScraper: EventScraper
-  readonly stateUpdater: StateUpdater
+export class EventIndexer {
   color: Chalk = chalk.green
+  readonly eventScraper: EventScraper
+  readonly eventParser: EventParser
+  readonly stateUpdater: StateUpdater
 
   constructor(public readonly context: Context) {
-    super(context)
     this.eventScraper = new EventScraper(context)
+    this.eventParser = new EventParser(context)
     this.stateUpdater = new StateUpdater(context)
   }
 
@@ -72,7 +73,7 @@ export class EventIndexer extends EventParser {
   async storeLogs(logs: Log[]): Promise<void> {
     let lastHandledBlock: number | null = null
     for (const log of logs) {
-      const fullLog = await this.logToEvent(log)
+      const fullLog = await this.eventParser.logToEvent(log)
       if (fullLog !== null) {
         await this.stateUpdater.processEvent(fullLog)
       }
