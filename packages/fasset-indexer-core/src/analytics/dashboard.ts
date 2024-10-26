@@ -5,12 +5,12 @@ import { MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionRequested } from "../database/entities/events/redemption"
 import { CollateralPoolExited } from "../database/entities/events/collateralPool"
 import { fassetToUsdPrice } from "./utils"
+import { Contracts } from "../context/contracts"
 import { MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
 import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
 import type { AggregateTimeSeries, PoolScore, TimeSeries } from "./interface"
-import { AgentVaultInfo } from "../database/entities/state/agent"
 
 
 /**
@@ -18,10 +18,22 @@ import { AgentVaultInfo } from "../database/entities/state/agent"
  * It is seperated in case of UI's opensource release, and subsequent simplified indexer deployment.
  */
 export abstract class DashboardAnalytics {
-  constructor(public readonly orm: ORM) { }
+  contracts: Contracts
+
+  constructor(public readonly orm: ORM) {
+    this.contracts = new Contracts()
+  }
 
   ///////////////////////////////////////////////////////////////
   // diffs
+
+  async fAssetSupplyDiff(): Promise<{ fasset: FAssetType, diff: bigint }[]> {
+    return this.orm.em.createQueryBuilder(MintingExecuted, 'me')
+      .select(['me.fasset', raw('SUM(cr.value_uba) as diff')])
+      .join('me.collateralReserved', 'cr')
+      .groupBy('me.fasset')
+      .execute()
+  }
 
   //////////////////////////////////////////////////////////////////////
   // collateral pools

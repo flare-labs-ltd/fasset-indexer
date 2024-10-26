@@ -6,7 +6,7 @@ import { BtcBlock } from "../src/database/entities/btc/block"
 import { BtcTx } from "../src/database/entities/btc/transaction"
 import { BtcStateUpdater } from "../src/indexer-btc/lib/btc-state-updater"
 import { BtcFixture } from "./fixtures/btc"
-import { Context } from "../src/context"
+import { Context } from "../src/context/context"
 import { CONFIG } from "./fixtures/config"
 
 

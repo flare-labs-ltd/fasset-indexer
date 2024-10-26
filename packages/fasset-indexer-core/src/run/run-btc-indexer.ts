@@ -1,6 +1,6 @@
 import { deleteVar } from "../utils"
 import { BtcIndexer } from "../indexer-btc/btc-indexer"
-import { Context } from "../context"
+import { Context } from "../context/context"
 import { FIRST_UNHANDLED_BTC_BLOCK } from "../config/constants"
 import { config } from "../config/config"
 

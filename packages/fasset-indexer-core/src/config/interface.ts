@@ -27,12 +27,6 @@ export interface IConfig {
     url: string
     apiKey?: string
   }
-  contracts: {
-    addresses: { name: string, address: string, contractName: string }[],
-    abis: {
-      assetManager: InterfaceAbi
-    }
-  }
   db: OrmOptions,
   ignoreEvents?: string[]
 }

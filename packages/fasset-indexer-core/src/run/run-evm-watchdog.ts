@@ -1,5 +1,5 @@
 import { EvmStateWatchdog } from "../indexer-evm/evm-watchdog"
-import { Context } from "../context"
+import { Context } from "../context/context"
 import { config } from "../config/config"
 
 

@@ -6,7 +6,7 @@ import { EVENTS,
   FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, MIN_EVM_BLOCK_NUMBER
 } from "../../config/constants"
 import type { Log } from "ethers"
-import type { Context } from "../../context"
+import type { Context } from "../../context/context"
 
 
 const INSERTION_EVENTS: string[] = [

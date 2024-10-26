@@ -1,4 +1,4 @@
-import { Context } from "../context"
+import { Context } from "../context/context"
 import { config } from "../config/config"
 import { EventIndexerParallelPopulation } from "../indexer-evm/migrations/indexer-parallel-population"
 

@@ -128,10 +128,8 @@ export class FAssetIndexerController {
   }
 
   @Get('/total-claimed-fasset-fees?')
-  getTotalFAssetClaimed(@Query('user') user: string): Promise<ApiResponse<{
-    fBtc: bigint, fXrp: bigint
-  }>> {
-    return apiResponse(this.appService.totalClaimedFAssetFeesByUser(user), 200)
+  getTotalFAssetClaimed(@Query('user') user: string): Promise<ApiResponse<{ fasset: FAssetType, claimedUBA: bigint }[]>> {
+    return apiResponse(this.appService.totalClaimedPoolFeesByUser(user), 200)
   }
 
 }

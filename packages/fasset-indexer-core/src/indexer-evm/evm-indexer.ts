@@ -10,7 +10,7 @@ import {
   EVM_BLOCK_HEIGHT_OFFSET
 } from '../config/constants'
 import type { Log } from 'ethers'
-import type { Context } from '../context'
+import type { Context } from '../context/context'
 
 
 export class EventIndexer extends EventParser {

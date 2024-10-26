@@ -1,27 +1,8 @@
-import { JsonRpcProvider, FetchRequest } from "ethers"
-import { FAssetType } from "./shared"
-import { createOrm } from "./database/utils"
-import {
-  IAssetManager__factory, ERC20__factory,
-  IAgentOwnerRegistry__factory, ICollateralPool__factory,
-  IPriceReader__factory
-} from "../chain/typechain"
-import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../chain/typechain"
-import type { IAssetManagerInterface } from "../chain/typechain/IAssetManager"
-import type { ICollateralPoolInterface } from "../chain/typechain/ICollateralPool"
-import type { ERC20Interface } from "../chain/typechain/ERC20"
-import type { ORM } from "./database/interface"
-import type { IConfig } from "./config/interface"
+import { FAssetType } from "../shared"
+import { contracts } from "../config/contracts"
 
 
-export class Context {
-  provider: JsonRpcProvider
-  assetManagerInterface: IAssetManagerInterface
-  collateralPoolInterface: ICollateralPoolInterface
-  agentOwnerRegistryContract: IAgentOwnerRegistry
-  erc20Interface: ERC20Interface
-  orm: ORM
-  // caches
+export class Contracts {
   private assetManagerToFAsset__cache: Map<string, FAssetType> = new Map()
   private fAssetToAssetManager__cache: Map<FAssetType, string> = new Map()
   private fAssetTokenToFAsset__cache: Map<string, FAssetType> = new Map()
@@ -29,34 +10,11 @@ export class Context {
   private isAssetManager__cache: Set<string> = new Set()
   private isFAssetToken__cache: Set<string> = new Set()
 
-  constructor(public config: IConfig, orm: ORM) {
-    this.provider = this.getEthersApiProvider(config.flrRpc.url, config.flrRpc.apiKey)
-    this.assetManagerInterface = IAssetManager__factory.createInterface()
-    this.agentOwnerRegistryContract = this.getAgentOwnerRegistryContract()
-    this.collateralPoolInterface = ICollateralPool__factory.createInterface()
-    this.erc20Interface = ERC20__factory.createInterface()
-    this.orm = orm
+  constructor() {
     // populate caches for faster lookups
     this.populateFAssetTypeToAssetManagerCache()
     this.populateIsAssetManagerCache()
     this.populateIsFAssetTokenCache()
-  }
-
-  static async create(config: IConfig): Promise<Context> {
-    const orm = await createOrm(config.db, "safe")
-    return new Context(config, orm)
-  }
-
-  getAssetManagerContract(address: string): IAssetManager {
-    return IAssetManager__factory.connect(address, this.provider)
-  }
-
-  getPriceReaderContract(address: string): IPriceReader {
-    return IPriceReader__factory.connect(address, this.provider)
-  }
-
-  getERC20(address: string): ERC20 {
-    return ERC20__factory.connect(address, this.provider)
   }
 
   isAssetManager(address: string): boolean {
@@ -92,7 +50,7 @@ export class Context {
   }
 
   getContractAddress(name: string): string {
-    for (const contract of this.config.contracts.addresses) {
+    for (const contract of contracts.addresses) {
       if (contract.name === name)
         return contract.address
     }
@@ -100,7 +58,7 @@ export class Context {
   }
 
   protected populateFAssetTypeToAssetManagerCache(): void {
-    for (const contract of this.config.contracts.addresses) {
+    for (const contract of contracts.addresses) {
       let fasset = null
       if (contract.name === 'AssetManager_FTestXRP') {
         fasset = FAssetType.FXRP
@@ -119,7 +77,7 @@ export class Context {
   }
 
   protected populateFAssetTypeToFAssetTokenCache(): void {
-    for (const contract of this.config.contracts.addresses) {
+    for (const contract of contracts.addresses) {
       let fasset = null
       if (contract.name === 'FTestXRP') {
         fasset = FAssetType.FXRP
@@ -138,7 +96,7 @@ export class Context {
   }
 
   protected populateIsAssetManagerCache(): void {
-    for (const contract of this.config.contracts.addresses) {
+    for (const contract of contracts.addresses) {
       if (contract.name.startsWith('AssetManager_')) {
         this.isAssetManager__cache.add(contract.address)
       }
@@ -146,23 +104,10 @@ export class Context {
   }
 
   protected populateIsFAssetTokenCache(): void {
-    for (const contract of this.config.contracts.addresses) {
+    for (const contract of contracts.addresses) {
       if (contract.contractName === "FAssetProxy.sol") {
         this.isFAssetToken__cache.add(contract.address)
       }
     }
-  }
-
-  private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {
-    const connection = new FetchRequest(rpcUrl)
-    if (apiKey !== undefined) {
-      connection.setHeader('x-api-key', apiKey)
-    }
-    return new JsonRpcProvider(connection)
-  }
-
-  private getAgentOwnerRegistryContract(): IAgentOwnerRegistry {
-    const address = this.getContractAddress("AgentOwnerRegistry")
-    return IAgentOwnerRegistry__factory.connect(address, this.provider)
   }
 }

@@ -1,10 +1,10 @@
 import { ORM } from "../../src"
+import { FAssetType } from "../../src"
 import { EvmAddress, UnderlyingAddress } from "../../src/database/entities/address"
 import { CollateralTypeAdded } from "../../src/database/entities/events/token"
 import { AgentManager, AgentOwner, AgentVault } from "../../src/database/entities/agent"
 import { CollateralReserved } from "../../src/database/entities/events/minting"
 import { RedemptionRequested } from "../../src/database/entities/events/redemption"
-import { FAssetType } from "../../src/database/entities/events/_bound"
 import { randomChoice, randomHash, randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress } from "./utils"
 import { ASSET_MANAGERS, AGENT_SETTINGS, WNAT_TOKEN } from "./constants"
 import type {

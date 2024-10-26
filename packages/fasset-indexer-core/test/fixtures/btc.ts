@@ -1,6 +1,6 @@
 import { BlockbookBlock, BlockbookTx } from "../../src/indexer-btc/blockbook/interface"
 import { Blockbook } from "../../src/indexer-btc/blockbook/blockbook"
-import type { Context } from "../../src/context"
+import type { Context } from "../../src/context/context"
 
 export class BtcFixture {
     private blockbook: Blockbook
