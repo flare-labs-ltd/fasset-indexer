@@ -1,4 +1,3 @@
-import type { InterfaceAbi } from "ethers"
 import type { OrmOptions } from "../database/interface"
 
 

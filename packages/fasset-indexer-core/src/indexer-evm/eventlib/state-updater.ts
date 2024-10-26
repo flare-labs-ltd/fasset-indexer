@@ -13,7 +13,7 @@ import type { EvmLog } from "../../database/entities/evm/log"
 export class StateUpdater extends EventStorer {
 
   constructor(public readonly context: Context) {
-    super(context)
+    super(context.orm)
   }
 
   protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
