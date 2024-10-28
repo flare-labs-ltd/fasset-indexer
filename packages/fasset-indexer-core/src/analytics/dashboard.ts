@@ -83,8 +83,9 @@ export abstract class DashboardAnalytics {
   // collateral pools
 
   async poolTransactionsCount(): Promise<number> {
-    const entered = await this.orm.em.count(CollateralPoolExited)
-    const exited = await this.orm.em.count(CollateralPoolExited)
+    const em = this.orm.em.fork()
+    const entered = await em.count(CollateralPoolExited)
+    const exited = await em.count(CollateralPoolExited)
     return entered + exited
   }
 
@@ -109,24 +110,28 @@ export abstract class DashboardAnalytics {
   }
 
   async totalClaimedPoolFees(): Promise<ClaimedFees> {
-    return this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
+    const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
       .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA')])
       .groupBy('cpe.fasset')
       .execute()
+    // @ts-ignore
+    return resp.map(x => ({ ...x, fasset: FAssetType[x.fasset] }))
   }
 
   async totalClaimedPoolFeesByUser(user: string): Promise<ClaimedFees> {
-    return this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
+    const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
       .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA')])
       .join('cpe.tokenHolder', 'th')
       .where({ 'th.hex': user })
       .groupBy('cpe.fasset')
       .execute()
+    // @ts-ignore
+    return resp.map(x => ({ ...x, fasset: FAssetType[x.fasset] }))
   }
 
-  async totalClaimedPoolFeesByPoolAndUser(pool: string, user: string): Promise<bigint> {
+  async totalClaimedPoolFeesByPoolAndUser(pool: string, user: string): Promise<ClaimedFees> {
     const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select(raw('SUM(received_fasset_fees_uba) as claimedUBA'))
+      .select('cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA'))
       .join('cpe.tokenHolder', 'th')
       .join('cpe.evmLog', 'el')
       .join('el.address', 'ela')
@@ -135,8 +140,12 @@ export abstract class DashboardAnalytics {
         'th.hex': user
       })
       .execute()
-    // @ts-ignore - bigint
-    return resp[0]?.claimedUBA || BigInt(0)
+    const fassetType = resp[0]?.fasset
+    if (fassetType === undefined) return []
+    return [{
+      fasset: FAssetType[fassetType] as FAsset,
+      claimedUBA: this.extractValue(resp, 'claimedUBA'),
+    }]
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -160,7 +169,7 @@ export abstract class DashboardAnalytics {
         .join('me.collateralReserved', 'cr')
         .join('me.evmLog', 'el')
         .join('el.block', 'block')
-        .where({ 'block.timestamp': { $gt, $lt }})
+        .where({ 'block.timestamp': { $gt, $lt } })
         .groupBy('fasset'),
       end, npoints, start
     )
@@ -171,9 +180,9 @@ export abstract class DashboardAnalytics {
     return this.getTimeSeries(
       ($gt, $lt) => em.createQueryBuilder(RedemptionRequested, 'rr')
         .select(['rr.fasset', raw('SUM(rr.value_uba) as value')])
-        .join('me.evmLog', 'log')
+        .join('rr.evmLog', 'log')
         .join('log.block', 'block')
-        .where({ 'block.timestamp': { $gt, $lt }})
+        .where({ 'block.timestamp': { $gt, $lt } })
         .groupBy('fasset'),
       end, npoints, start
     )
