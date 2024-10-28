@@ -16,6 +16,7 @@ export class DashboardController {
 
   @Get('fasset-supply-diff?')
   @ApiOperation({ summary: 'Difference between fasset supplies between now and now - lookback' })
+  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | day | week | month | year" })
   @ApiQuery({ name: "now", type: Number, required: false })
   getFassetSupplyDiff(
     @Query('lookback') lookback: string,
@@ -67,11 +68,11 @@ export class DashboardController {
 
   @Get('total-claimed-pool-fees?')
   @ApiOperation({ summary: 'Total claimed collateral pool fees' })
-  @ApiQuery({ name: "user", type: String, required: false })
   @ApiQuery({ name: "pool", type: String, required: false })
+  @ApiQuery({ name: "user", type: String, required: false })
   getTotalClaimedPoolFees(
-    @Query('user') user?: string,
-    @Query('pool') pool?: string
+    @Query('pool') pool?: string,
+    @Query('user') user?: string
   ): Promise<ApiResponse<ClaimedFees>> {
     if (pool === undefined && user === undefined) {
       return apiResponse(this.appService.totalClaimedPoolFees(), 200)
