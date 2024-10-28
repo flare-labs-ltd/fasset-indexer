@@ -1,4 +1,4 @@
-import type { FAsset, FAssetType } from "../shared"
+import type { FAsset } from "../shared"
 
 export type TimeSeries = { [fasset in Partial<FAsset>]: { index: number, start: number, end: number, value: bigint }[] }
 
@@ -8,6 +8,6 @@ export type PoolScore = { [fasset in Partial<FAsset>]: { pool: string, score: bi
 
 export type TokenPortfolio = { token: string, balance: bigint }[]
 
-export type ClaimedFees = { fasset: FAssetType, claimedUBA: bigint }[]
+export type ClaimedFees = { fasset: FAsset, claimedUBA: bigint }[]
 
 export type FAssetDiffs = { fasset: FAsset, amountBefore: bigint, amountAfter: bigint }[]
