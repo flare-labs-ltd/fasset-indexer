@@ -1,6 +1,6 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "../database/utils"
-import { Contracts } from "./contracts"
+import { ContractLookup } from "./contracts"
 import {
   IAssetManager__factory, ERC20__factory,
   IAgentOwnerRegistry__factory, ICollateralPool__factory,
@@ -14,7 +14,7 @@ import type { ORM } from "../database/interface"
 import type { IConfig } from "../config/interface"
 
 
-export class Context extends Contracts {
+export class Context extends ContractLookup {
   provider: JsonRpcProvider
   assetManagerInterface: IAssetManagerInterface
   collateralPoolInterface: ICollateralPoolInterface

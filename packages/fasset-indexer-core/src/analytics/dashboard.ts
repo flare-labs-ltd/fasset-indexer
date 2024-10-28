@@ -5,7 +5,7 @@ import { MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionRequested } from "../database/entities/events/redemption"
 import { CollateralPoolExited } from "../database/entities/events/collateralPool"
 import { fassetToUsdPrice } from "./utils"
-import { Contracts } from "../context/contracts"
+import { ContractLookup } from "../context/contracts"
 import { MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
 import type { SelectQueryBuilder } from "@mikro-orm/knex"
@@ -18,10 +18,10 @@ import type { AggregateTimeSeries, ClaimedFees, PoolScore, TimeSeries, TokenPort
  * It is seperated in case of UI's opensource release, and subsequent simplified indexer deployment.
  */
 export abstract class DashboardAnalytics {
-  contracts: Contracts
+  contracts: ContractLookup
 
   constructor(public readonly orm: ORM) {
-    this.contracts = new Contracts()
+    this.contracts = new ContractLookup()
   }
 
   ///////////////////////////////////////////////////////////////

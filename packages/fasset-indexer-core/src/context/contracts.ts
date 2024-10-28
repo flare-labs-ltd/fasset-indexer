@@ -2,7 +2,9 @@ import { FAssetType } from "../shared"
 import { contracts } from "../config/contracts"
 
 
-export class Contracts {
+export class ContractLookup {
+  static singleton: ContractLookup | null = null
+  // caches
   private assetManagerToFAsset__cache: Map<string, FAssetType> = new Map()
   private fAssetToAssetManager__cache: Map<FAssetType, string> = new Map()
   private fAssetTokenToFAsset__cache: Map<string, FAssetType> = new Map()
@@ -11,6 +13,9 @@ export class Contracts {
   private isFAssetToken__cache: Set<string> = new Set()
 
   constructor() {
+    if (ContractLookup.singleton !== null) {
+      return ContractLookup.singleton
+    }
     // populate caches for faster lookups
     this.populateFAssetTypeToAssetManagerCache()
     this.populateIsAssetManagerCache()

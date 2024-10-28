@@ -5,6 +5,6 @@ export { FullLiquidationStarted, LiquidationPerformed } from "./database/entitie
 export { Analytics } from "./analytics/analytics"
 export { createOrm } from "./database/utils"
 export { getOrmConfig, getUserDatabaseConfig } from "./config/utils"
-export { Contracts } from "./context/contracts"
+export { ContractLookup as Contracts } from "./context/contracts"
 export { MIN_EVM_BLOCK_TIMESTAMP } from "./config/constants"
 export type { PoolScore, TimeSeries, AggregateTimeSeries, TokenPortfolio, ClaimedFees } from "./analytics/interface"

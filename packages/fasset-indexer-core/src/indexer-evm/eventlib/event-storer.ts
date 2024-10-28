@@ -31,7 +31,7 @@ import {
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
 import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
-import { Contracts } from "../../context/contracts"
+import { ContractLookup } from "../../context/contracts"
 import { EVENTS } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Event } from "./event-scraper"
@@ -54,10 +54,10 @@ import type { ORM } from "../../database/interface"
 
 
 export class EventStorer {
-  contracts: Contracts
+  contracts: ContractLookup
 
   constructor(readonly orm: ORM) {
-    this.contracts = new Contracts()
+    this.contracts = new ContractLookup()
   }
 
   async processEvent(log: Event): Promise<void> {
