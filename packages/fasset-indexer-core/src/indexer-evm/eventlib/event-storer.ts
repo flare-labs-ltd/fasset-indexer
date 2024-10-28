@@ -5,7 +5,7 @@ import {
 } from "../shared"
 import { EvmLog } from "../../database/entities/evm/log"
 import { CollateralTypeAdded, ERC20Transfer } from "../../database/entities/events/token"
-import { AddressType } from "../../database/entities/address"
+import { AddressType, EvmAddress } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
 import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
@@ -51,6 +51,7 @@ import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollat
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { ORM } from "../../database/interface"
+import { TokenBalance } from "../../database/entities/state/balance"
 
 
 export class EventStorer {
@@ -561,7 +562,19 @@ export class EventStorer {
     const fromEvmAddress = await findOrCreateEvmAddress(em, from, AddressType.USER)
     const toEvmAddress = await findOrCreateEvmAddress(em, to, AddressType.USER)
     const erc20Transfer = new ERC20Transfer(evmLog, fromEvmAddress, toEvmAddress, value)
+    await this.increaseTokenBalance(em, evmLog.address, toEvmAddress, value)
+    await this.increaseTokenBalance(em, evmLog.address, fromEvmAddress, -value)
     em.persist(erc20Transfer)
+  }
+
+  private async increaseTokenBalance(em: EntityManager, token: EvmAddress, holder: EvmAddress, amount: bigint): Promise<void> {
+    let balance = await em.findOne(TokenBalance, { token, holder })
+    if (!balance) {
+      balance = new TokenBalance(token, holder, amount)
+    } else {
+      balance.amount += amount
+    }
+    em.persist(balance)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

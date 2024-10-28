@@ -344,7 +344,7 @@ export class EventFixture {
     ]
   }
 
-  protected async generateErc20Transfer(): Promise<TransferEvent.OutputTuple> {
+  protected async generateTransfer(): Promise<TransferEvent.OutputTuple> {
     return [
       randomNativeAddress(),
       randomNativeAddress(),

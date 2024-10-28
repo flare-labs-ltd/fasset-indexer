@@ -32,6 +32,7 @@ import { CurrentUnderlyingBlockUpdated } from "./entities/events/system"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
+import { TokenBalance } from "./entities/state/balance"
 import { BtcTx, BtcTxInput, BtcTxOutput, OpReturn } from "./entities/btc/transaction"
 import { BtcBlock } from "./entities/btc/block"
 import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
@@ -52,7 +53,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     IllegalPaymentConfirmed, DuplicatePaymentConfirmed, UnderlyingBalanceTooLow,
     CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
     AgentPing, AgentPingResponse, CurrentUnderlyingBlockUpdated,
-    FtsoPrice, UntrackedAgentVault,
+    FtsoPrice, UntrackedAgentVault, TokenBalance,
     // btc
     BtcTxOutput, BtcTxInput, OpReturn, BtcBlock, BtcTx
   ],

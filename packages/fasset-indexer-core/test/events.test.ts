@@ -6,7 +6,7 @@ import { FAssetType } from "../src"
 import { EvmLog } from "../src/database/entities/evm/log"
 import { AgentVaultCreated } from "../src/database/entities/events/agent"
 import { AgentVaultSettings } from "../src/database/entities/state/agent"
-import { CollateralTypeAdded } from "../src/database/entities/events/token"
+import { CollateralTypeAdded, ERC20Transfer } from "../src/database/entities/events/token"
 import { EventFixture } from "./fixtures/event"
 import {
   CollateralReservationDeleted, CollateralReserved,
@@ -27,6 +27,7 @@ import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
 import { AgentPing, AgentPingResponse } from "../src/database/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../src/database/entities/events/system"
+import { TokenBalance } from "../src/database/entities/state/balance"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -48,6 +49,50 @@ describe("FAsset evm events", () => {
   afterEach(async () => {
     await context.orm.close(true)
     unlink(CONFIG.db.dbName!, () => {})
+  })
+
+  it("should store erc20 transfers", async () => {
+    const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
+    const erc20Transfer = await fixture.generateEvent(EVENTS.ERC20_TRANSFER, assetManager)
+    const em = context.orm.em.fork()
+    await storer.processEventUnsafe(em, erc20Transfer)
+    const erc20TransferEntity = await em.findOneOrFail(EvmLog, { index: erc20Transfer.logIndex },
+      { populate: ['block', 'address' ]}
+    )
+    expect(erc20TransferEntity).to.exist
+    expect(erc20TransferEntity.name).to.equal(EVENTS.ERC20_TRANSFER)
+    expect(erc20TransferEntity.address.hex).to.equal(assetManager)
+    expect(erc20TransferEntity.block.index).to.equal(erc20Transfer.blockNumber)
+    // check that erc20 transfer was stored
+    const erc20TransferStored = await em.findOneOrFail(ERC20Transfer,
+      { evmLog: { index: erc20Transfer.logIndex, block: { index: erc20Transfer.blockNumber }}},
+      { populate: ['evmLog.block', 'evmLog.address', 'from', 'to' ]}
+    )
+    expect(erc20TransferStored).to.exist
+    expect(erc20TransferStored.evmLog.index).to.equal(erc20Transfer.logIndex)
+    expect(erc20TransferStored.evmLog.block.index).to.equal(erc20Transfer.blockNumber)
+    expect(erc20TransferStored.evmLog.address.hex).to.equal(assetManager)
+    expect(erc20TransferStored.from.hex).to.equal(erc20Transfer.args[0])
+    expect(erc20TransferStored.to.hex).to.equal(erc20Transfer.args[1])
+    expect(erc20TransferStored.value).to.equal(erc20Transfer.args[2])
+    // check that balance was updated for sender
+    const tokenBalance = await em.findOneOrFail(TokenBalance,
+      { token: { hex: assetManager }, holder: { hex: erc20Transfer.args[0] }},
+      { populate: ['token', 'holder'] }
+    )
+    expect(tokenBalance).to.exist
+    expect(tokenBalance.token.hex).to.equal(assetManager)
+    expect(tokenBalance.holder.hex).to.equal(erc20Transfer.args[0])
+    expect(tokenBalance.amount).to.equal(-erc20Transfer.args[2])
+    // check that balance was updated for receiver
+    const tokenBalanceReceiver = await em.findOneOrFail(TokenBalance,
+      { token: { hex: assetManager }, holder: { hex: erc20Transfer.args[1] }},
+      { populate: ['token', 'holder'] }
+    )
+    expect(tokenBalanceReceiver).to.exist
+    expect(tokenBalanceReceiver.token.hex).to.equal(assetManager)
+    expect(tokenBalanceReceiver.holder.hex).to.equal(erc20Transfer.args[1])
+    expect(tokenBalanceReceiver.amount).to.equal(erc20Transfer.args[2])
   })
 
   it("should store agent created event", async () => {
