@@ -1,0 +1,2 @@
+export const MAX_GRAPH_POINTS = 100
+export const MAX_RETURNED_OBJECTS = 100

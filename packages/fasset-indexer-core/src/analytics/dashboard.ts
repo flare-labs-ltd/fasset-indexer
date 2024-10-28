@@ -10,7 +10,7 @@ import { MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
 import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
-import type { AggregateTimeSeries, PoolScore, TimeSeries } from "./interface"
+import type { AggregateTimeSeries, ClaimedFees, PoolScore, TimeSeries, TokenPortfolio } from "./interface"
 
 
 /**
@@ -38,7 +38,7 @@ export abstract class DashboardAnalytics {
   //////////////////////////////////////////////////////////////////////
   // collateral pools
 
-  async poolTransactionCount(): Promise<number> {
+  async poolTransactionsCount(): Promise<number> {
     const entered = await this.orm.em.count(CollateralPoolExited)
     const exited = await this.orm.em.count(CollateralPoolExited)
     return entered + exited
@@ -46,7 +46,7 @@ export abstract class DashboardAnalytics {
 
   async bestCollateralPools(n: number, minLots: number): Promise<PoolScore> {
     const con = this.orm.em.getConnection('read')
-    const res = await con.execute(BEST_COLLATERAL_POOLS(n, minLots))
+    const res = await con.execute(BEST_COLLATERAL_POOLS, [minLots, n])
     const ret = {} as PoolScore
     for (const r of res) {
       const fasset = FAssetType[r.fasset] as FAsset
@@ -58,26 +58,20 @@ export abstract class DashboardAnalytics {
     return ret
   }
 
-  async userCollateralPoolTokenPortfolio(user: string): Promise<
-    { collateralPoolToken: string, balance: bigint }[]
-  > {
+  async userCollateralPoolTokenPortfolio(user: string): Promise<TokenPortfolio> {
     const con = this.orm.em.getConnection('read')
-    const res = await con.execute(COLLATERAL_POOL_PORTFOLIO_SQL(user))
-    return res.map(x => ({ collateralPoolToken: x.cpt_address, balance: x.balance }))
+    const res = await con.execute(COLLATERAL_POOL_PORTFOLIO_SQL, [user])
+    return res.map(x => ({ token: x.cpt_address, balance: x.balance }))
   }
 
-  async totalClaimedPoolFees(): Promise<
-    { fasset: FAssetType, claimedUBA: bigint }[]
-  > {
+  async totalClaimedPoolFees(): Promise<ClaimedFees> {
     return this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
       .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA')])
       .groupBy('cpe.fasset')
       .execute()
   }
 
-  async totalClaimedPoolFeesByUser(user: string): Promise<
-    { fasset: FAssetType, claimedUBA: bigint }[]
-  > {
+  async totalClaimedPoolFeesByUser(user: string): Promise<ClaimedFees> {
     return this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
       .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA')])
       .join('cpe.tokenHolder', 'th')

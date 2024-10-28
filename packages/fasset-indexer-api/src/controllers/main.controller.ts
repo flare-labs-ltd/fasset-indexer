@@ -1,13 +1,13 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { FAssetIndexerService } from './app.service'
-import { apiResponse, type ApiResponse } from './common/api-response'
+import { FAssetIndexerService } from '../app.service'
+import { apiResponse, type ApiResponse } from '../common/api-response'
 import { LiquidationPerformed, FullLiquidationStarted, RedemptionDefault, FAssetType } from 'fasset-indexer-core'
 
 
-@ApiTags("Indexer")
+@ApiTags("Misc")
 @Controller("api/indexer")
-export class FAssetIndexerController {
+export class MiscController {
 
   constructor(private readonly appService: FAssetIndexerService) {}
 
@@ -131,5 +131,6 @@ export class FAssetIndexerController {
   getTotalFAssetClaimed(@Query('user') user: string): Promise<ApiResponse<{ fasset: FAssetType, claimedUBA: bigint }[]>> {
     return apiResponse(this.appService.totalClaimedPoolFeesByUser(user), 200)
   }
+
 
 }
