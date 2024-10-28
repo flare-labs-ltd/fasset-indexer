@@ -1,9 +1,10 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core'
 import { uint256 } from '../../custom/typeUint256'
-import { FAssetEventBound, type FAssetType } from './_bound'
+import { FAssetEventBound } from './_bound'
 import { AgentVault } from '../agent'
 import { BYTES32_LENGTH } from '../../../config/constants'
 import type { EvmLog } from '../evm/log'
+import type { FAssetType } from '../../../shared'
 
 @Entity()
 export class IllegalPaymentConfirmed extends FAssetEventBound {

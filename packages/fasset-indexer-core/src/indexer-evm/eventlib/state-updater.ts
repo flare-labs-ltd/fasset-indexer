@@ -5,7 +5,7 @@ import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
 import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManager"
-import type { Context } from "../../context"
+import type { Context } from "../../context/context"
 import type { EvmLog } from "../../database/entities/evm/log"
 
 
@@ -13,7 +13,7 @@ import type { EvmLog } from "../../database/entities/evm/log"
 export class StateUpdater extends EventStorer {
 
   constructor(public readonly context: Context) {
-    super(context)
+    super(context.orm)
   }
 
   protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {

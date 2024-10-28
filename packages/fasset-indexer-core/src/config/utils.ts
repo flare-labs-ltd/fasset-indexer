@@ -4,8 +4,6 @@ import { defineConfig } from "@mikro-orm/core"
 import { SqliteDriver } from '@mikro-orm/sqlite'
 import { PostgreSqlDriver } from "@mikro-orm/postgresql"
 import { IGNORE_EVENTS } from "./constants"
-import { abi as ASSET_MANAGER_ABI } from '../../chain/artifacts/IAssetManager.json'
-import CONTRACTS from '../../chain/coston.json'
 import type { OrmOptions } from '../database/interface'
 import type { IUserConfig, IUserDatabaseConfig, IConfig } from "./interface"
 
@@ -91,12 +89,6 @@ export function expandUserConfig(config: IUserConfig): IConfig {
     btcRpc: {
       url: config.btcRpcUrl,
       apiKey: config.btcApiKey,
-    },
-    contracts: {
-      addresses: CONTRACTS,
-      abis: {
-        assetManager: ASSET_MANAGER_ABI,
-      }
     },
     db: getOrmConfig(config),
     ignoreEvents: IGNORE_EVENTS

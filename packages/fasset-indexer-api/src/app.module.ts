@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { FAssetIndexerService } from './app.service'
-import { FAssetIndexerController } from './app.controller'
+import { MiscController } from './controllers/main.controller'
+import { DashboardController } from './controllers/dashboard.controller'
 import { createOrm, getUserDatabaseConfig, getOrmConfig } from 'fasset-indexer-core'
 
 
@@ -16,7 +17,7 @@ const fAssetIndexerServiceProvider = {
 
 @Module({
   imports: [],
-  controllers: [FAssetIndexerController],
+  controllers: [DashboardController, MiscController],
   providers: [fAssetIndexerServiceProvider]
 })
 export class FAssetIndexerModule {}

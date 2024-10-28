@@ -6,7 +6,7 @@ import { EVENTS,
   FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, MIN_EVM_BLOCK_NUMBER
 } from "../../config/constants"
 import type { Log } from "ethers"
-import type { Context } from "../../context"
+import type { Context } from "../../context/context"
 
 
 const INSERTION_EVENTS: string[] = [
@@ -55,7 +55,7 @@ export class EventIndexerBackPopulation extends EventIndexer {
 
   override async storeLogs(logs: Log[]): Promise<void> {
     logs = logs.filter(async log => {
-      const desc = await this.parseLog(log)
+      const desc = await this.eventParser.parseLog(log)
       return desc !== null && INSERTION_EVENTS.includes(desc.name)
     })
     await super.storeLogs(logs)

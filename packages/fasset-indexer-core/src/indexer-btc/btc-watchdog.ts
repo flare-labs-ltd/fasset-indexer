@@ -1,8 +1,8 @@
 import { sleep } from "../utils"
-import { FAssetType } from "../database/entities/events/_bound"
+import { FAssetType } from "../shared"
 import { AgentVault } from "../database/entities/agent"
 import { BtcStateUpdater } from "./lib/btc-state-updater"
-import { Context } from "../context"
+import { Context } from "../context/context"
 import { BTC_STATE_UPDATE_SLEEP_MS } from "../config/constants"
 
 export class BtcStateWatchdog {

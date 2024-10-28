@@ -1,6 +1,6 @@
 import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
-import { Context } from "../../context"
+import { Context } from "../../context/context"
 import { EVENTS, IGNORE_EVENTS } from "../../config/constants"
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Log, LogDescription } from "ethers"
@@ -49,11 +49,7 @@ export class EventParser {
     }
   }
 
-  protected ignoreLog(name: string): boolean {
-    return !this.supportedEvents.has(name)
-  }
-
-  protected async parseLog(log: Log): Promise<LogDescription | null> {
+  async parseLog(log: Log): Promise<LogDescription | null> {
     if (this.context.isAssetManager(log.address)) {
       return this.context.assetManagerInterface.parseLog(log)
     } else if (this.context.isFAssetToken(log.address)) {
@@ -84,6 +80,10 @@ export class EventParser {
       return this.context.collateralPoolInterface.parseLog(log)
     }
     return null
+  }
+
+  protected ignoreLog(name: string): boolean {
+    return !this.supportedEvents.has(name)
   }
 
   protected async isCollateralPool(em: EntityManager, address: string): Promise<boolean> {

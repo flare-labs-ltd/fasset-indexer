@@ -10,7 +10,7 @@ import {
   BTC_BLOCK_FETCH_SLEEP_MS,
   MIN_BTC_BLOCK_NUMBER
 } from '../config/constants'
-import type { Context } from '../context'
+import type { Context } from '../context/context'
 import type { BlockbookBlock } from './blockbook/interface'
 
 

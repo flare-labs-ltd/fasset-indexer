@@ -4,7 +4,7 @@ import { BtcBlock } from "../../database/entities/btc/block"
 import { Blockbook } from "../blockbook/blockbook"
 import { findOrCreateUnderlyingAddress } from "../../utils"
 import type { EntityManager } from "@mikro-orm/knex"
-import type { Context } from "../../context"
+import type { Context } from "../../context/context"
 import type { BlockbookBlock, BlockbookTx, BlockbookTxInput, BlockbookTxOutput } from "../blockbook/interface"
 
 

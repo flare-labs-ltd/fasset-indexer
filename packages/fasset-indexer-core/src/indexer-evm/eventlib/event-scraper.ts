@@ -1,4 +1,4 @@
-import type { Context } from "../../context"
+import type { Context } from "../../context/context"
 import type { Log } from "ethers"
 
 

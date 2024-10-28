@@ -1,7 +1,7 @@
 import { OpReturn } from "../database/entities/btc/transaction"
 import { Blockbook } from "../indexer-btc/blockbook/blockbook"
 import { BtcStateWatchdog } from "../indexer-btc/btc-watchdog"
-import { Context } from "../context"
+import { Context } from "../context/context"
 import { config } from "../config/config"
 
 async function fixOpReturnCodes() {

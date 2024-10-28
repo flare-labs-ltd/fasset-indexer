@@ -1,6 +1,6 @@
 import { EventIndexer } from "../evm-indexer"
 import { EventIndexerBackPopulation } from "./indexer-back-population"
-import type { Context } from "../../context"
+import type { Context } from "../../context/context"
 
 
 const BLOCK_INDEX_NUMBER = 92

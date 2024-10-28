@@ -1,11 +1,11 @@
 import { EntityManager } from "@mikro-orm/knex"
-import { AddressType, EvmAddress, UnderlyingAddress } from "../database/entities/address"
+import { AddressType, EvmAddress } from "../database/entities/address"
 import { EvmTransaction } from "../database/entities/evm/transaction"
 import { EvmBlock } from "../database/entities/evm/block"
 import { AgentVault } from "../database/entities/agent"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { UntrackedAgentVault, Var } from "../database/entities/state/var"
-import type { Context } from "../context"
+import type { Context } from "../context/context"
 import type { AgentInfo } from "../../chain/typechain/IAssetManager"
 
 

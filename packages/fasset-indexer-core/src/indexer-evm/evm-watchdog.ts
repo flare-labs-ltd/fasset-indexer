@@ -1,11 +1,11 @@
 import { EntityManager } from "@mikro-orm/knex"
 import { sleep } from "../utils"
-import { FAssetType } from "../database/entities/events/_bound"
+import { FAssetType } from "../shared"
 import { CollateralTypeAdded } from "../database/entities/events/token"
 import { AgentVault } from "../database/entities/agent"
 import { FtsoPrice } from "../database/entities/state/price"
 import { isUntrackedAgentVault, updateAgentVaultInfo } from "./shared"
-import { Context } from "../context"
+import { Context } from "../context/context"
 import { MID_CHAIN_FETCH_SLEEP_MS, EVM_STATE_UPDATE_SLEEP_MS } from "../config/constants"
 
 

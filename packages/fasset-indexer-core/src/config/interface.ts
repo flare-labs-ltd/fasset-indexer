@@ -1,4 +1,3 @@
-import type { InterfaceAbi } from "ethers"
 import type { OrmOptions } from "../database/interface"
 
 
@@ -26,12 +25,6 @@ export interface IConfig {
   btcRpc: {
     url: string
     apiKey?: string
-  }
-  contracts: {
-    addresses: { name: string, address: string, contractName: string }[],
-    abis: {
-      assetManager: InterfaceAbi
-    }
   }
   db: OrmOptions,
   ignoreEvents?: string[]

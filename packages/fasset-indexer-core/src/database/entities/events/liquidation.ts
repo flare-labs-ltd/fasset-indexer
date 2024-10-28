@@ -1,9 +1,10 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core'
 import { uint256 } from '../../custom/typeUint256'
-import { FAssetEventBound, type FAssetType } from './_bound'
+import { FAssetEventBound } from './_bound'
 import { AgentVault } from '../agent'
 import { EvmAddress } from '../address'
 import type { EvmLog } from '../evm/log'
+import type { FAssetType } from '../../../shared'
 
 
 class LiquidationStartedBase extends FAssetEventBound {

@@ -8,7 +8,7 @@ async function bootstrap() {
   const app = await NestFactory.create(FAssetIndexerModule)
   const config = new DocumentBuilder()
     .setTitle('FAsset Indexer')
-    .setDescription('Indexer for the FAsset protocol')
+    .setDescription('Api for the FAsset indexer')
     .setVersion('1.0')
     .build()
   const document = SwaggerModule.createDocument(app, config)
