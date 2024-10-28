@@ -72,11 +72,12 @@ export abstract class DashboardAnalytics {
   }
 
   private extractValue(qr: any, key: string): bigint {
-    if (qr[0]?.minted) {
-      return BigInt(qr[0][key])
-    } else {
-      return BigInt(0)
+    if (qr[0]) {
+      if (qr[0][key]) {
+        return BigInt(qr[0][key])
+      }
     }
+    return BigInt(0)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -131,7 +132,7 @@ export abstract class DashboardAnalytics {
 
   async totalClaimedPoolFeesByPoolAndUser(pool: string, user: string): Promise<ClaimedFees> {
     const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select('cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA'))
+      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimed_uba')])
       .join('cpe.tokenHolder', 'th')
       .join('cpe.evmLog', 'el')
       .join('el.address', 'ela')
@@ -139,12 +140,13 @@ export abstract class DashboardAnalytics {
         'ela.hex': pool,
         'th.hex': user
       })
+      .groupBy('cpe.fasset')
       .execute()
     const fassetType = resp[0]?.fasset
     if (fassetType === undefined) return []
     return [{
       fasset: FAssetType[fassetType] as FAsset,
-      claimedUBA: this.extractValue(resp, 'claimedUBA'),
+      claimedUBA: this.extractValue(resp, 'claimed_uba'),
     }]
   }
 
