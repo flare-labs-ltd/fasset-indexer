@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get, Optional, ParseIntPipe, Query } from '@nestjs/common'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../app.service'
 import { apiResponse, type ApiResponse } from '../common/api-response'
@@ -20,7 +20,7 @@ export class DashboardController {
   @ApiQuery({ name: "now", type: Number, required: false })
   getFassetSupplyDiff(
     @Query('lookback') lookback: string,
-    @Query('now') now?: number
+    @Query('now', new ParseIntPipe({ optional: true })) now?: number
   ): Promise<ApiResponse<FAssetDiffs>> {
     let seconds = null
     if (lookback === "day") {
@@ -50,8 +50,8 @@ export class DashboardController {
   @ApiOperation({ summary: 'The main collateral pools to advertise' })
   @ApiQuery({ name: "minLots", type: Number, required: false })
   getBestCollateralPools(
-    @Query('n') n: number,
-    @Query('minLots') minLots?: number
+    @Query('n', ParseIntPipe) n: number,
+    @Query('minLots', new ParseIntPipe({ optional: true })) minLots?: number
   ): Promise<ApiResponse<PoolScore>> {
     const err = this.restrictReturnedObjects(n)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
@@ -92,9 +92,9 @@ export class DashboardController {
   @ApiOperation({ summary: 'Time series of the total $ value of redeemed FAssets' })
   @ApiQuery({ name: "startTime", type: Number, required: false })
   getTimeSeriesRedeemed(
-    @Query('endtime') end: number,
-    @Query('npoints') npoints: number,
-    @Query('startTime') start?: number
+    @Query('endtime', ParseIntPipe) end: number,
+    @Query('npoints', ParseIntPipe) npoints: number,
+    @Query('startTime', new ParseIntPipe({ optional: true })) start?: number
   ): Promise<ApiResponse<AggregateTimeSeries>> {
     const err = this.restrictPoints(end, npoints, start)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
@@ -105,9 +105,9 @@ export class DashboardController {
   @ApiOperation({ summary: 'Time series of the total $ value of minted FAssets' })
   @ApiQuery({ name: "startTime", type: Number, required: false })
   getTimeSeriesMinted(
-    @Query('endtime') end: number,
-    @Query('npoints') npoints: number,
-    @Query('startTime') start?: number
+    @Query('endtime', ParseIntPipe) end: number,
+    @Query('npoints', ParseIntPipe) npoints: number,
+    @Query('startTime', new ParseIntPipe({ optional: true })) start?: number
   ): Promise<ApiResponse<AggregateTimeSeries>> {
     const err = this.restrictPoints(end, npoints, start)
     if (err !== null) return apiResponse(Promise.reject(err), 400)

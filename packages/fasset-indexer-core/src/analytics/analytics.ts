@@ -237,7 +237,7 @@ async function main() {
   console.log(resp)
   const resp2 = await analytics.userCollateralPoolTokenPortfolio('0xded754459e83981176A5E6c0c39c397b945B7a8A')
   console.log(resp2)
-  const resp3 = await analytics.mintedTimeSeries(Date.now() / 1000, 10)
+  const resp3 = await analytics.mintedTimeSeries(1730100814, 10, 1728751614)
   console.log(resp3)
   const resp4 = await analytics.mintedAggregateTimeSeries(Date.now() / 1000, 10)
   console.log(resp4)
