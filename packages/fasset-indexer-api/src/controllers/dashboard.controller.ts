@@ -2,8 +2,8 @@ import { Controller, Get, Query } from '@nestjs/common'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../app.service'
 import { apiResponse, type ApiResponse } from '../common/api-response'
-import { MAX_GRAPH_POINTS, MAX_RETURNED_OBJECTS } from 'src/common/constants'
-import type { AggregateTimeSeries, ClaimedFees, PoolScore, TokenPortfolio } from 'fasset-indexer-core'
+import { MAX_GRAPH_POINTS, MAX_RETURNED_OBJECTS, MINUTE, DAY, WEEK, MONTH, YEAR } from 'src/common/constants'
+import type { AggregateTimeSeries, ClaimedFees, PoolScore, TokenPortfolio, FAssetDiffs } from 'fasset-indexer-core'
 
 
 @ApiTags('Dashboard')
@@ -13,6 +13,30 @@ export class DashboardController {
 
   /////////////////////////////////////////////////////////////////
   // info
+
+  @Get('fasset-supply-diff')
+  @ApiOperation({ summary: 'Difference between fasset supplies between now and now - lookback' })
+  @ApiQuery({ name: "now", type: Number, required: false })
+  getFassetSupplyDiff(
+    @Query('lookback') lookback: string,
+    @Query('now') now?: number
+  ): Promise<ApiResponse<FAssetDiffs>> {
+    let seconds = null
+    if (lookback === "day") {
+      seconds = DAY
+    } else if (lookback === "week") {
+      seconds = WEEK
+    } else if (lookback === "month") {
+      seconds = MONTH
+    } else if (lookback === "year") {
+      seconds = YEAR
+    } else {
+      seconds = parseInt(lookback)
+      if (isNaN(seconds)) return apiResponse(Promise.reject(`Invalid input lookback=${lookback}`), 400)
+    }
+    now = now ?? Math.floor(Date.now() / 1000)
+    return apiResponse(this.appService.fAssetSupplyDiff(now - seconds, now), 200)
+  }
 
   @Get('collateral-pool-transactions-count')
   @ApiOperation({ summary: 'Number of FAsset transactions related to collateral pools' })
@@ -81,7 +105,7 @@ export class DashboardController {
 
   @Get('/time-series/minted:endtime:points')
   @ApiOperation({ summary: 'Time series of the total $ value of minted FAssets' })
-  @ApiQuery({ name: "user", type: Number, required: false })
+  @ApiQuery({ name: "startTime", type: Number, required: false })
   getTimeSeriesMinted(
     @Query('endtime') end: number,
     @Query('npoints') npoints: number,
