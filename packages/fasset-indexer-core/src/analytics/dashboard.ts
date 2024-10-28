@@ -1,5 +1,8 @@
 import { raw } from "@mikro-orm/core"
+import { ZeroAddress } from "ethers"
 import { FAsset, FAssetType } from "../shared"
+import { EvmAddress } from "../database/entities/address"
+import { ERC20Transfer } from "../database/entities/events/token"
 import { FAssetEventBound } from "../database/entities/events/_bound"
 import { MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionRequested } from "../database/entities/events/redemption"
@@ -8,10 +11,9 @@ import { fassetToUsdPrice } from "./utils"
 import { ContractLookup } from "../context/contracts"
 import { MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
-import type { SelectQueryBuilder } from "@mikro-orm/knex"
+import type { QueryBuilder, SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
-import type { AggregateTimeSeries, ClaimedFees, PoolScore, TimeSeries, TokenPortfolio } from "./interface"
-
+import type { AggregateTimeSeries, ClaimedFees, FAssetDiffs, PoolScore, TimeSeries, TokenPortfolio } from "./interface"
 
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
@@ -27,12 +29,54 @@ export abstract class DashboardAnalytics {
   ///////////////////////////////////////////////////////////////
   // diffs
 
-  async fAssetSupplyDiff(): Promise<{ fasset: FAssetType, diff: bigint }[]> {
-    return this.orm.em.createQueryBuilder(MintingExecuted, 'me')
-      .select(['me.fasset', raw('SUM(cr.value_uba) as diff')])
-      .join('me.collateralReserved', 'cr')
-      .groupBy('me.fasset')
+  async fAssetSupplyDiff(compareBefore: number, compareAfter: number): Promise<FAssetDiffs> {
+    const ret = [] as FAssetDiffs
+    const em = this.orm.em.fork()
+    const zeroAddress = await em.findOne(EvmAddress, { hex: ZeroAddress })
+    if (zeroAddress === null) return ret
+    for (const fassetType in FAssetType) {
+      const fasset = FAssetType[fassetType] as FAsset
+      let fAssetAddress: string | null = null
+      try {
+        fAssetAddress = this.contracts.fAssetTypeToFAssetAddress(FAssetType[fasset])
+      } catch (err: any) {
+        continue // fasset not supported yet
+      }
+      const fAssetEvmAddress = await em.findOne(EvmAddress, { hex: fAssetAddress })
+      if (fAssetEvmAddress === null) continue
+      const amountBefore = await this.tokenSupplyAt(fAssetEvmAddress.id, compareBefore, zeroAddress.id)
+      const amountAfter = await this.tokenSupplyAt(fAssetEvmAddress.id, compareAfter, zeroAddress.id)
+      ret.push({ fasset, amountBefore, amountAfter })
+    }
+    return ret
+  }
+
+  private async tokenSupplyAt(tokenId: number, timestamp: number, zeroAddressId: number): Promise<bigint> {
+    if (zeroAddressId === null) return BigInt(0)
+    const minted = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
+      .select([raw('SUM(t.value) as minted')])
+      .join('evmLog', 'el')
+      .join('el.block', 'block')
+      .where({ 't.from_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
       .execute()
+    const mintedValue = this.extractValue(minted, 'minted')
+    if (mintedValue == BigInt(0)) return BigInt(0)
+    const burned = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
+      .select([raw('SUM(t.value) as burned')])
+      .join('evmLog', 'el')
+      .join('el.block', 'block')
+      .where({ 't.to_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
+      .execute()
+    const burnedValue = this.extractValue(burned, 'burned')
+    return mintedValue - burnedValue
+  }
+
+  private extractValue(qr: any, key: string): bigint {
+    if (qr[0]?.minted) {
+      return BigInt(qr[0][key])
+    } else {
+      return BigInt(0)
+    }
   }
 
   //////////////////////////////////////////////////////////////////////

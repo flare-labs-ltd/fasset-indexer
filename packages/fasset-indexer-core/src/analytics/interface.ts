@@ -9,3 +9,5 @@ export type PoolScore = { [fasset in Partial<FAsset>]: { pool: string, score: bi
 export type TokenPortfolio = { token: string, balance: bigint }[]
 
 export type ClaimedFees = { fasset: FAssetType, claimedUBA: bigint }[]
+
+export type FAssetDiffs = { fasset: FAsset, amountBefore: bigint, amountAfter: bigint }[]

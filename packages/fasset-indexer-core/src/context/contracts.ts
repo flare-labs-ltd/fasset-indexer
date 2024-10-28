@@ -18,8 +18,10 @@ export class ContractLookup {
     }
     // populate caches for faster lookups
     this.populateFAssetTypeToAssetManagerCache()
+    this.populateFAssetTypeToFAssetTokenCache()
     this.populateIsAssetManagerCache()
     this.populateIsFAssetTokenCache()
+    ContractLookup.singleton = this
   }
 
   isAssetManager(address: string): boolean {

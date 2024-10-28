@@ -241,6 +241,8 @@ async function main() {
   console.log(resp3)
   const resp4 = await analytics.mintedAggregateTimeSeries(Date.now() / 1000, 10)
   console.log(resp4)
+  const resp5 = await analytics.fAssetSupplyDiff(Date.now() / 1000 - 60 * 60 * 24 * 30, Date.now() / 1000)
+  console.log(resp5)
   await context.orm.close()
 }
 
