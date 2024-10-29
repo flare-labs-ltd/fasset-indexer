@@ -24,6 +24,7 @@ async function setTokenBalances(context: Context) {
       .groupBy(['l.address', 't.from'])
       .execute()
     for (const m of minus) {
+      console.log('processing from transfer', m)
       // @ts-ignore
       let balance = await em.findOne(TokenBalance, { token: m.address_id, holder: m.from })
       if (!balance) {
@@ -46,7 +47,7 @@ async function runIndexer(start?: number) {
   })
 
   await setTokenBalances(context)
-  //await indexer.run()
+  await indexer.run()
 }
 
 runIndexer()
