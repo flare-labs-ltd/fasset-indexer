@@ -3,7 +3,10 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../app.service'
 import { apiResponse, type ApiResponse } from '../common/api-response'
 import { MAX_GRAPH_POINTS, MAX_RETURNED_OBJECTS, DAY, WEEK, MONTH, YEAR } from 'src/common/constants'
-import type { AggregateTimeSeries, ClaimedFees, PoolScore, TokenPortfolio, FAssetDiffs, FAssetHolderCount } from 'fasset-indexer-core'
+import type {
+  AggregateTimeSeries, ClaimedFees, PoolScore, TokenPortfolio,
+  FAssetDiffs, FAssetHolderCount, FAssetDiff
+} from 'fasset-indexer-core'
 
 
 @ApiTags('Dashboard')
@@ -18,32 +21,6 @@ export class DashboardController {
   @ApiOperation({ summary: 'Number of fasset token holders' })
   getFAssetHolderCount(): Promise<ApiResponse<FAssetHolderCount>> {
     return apiResponse(this.appService.fAssetholderCount(), 200)
-  }
-
-  @Get('fasset-supply-diff?')
-  @ApiOperation({ summary: 'Difference between fasset supplies between now and now - lookback' })
-  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | day | week | month | year" })
-  @ApiQuery({ name: "now", type: Number, required: false })
-  getFassetSupplyDiff(
-    @Query('lookback') lookback: string,
-    @Query('now', new ParseIntPipe({ optional: true })) now?: number
-  ): Promise<ApiResponse<FAssetDiffs>> {
-    let seconds = null
-    if (lookback === "day") {
-      seconds = DAY
-    } else if (lookback === "week") {
-      seconds = WEEK
-    } else if (lookback === "month") {
-      seconds = MONTH
-    } else if (lookback === "year") {
-      seconds = YEAR
-    } else {
-      seconds = parseInt(lookback)
-      if (isNaN(seconds)) return apiResponse(Promise.reject(
-        new Error(`Invalid input lookback=${lookback}`)), 400)
-    }
-    now = now ?? Math.floor(Date.now() / 1000)
-    return apiResponse(this.appService.fAssetSupplyDiff(now - seconds, now), 200)
   }
 
   @Get('collateral-pool-transactions-count')
@@ -91,6 +68,53 @@ export class DashboardController {
     }
   }
 
+  //////////////////////////////////////////////////////////////////////
+  // diffs
+
+  @Get('/diff/fasset-supply?')
+  @ApiOperation({ summary: 'Difference between fasset supplies between now and now - lookback' })
+  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | 'day' | 'week' | 'month' | 'year'" })
+  @ApiQuery({ name: "now", type: Number, required: false })
+  getFassetSupplyDiff(
+    @Query('lookback') lookback: string,
+    @Query('now', new ParseIntPipe({ optional: true })) now?: number
+  ): Promise<ApiResponse<FAssetDiffs>> {
+    const seconds = this.stringToSeconds(lookback)
+    if (seconds === undefined) return apiResponse(Promise.reject(new Error(`Invalid input lookback=${lookback}`)), 400)
+    now = now ?? Math.floor(Date.now() / 1000)
+    return apiResponse(this.appService.fAssetSupplyDiff(now - seconds, now), 200)
+  }
+
+  @Get('/diff/pool-collateral?')
+  @ApiOperation({ summary: 'Difference between pool collateral between now and now - lookback' })
+  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | 'day' | 'week' | 'month' | 'year'" })
+  @ApiQuery({ name: "now", type: Number, required: false })
+  getPoolCollateralDiff(
+    @Query('pool') pool: string,
+    @Query('lookback') lookback: string,
+    @Query('now', new ParseIntPipe({ optional: true })) now?: number
+  ): Promise<ApiResponse<FAssetDiff>> {
+    const seconds = this.stringToSeconds(lookback)
+    if (seconds === undefined) return apiResponse(Promise.reject(new Error(`Invalid input lookback=${lookback}`)), 400)
+    now = now ?? Math.floor(Date.now() / 1000)
+    return apiResponse(this.appService.poolCollateralDiff(pool, now - seconds, now), 200)
+  }
+
+  @Get('/diff/collected-pool-fees?')
+  @ApiOperation({ summary: 'Difference between pool collateral between now and now - lookback' })
+  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | 'day' | 'week' | 'month' | 'year'" })
+  @ApiQuery({ name: "now", type: Number, required: false })
+  getPoolFeesDiff(
+    @Query('pool') pool: string,
+    @Query('lookback') lookback: string,
+    @Query('now', new ParseIntPipe({ optional: true })) now?: number
+  ): Promise<ApiResponse<FAssetDiff>> {
+    const seconds = this.stringToSeconds(lookback)
+    if (seconds === undefined) return apiResponse(Promise.reject(new Error(`Invalid input lookback=${lookback}`)), 400)
+    now = now ?? Math.floor(Date.now() / 1000)
+    return apiResponse(this.appService.poolFeesDiff(pool, now - seconds, now), 200)
+  }
+
   ///////////////////////////////////////////////////////////////
   // time-series
 
@@ -135,5 +159,23 @@ export class DashboardController {
       return new Error(`Cannot request more than ${MAX_RETURNED_OBJECTS} objects`)
     }
     return null
+  }
+
+  private stringToSeconds(s: string): number | undefined {
+    let seconds = null
+    if (s === "day") {
+      seconds = DAY
+    } else if (s === "week") {
+      seconds = WEEK
+    } else if (s === "month") {
+      seconds = MONTH
+    } else if (s === "year") {
+      seconds = YEAR
+    } else {
+      seconds = parseInt(s)
+      if (!isNaN(seconds))
+        return undefined
+    }
+    return seconds
   }
 }

@@ -7,4 +7,6 @@ export { createOrm } from "./database/utils"
 export { getOrmConfig, getUserDatabaseConfig } from "./config/utils"
 export { ContractLookup as Contracts } from "./context/contracts"
 export { MIN_EVM_BLOCK_TIMESTAMP } from "./config/constants"
-export type { PoolScore, TimeSeries, AggregateTimeSeries, TokenPortfolio, ClaimedFees, FAssetDiffs, FAssetHolderCount } from "./analytics/interface"
+export type { PoolScore, TimeSeries, AggregateTimeSeries, TokenPortfolio, ClaimedFees, FAssetDiffs, FAssetHolderCount,
+    FAssetDiff
+ } from "./analytics/interface"

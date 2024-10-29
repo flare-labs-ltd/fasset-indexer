@@ -10,6 +10,8 @@ export type TokenPortfolio = { token: string, balance: bigint }[]
 
 export type ClaimedFees = { fasset: FAsset, claimedUBA: bigint }[]
 
-export type FAssetDiffs = { fasset: FAsset, amountBefore: bigint, amountAfter: bigint }[]
+export type FAssetDiff = { fasset: FAsset, amountBefore: bigint, amountAfter: bigint }
+
+export type FAssetDiffs = FAssetDiff[]
 
 export type FAssetHolderCount = { fasset: FAsset, nholders: number }[]

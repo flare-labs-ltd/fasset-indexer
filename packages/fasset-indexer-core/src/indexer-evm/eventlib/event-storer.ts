@@ -562,9 +562,9 @@ export class EventStorer {
     const fromEvmAddress = await findOrCreateEvmAddress(em, from, AddressType.USER)
     const toEvmAddress = await findOrCreateEvmAddress(em, to, AddressType.USER)
     const erc20Transfer = new ERC20Transfer(evmLog, fromEvmAddress, toEvmAddress, value)
+    em.persist(erc20Transfer)
     await this.increaseTokenBalance(em, evmLog.address, toEvmAddress, value)
     await this.increaseTokenBalance(em, evmLog.address, fromEvmAddress, -value)
-    em.persist(erc20Transfer)
   }
 
   private async increaseTokenBalance(em: EntityManager, token: EvmAddress, holder: EvmAddress, amount: bigint): Promise<void> {

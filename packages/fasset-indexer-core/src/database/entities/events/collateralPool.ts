@@ -47,8 +47,8 @@ export class CollateralPoolEntered extends FAssetEventBound {
 }
 
 @Entity()
-export class CollateralPoolExited extends FAssetEventBound {
 
+export class CollateralPoolExited extends FAssetEventBound {
   @ManyToOne({ entity: () => EvmAddress })
   tokenHolder: EvmAddress
 
