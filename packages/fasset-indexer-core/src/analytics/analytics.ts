@@ -225,12 +225,12 @@ export class Analytics extends DashboardAnalytics {
 }
 
 
-/* import { Context } from "../context/context"
+import { Context } from "../context/context"
 import { config } from "../config/config"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  const resp = await analytics.totalClaimedPoolFeesByPoolAndUser(
+  /* const resp = await analytics.totalClaimedPoolFeesByPoolAndUser(
     '0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E',
     '0x28637E84DeeB3499BCE0c3dA7C708823f354eF9C'
   )
@@ -245,7 +245,13 @@ async function main() {
   console.log(resp5)
   const resp6 = await analytics.poolTransactionsCount()
   console.log(resp6)
+
+  const resp21 = await analytics.totalClaimedPoolFeesByPool('0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E')
+  console.log(resp21) */
+
+  const resp7 = await analytics.bestCollateralPools(10, 10)
+  console.log(resp7)
   await context.orm.close()
 }
 
-main() */
+main()
