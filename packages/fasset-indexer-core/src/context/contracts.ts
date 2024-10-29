@@ -11,6 +11,8 @@ export class ContractLookup {
   private fAssetToFAssetToken__cache: Map<FAssetType, string> = new Map()
   private isAssetManager__cache: Set<string> = new Set()
   private isFAssetToken__cache: Set<string> = new Set()
+  // public
+  public fassetTokens: string[] = []
 
   constructor() {
     if (ContractLookup.singleton !== null) {
@@ -21,6 +23,7 @@ export class ContractLookup {
     this.populateFAssetTypeToFAssetTokenCache()
     this.populateIsAssetManagerCache()
     this.populateIsFAssetTokenCache()
+    this.fassetTokens = Array.from(this.isFAssetToken__cache)
     ContractLookup.singleton = this
   }
 
@@ -32,7 +35,7 @@ export class ContractLookup {
     return this.isFAssetToken__cache.has(address)
   }
 
-  addressToFAssetType(address: string): FAssetType {
+  assetManagerAddressToFAssetType(address: string): FAssetType {
     if (this.assetManagerToFAsset__cache.has(address)) {
       return this.assetManagerToFAsset__cache.get(address)!
     } else {
@@ -48,11 +51,19 @@ export class ContractLookup {
     }
   }
 
+  fAssetAddressToFAssetType(address: string): FAssetType {
+    if (this.fAssetTokenToFAsset__cache.has(address)) {
+      return this.fAssetTokenToFAsset__cache.get(address)!
+    } else {
+      throw new Error(`No FAsset type found for address ${address}`)
+    }
+  }
+
   fAssetTypeToFAssetAddress(type: FAssetType): string {
     if (this.fAssetToFAssetToken__cache.has(type)) {
       return this.fAssetToFAssetToken__cache.get(type)!
     } else {
-      throw new Error(`No FAssetToken found for type ${type}`)
+      throw new Error(`No FAsset token found for type ${type}`)
     }
   }
 

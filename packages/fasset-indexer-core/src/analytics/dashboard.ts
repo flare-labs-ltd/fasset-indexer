@@ -11,9 +11,10 @@ import { fassetToUsdPrice } from "./utils"
 import { ContractLookup } from "../context/contracts"
 import { MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
-import type { QueryBuilder, SelectQueryBuilder } from "@mikro-orm/knex"
+import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
-import type { AggregateTimeSeries, ClaimedFees, FAssetDiffs, PoolScore, TimeSeries, TokenPortfolio } from "./interface"
+import type { AggregateTimeSeries, ClaimedFees, FAssetDiffs, FAssetHolderCount, PoolScore, TimeSeries, TokenPortfolio } from "./interface"
+import { TokenBalance } from "../database/entities/state/balance"
 
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
@@ -24,6 +25,26 @@ export abstract class DashboardAnalytics {
 
   constructor(public readonly orm: ORM) {
     this.contracts = new ContractLookup()
+  }
+
+  async fAssetholderCount(): Promise<FAssetHolderCount> {
+    const res = await this.orm.em.createQueryBuilder(TokenBalance, 'tb')
+      .select(['tk.hex as token_address', raw('COUNT(DISTINCT tb.holder_id) as n_token_holders')])
+      .join('tb.token', 'tk')
+      .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.contracts.fassetTokens }})
+      .groupBy('tk.hex')
+      .execute()
+    const ret: FAssetHolderCount = []
+    for (const r of res) {
+      // @ts-ignore
+      const address = r.token_address
+      if (!address) continue
+      // @ts-ignore
+      const nholders = Number(r.n_token_holders || 0)
+      const fasset = this.contracts.fAssetAddressToFAssetType(address)
+      ret.push({ fasset: FAssetType[fasset] as FAsset, nholders })
+    }
+    return ret
   }
 
   ///////////////////////////////////////////////////////////////
@@ -59,7 +80,8 @@ export abstract class DashboardAnalytics {
       .join('el.block', 'block')
       .where({ 't.from_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
       .execute()
-    const mintedValue = this.extractValue(minted, 'minted')
+    // @ts-ignore
+    const mintedValue = BigInt(minted[0]?.minted || 0)
     if (mintedValue == BigInt(0)) return BigInt(0)
     const burned = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
       .select([raw('SUM(t.value) as burned')])
@@ -67,17 +89,9 @@ export abstract class DashboardAnalytics {
       .join('el.block', 'block')
       .where({ 't.to_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
       .execute()
-    const burnedValue = this.extractValue(burned, 'burned')
+    // @ts-ignore
+    const burnedValue = BigInt(burned[0]?.burned || 0)
     return mintedValue - burnedValue
-  }
-
-  private extractValue(qr: any, key: string): bigint {
-    if (qr[0]) {
-      if (qr[0][key]) {
-        return BigInt(qr[0][key])
-      }
-    }
-    return BigInt(0)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -99,7 +113,9 @@ export abstract class DashboardAnalytics {
       if (ret[fasset] === undefined) {
         ret[fasset] = []
       }
-      ret[fasset].push({ pool: r.hex, score: r.fee_score })
+      const claimedResp = await this.totalClaimedPoolFeesByPool(r.hex)
+      const claimed = claimedResp[0]?.claimedUBA || BigInt(0)
+      ret[fasset].push({ pool: r.hex, score: r.fee_score, claimed })
     }
     return ret
   }
@@ -112,22 +128,43 @@ export abstract class DashboardAnalytics {
 
   async totalClaimedPoolFees(): Promise<ClaimedFees> {
     const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA')])
+      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimed_uba')])
       .groupBy('cpe.fasset')
       .execute()
-    // @ts-ignore
-    return resp.map(x => ({ ...x, fasset: FAssetType[x.fasset] }))
+    return resp.map(x => ({
+      // @ts-ignore
+      claimedUBA: BigInt(x?.claimed_uba || 0),
+      fasset: FAssetType[x.fasset] as FAsset
+    }))
   }
 
   async totalClaimedPoolFeesByUser(user: string): Promise<ClaimedFees> {
     const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimedUBA')])
+      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimed_uba')])
       .join('cpe.tokenHolder', 'th')
       .where({ 'th.hex': user })
       .groupBy('cpe.fasset')
       .execute()
-    // @ts-ignore
-    return resp.map(x => ({ ...x, fasset: FAssetType[x.fasset] }))
+    return resp.map(x => ({
+      // @ts-ignore
+      claimedUBA: BigInt(x?.claimed_uba || 0),
+      fasset: FAssetType[x.fasset] as FAsset
+    }))
+  }
+
+  async totalClaimedPoolFeesByPool(pool: string): Promise<ClaimedFees> {
+    const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
+      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimed_uba')])
+      .join('cpe.evmLog', 'el')
+      .join('el.address', 'ela')
+      .where({ 'ela.hex': pool })
+      .groupBy('cpe.fasset')
+      .execute()
+    return resp.map(x => ({
+      // @ts-ignore
+      claimedUBA: BigInt(x?.claimed_uba || 0),
+      fasset: FAssetType[x.fasset] as FAsset
+    }))
   }
 
   async totalClaimedPoolFeesByPoolAndUser(pool: string, user: string): Promise<ClaimedFees> {
@@ -146,7 +183,8 @@ export abstract class DashboardAnalytics {
     if (fassetType === undefined) return []
     return [{
       fasset: FAssetType[fassetType] as FAsset,
-      claimedUBA: this.extractValue(resp, 'claimed_uba'),
+      // @ts-ignore
+      claimedUBA: BigInt(resp[0]?.claimed_uba || 0),
     }]
   }
 

@@ -1,9 +1,9 @@
-import { Controller, Get, Optional, ParseIntPipe, Query } from '@nestjs/common'
+import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../app.service'
 import { apiResponse, type ApiResponse } from '../common/api-response'
 import { MAX_GRAPH_POINTS, MAX_RETURNED_OBJECTS, DAY, WEEK, MONTH, YEAR } from 'src/common/constants'
-import type { AggregateTimeSeries, ClaimedFees, PoolScore, TokenPortfolio, FAssetDiffs } from 'fasset-indexer-core'
+import type { AggregateTimeSeries, ClaimedFees, PoolScore, TokenPortfolio, FAssetDiffs, FAssetHolderCount } from 'fasset-indexer-core'
 
 
 @ApiTags('Dashboard')
@@ -13,6 +13,12 @@ export class DashboardController {
 
   /////////////////////////////////////////////////////////////////
   // info
+
+  @Get('fasset-holder-count')
+  @ApiOperation({ summary: 'Number of fasset token holders' })
+  getFAssetHolderCount(): Promise<ApiResponse<FAssetHolderCount>> {
+    return apiResponse(this.appService.fAssetholderCount(), 200)
+  }
 
   @Get('fasset-supply-diff?')
   @ApiOperation({ summary: 'Difference between fasset supplies between now and now - lookback' })
@@ -78,10 +84,10 @@ export class DashboardController {
       return apiResponse(this.appService.totalClaimedPoolFees(), 200)
     } else if (user !== undefined && pool === undefined) {
       return apiResponse(this.appService.totalClaimedPoolFeesByUser(user), 200)
-    } else if (user !== undefined && pool !== undefined) {
-      return apiResponse(this.appService.totalClaimedPoolFeesByPoolAndUser(pool, user), 200)
+    } else if (pool !== undefined && user === undefined) {
+      return apiResponse(this.appService.totalClaimedPoolFeesByPool(pool), 400)
     } else {
-      return apiResponse(Promise.reject(new Error("Cannot specify only pool")), 400)
+      return apiResponse(this.appService.totalClaimedPoolFeesByPoolAndUser(pool, user), 200)
     }
   }
 
