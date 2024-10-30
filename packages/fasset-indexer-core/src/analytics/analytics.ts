@@ -256,6 +256,9 @@ async function main() {
 
   const resp9 = await analytics.totalClaimedPoolFees()
   console.log(resp9)
+
+  const resp10 = await analytics.bestCollateralPools(10, 100)
+  console.log(resp10)
   await context.orm.close()
 }
 
