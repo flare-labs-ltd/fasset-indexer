@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../app.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
-import { LiquidationPerformed, FullLiquidationStarted, RedemptionDefault, FAssetType, ClaimedFees } from 'fasset-indexer-core'
+import { LiquidationPerformed, FullLiquidationStarted, RedemptionDefault, FAssetType } from 'fasset-indexer-core'
 
 
 @ApiTags("Misc")
@@ -119,5 +119,9 @@ export class MiscController {
     return apiResponse(this.appService.redemptionDefault(id, FAssetType[fasset]), 200)
   }
 
+  @Get('/full-liquidation-reason?')
+  fullLiquidationReason(@Query('agent') agent): Promise<ApiResponse<any>> {
+    return apiResponse(this.appService.fullLiquidationReason(agent), 200)
+  }
 
 }
