@@ -309,7 +309,7 @@ export abstract class DashboardAnalytics {
   private async totalClaimedPoolFeesByPoolAt(pool: string, timestamp?: number): Promise<ClaimedFees> {
     let enteredFeesQb = this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
       .select(['cpe.fasset', raw('SUM(cpe.added_fasset_fee_uba) as fees')])
-      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
+      .where({ 'ela.hex': pool })
       .groupBy('cpe.fasset')
       .join('cpe.evmLog', 'el')
       .join('el.address', 'ela')
