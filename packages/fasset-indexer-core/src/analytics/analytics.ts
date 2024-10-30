@@ -15,6 +15,7 @@ import {
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
 import type { FAssetType } from "../shared"
+import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../database/entities/events/challenge"
 
 
 export class Analytics extends DashboardAnalytics {
@@ -222,10 +223,27 @@ export class Analytics extends DashboardAnalytics {
     return this.orm.em.fork().count(EvmLog, { block: { timestamp: { $gt: Date.now() / 1000 - seconds }}})
   }
 
+  async fullLiquidationReason(agent: string): Promise<IllegalPaymentConfirmed | DuplicatePaymentConfirmed | UnderlyingBalanceTooLow | null> {
+    const em = this.orm.em.fork()
+    const illegal = await em.findOne(IllegalPaymentConfirmed, { agentVault: { address: { hex: agent }}},
+      { populate: ['evmLog.block', 'agentVault.address', 'agentVault.underlyingAddress'] }
+    )
+    if (illegal) return illegal
+    const duplicate = await em.findOne(DuplicatePaymentConfirmed, { agentVault: { address: { hex: agent }}},
+      { populate: ['evmLog.block', 'agentVault.address', 'agentVault.underlyingAddress'] }
+    )
+    if (duplicate) return duplicate
+    const balance = await em.findOne(UnderlyingBalanceTooLow, { agentVault: { address: { hex: agent }}},
+      { populate: ['evmLog.block', 'agentVault.address', 'agentVault.underlyingAddress'] }
+    )
+    return balance
+  }
 }
 
 /* import { Context } from "../context/context"
 import { config } from "../config/config"
+import { AgentVault } from "../database/entities/agent"
+import { EvmAddress } from "../database/entities/address"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
@@ -259,6 +277,10 @@ async function main() {
 
   const resp10 = await analytics.bestCollateralPools(10, 100)
   console.log(resp10)
+
+  const resp11 = await analytics.fullLiquidationReason('0x06e968cc76157BA588D4FEfe874ef499669EB81a')
+  console.log(resp11)
+
   await context.orm.close()
 }
 
