@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../app.service'
-import { apiResponse, type ApiResponse } from '../common/api-response'
+import { apiResponse, type ApiResponse } from '../shared/api-response'
 import { LiquidationPerformed, FullLiquidationStarted, RedemptionDefault, FAssetType, ClaimedFees } from 'fasset-indexer-core'
 
 

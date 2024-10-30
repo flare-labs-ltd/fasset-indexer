@@ -224,7 +224,6 @@ export class Analytics extends DashboardAnalytics {
 
 }
 
-
 /* import { Context } from "../context/context"
 import { config } from "../config/config"
 async function main() {
@@ -251,6 +250,12 @@ async function main() {
 
   const resp7 = await analytics.bestCollateralPools(10, 10)
   console.log(resp7)
+
+  const resp8 = await analytics.totalClaimedPoolFeesAggregateDiff(Date.now() / 1000 - 3600 * 24 * 60, Date.now() / 1000)
+  console.log(resp8)
+
+  const resp9 = await analytics.totalClaimedPoolFees()
+  console.log(resp9)
   await context.orm.close()
 }
 
