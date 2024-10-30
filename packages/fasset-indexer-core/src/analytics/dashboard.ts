@@ -11,11 +11,11 @@ import { CollateralPoolEntered, CollateralPoolExited } from "../database/entitie
 import { TokenBalance } from "../database/entities/state/balance"
 import { fassetToUsdPrice } from "./utils"
 import { ContractLookup } from "../context/contracts"
-import { MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
+import { FASSETS, MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
 import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
-import type { AggregateTimeSeries, ClaimedFees, FAssetDiff, FAssetDiffs, FAssetHolderCount, PoolScore, TimeSeries, TokenPortfolio } from "./interface"
+import type { AggregateTimeSeries, ClaimedFees, Diff, FAssetDiff, FAssetHolderCount, PoolScore, TimeSeries, TokenPortfolio } from "./interface"
 
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
@@ -51,13 +51,12 @@ export abstract class DashboardAnalytics {
   ///////////////////////////////////////////////////////////////
   // diffs
 
-  async fAssetSupplyDiff(compareBefore: number, compareAfter: number): Promise<FAssetDiffs> {
-    const ret = [] as FAssetDiffs
+  async fAssetSupplyDiffs(compareBefore: number, compareAfter: number): Promise<FAssetDiff[]> {
+    const ret = [] as FAssetDiff[]
     const em = this.orm.em.fork()
     const zeroAddress = await em.findOne(EvmAddress, { hex: ZeroAddress })
     if (zeroAddress === null) return ret
-    for (const fassetType in FAssetType) {
-      const fasset = FAssetType[fassetType] as FAsset
+    for (const fasset of FASSETS) {
       let fAssetAddress: string | null = null
       try {
         fAssetAddress = this.contracts.fAssetTypeToFAssetAddress(FAssetType[fasset])
@@ -81,91 +80,31 @@ export abstract class DashboardAnalytics {
     return { fasset, amountBefore, amountAfter }
   }
 
-  async poolFeesDiff(pool: string, compareBefore: number, compareAfter: number): Promise<FAssetDiff> {
-    const vault = await this.orm.em.fork().findOneOrFail(AgentVault, { collateralPool: { hex: pool }})
-    const fasset = FAssetType[vault.fasset] as FAsset
-    const amountBefore = await this.poolFeesAt(pool, compareBefore)
-    const amountAfter = await this.poolFeesAt(pool, compareAfter)
-    return { fasset, amountBefore, amountAfter }
+  async totalClaimedPoolFeesByPoolDiff(pool: string, compareBefore: number, compareAfter: number): Promise<FAssetDiff> {
+    const claimedFeesBefore = await this.totalClaimedPoolFeesByPoolAt(pool, compareBefore)
+    const claimedFeesAfter = await this.totalClaimedPoolFeesByPoolAt(pool, compareAfter)
+    return {
+      fasset: claimedFeesBefore[0]?.fasset || claimedFeesAfter[0]?.fasset,
+      amountBefore: claimedFeesBefore[0]?.claimedUBA || BigInt(0),
+      amountAfter: claimedFeesAfter[0]?.claimedUBA || BigInt(0)
+    }
   }
 
-  private async poolCollateralAt(pool: string, timestamp: number): Promise<bigint> {
-    const amountInRes = await this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
-      .select([raw('SUM(cpe.amount_nat_wei) as collateral')])
-      .join('cpe.evmLog', 'el')
-      .join('el.block', 'block')
-      .join('el.address', 'ela')
-      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
-      .execute()
-    // @ts-ignore
-    const amountIn = BigInt(amountInRes[0]?.collateral || 0)
-    if (amountIn === BigInt(0)) return BigInt(0)
-    const amountOutRes = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select([raw('SUM(cpe.received_nat_wei) as collateral')])
-      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
-      .join('cpe.evmLog', 'el')
-      .join('el.block', 'block')
-      .join('el.address', 'ela')
-      .execute()
-    // @ts-ignore
-    const amountOut = BigInt(amountOutRes[0]?.collateral || 0)
-    return amountIn - amountOut
+  async totalClaimedPoolFeesDiffs(compareBefore: number, compareAfter: number): Promise<FAssetDiff[]> {
+    const claimedFeesBefore = await this.totalClaimedPoolFeesAt(compareBefore)
+    const claimedFeesAfter = await this.totalClaimedPoolFeesAt(compareAfter)
+    const fassetDiffs = [] as FAssetDiff[]
+    for (const fasset of FASSETS) {
+      const cfbf = claimedFeesBefore.find(cfbf => cfbf.fasset === fasset)?.claimedUBA
+      const cfaf = claimedFeesAfter.find(cfaf => cfaf.fasset === fasset)?.claimedUBA
+      fassetDiffs.push({ fasset, amountBefore: cfbf || BigInt(0), amountAfter: cfaf || BigInt(0) })
+    }
+    return fassetDiffs
   }
 
-  private async poolFeesAt(pool: string, timestamp: number): Promise<bigint> {
-    const enteredFeesRes = await this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
-      .select([raw('SUM(cpe.added_fasset_fee_uba) as fees')])
-      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
-      .join('cpe.evmLog', 'el')
-      .join('el.block', 'block')
-      .join('el.address', 'ela')
-      .execute()
-    // @ts-ignore
-    const enteredFees = BigInt(enteredFeesRes[0]?.fees || 0)
-    const mintingPoolFeesRes = await this.orm.em.createQueryBuilder(MintingExecuted, 'me')
-      .select([raw('SUM(me.pool_fee_uba) as fees')])
-      .where({ 'cp.hex': pool, 'block.timestamp': { $lte: timestamp }})
-      .join('me.collateralReserved', 'cr')
-      .join('cr.agentVault', 'av')
-      .join('av.collateralPool', 'cp')
-      .join('me.evmLog', 'el')
-      .join('el.block', 'block')
-      .execute()
-    // @ts-ignore
-    const mintingPoolFees = BigInt(mintingPoolFeesRes[0]?.fees || 0)
-    if (enteredFees + mintingPoolFees == BigInt(0)) return BigInt(0)
-    const exited = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select([raw('SUM(cpe.received_fasset_fees_uba) as fees')])
-      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
-      .join('cpe.evmLog', 'el')
-      .join('el.block', 'block')
-      .join('el.address', 'ela')
-      .execute()
-    // @ts-ignore
-    const exitedFees = BigInt(exited[0]?.fees || 0)
-    return enteredFees + mintingPoolFees - exitedFees
-  }
-
-  private async tokenSupplyAt(tokenId: number, timestamp: number, zeroAddressId: number): Promise<bigint> {
-    if (zeroAddressId === null) return BigInt(0)
-    const minted = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
-      .select([raw('SUM(t.value) as minted')])
-      .join('evmLog', 'el')
-      .join('el.block', 'block')
-      .where({ 't.from_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
-      .execute()
-    // @ts-ignore
-    const mintedValue = BigInt(minted[0]?.minted || 0)
-    if (mintedValue == BigInt(0)) return BigInt(0)
-    const burned = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
-      .select([raw('SUM(t.value) as burned')])
-      .where({ 't.to_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
-      .join('evmLog', 'el')
-      .join('el.block', 'block')
-      .execute()
-    // @ts-ignore
-    const burnedValue = BigInt(burned[0]?.burned || 0)
-    return mintedValue - burnedValue
+  async totalClaimedPoolFeesAggregateDiff(compareBefore: number, compareAfter: number): Promise<Diff> {
+    const claimedFeesBefore = await this.totalClaimedPoolFeesDiffs(compareBefore, compareAfter)
+    return this.aggregateFAssetDiffs(claimedFeesBefore)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -201,15 +140,7 @@ export abstract class DashboardAnalytics {
   }
 
   async totalClaimedPoolFees(): Promise<ClaimedFees> {
-    const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimed_uba')])
-      .groupBy('cpe.fasset')
-      .execute()
-    return resp.map(x => ({
-      // @ts-ignore
-      claimedUBA: BigInt(x?.claimed_uba || 0),
-      fasset: FAssetType[x.fasset] as FAsset
-    }))
+    return this.totalClaimedPoolFeesAt()
   }
 
   async totalClaimedPoolFeesByUser(user: string): Promise<ClaimedFees> {
@@ -227,18 +158,7 @@ export abstract class DashboardAnalytics {
   }
 
   async totalClaimedPoolFeesByPool(pool: string): Promise<ClaimedFees> {
-    const resp = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
-      .select(['cpe.fasset', raw('SUM(received_fasset_fees_uba) as claimed_uba')])
-      .join('cpe.evmLog', 'el')
-      .join('el.address', 'ela')
-      .where({ 'ela.hex': pool })
-      .groupBy('cpe.fasset')
-      .execute()
-    return resp.map(x => ({
-      // @ts-ignore
-      claimedUBA: BigInt(x?.claimed_uba || 0),
-      fasset: FAssetType[x.fasset] as FAsset
-    }))
+    return this.totalClaimedPoolFeesByPoolAt(pool)
   }
 
   async totalClaimedPoolFeesByPoolAndUser(pool: string, user: string): Promise<ClaimedFees> {
@@ -299,6 +219,9 @@ export abstract class DashboardAnalytics {
     )
   }
 
+  //////////////////////////////////////////////////////////////////////
+  // helpers
+
   protected async getTimeSeries<T extends FAssetEventBound>(
     query: (si: number, ei: number) => SelectQueryBuilder<T>,
     end: number, npoints: number, start?: number
@@ -343,5 +266,103 @@ export abstract class DashboardAnalytics {
       const index = parseInt(_index)
       return { index, ...agg[index] }
     })
+  }
+
+  protected async aggregateFAssetDiffs(diffs: FAssetDiff[]): Promise<Diff> {
+    const em = this.orm.em.fork()
+    const ret: Diff = { amountBefore: BigInt(0), amountAfter: BigInt(0) }
+    for (const diff of diffs) {
+      if (diff.amountAfter === BigInt(0) && diff.amountBefore === BigInt(0)) continue
+      const [priceMul, priceDiv] = await fassetToUsdPrice(em, FAssetType[diff.fasset])
+      ret.amountBefore += PRICE_FACTOR * diff.amountBefore * priceMul / priceDiv
+      ret.amountAfter += PRICE_FACTOR * diff.amountAfter * priceMul / priceDiv
+    }
+    return ret
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // generalizations
+
+  private async poolCollateralAt(pool: string, timestamp: number): Promise<bigint> {
+    const amountInRes = await this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
+      .select([raw('SUM(cpe.amount_nat_wei) as collateral')])
+      .join('cpe.evmLog', 'el')
+      .join('el.block', 'block')
+      .join('el.address', 'ela')
+      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
+      .execute()
+    // @ts-ignore
+    const amountIn = BigInt(amountInRes[0]?.collateral || 0)
+    if (amountIn === BigInt(0)) return BigInt(0)
+    const amountOutRes = await this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
+      .select([raw('SUM(cpe.received_nat_wei) as collateral')])
+      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
+      .join('cpe.evmLog', 'el')
+      .join('el.block', 'block')
+      .join('el.address', 'ela')
+      .execute()
+    // @ts-ignore
+    const amountOut = BigInt(amountOutRes[0]?.collateral || 0)
+    return amountIn - amountOut
+  }
+
+  private async totalClaimedPoolFeesByPoolAt(pool: string, timestamp?: number): Promise<ClaimedFees> {
+    let enteredFeesQb = this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
+      .select(['cpe.fasset', raw('SUM(cpe.added_fasset_fee_uba) as fees')])
+      .where({ 'ela.hex': pool, 'block.timestamp': { $lte: timestamp }})
+      .groupBy('cpe.fasset')
+      .join('cpe.evmLog', 'el')
+      .join('el.address', 'ela')
+    if (timestamp !== undefined) {
+      enteredFeesQb = enteredFeesQb
+        .join('el.block', 'block')
+        .where({ 'block.timestamp': { $lte: timestamp }})
+    }
+    const enteredFeesRes = await enteredFeesQb.execute()
+    const fasset = enteredFeesRes[0]?.fasset
+    if (fasset === null || fasset === undefined) return []
+    // @ts-ignore
+    const enteredFees = BigInt(enteredFeesRes[0]?.fees || 0)
+    return [{ fasset: FAssetType[fasset] as FAsset, claimedUBA: enteredFees }]
+  }
+
+  private async totalClaimedPoolFeesAt(timestamp?: number): Promise<ClaimedFees> {
+    let enteredFeesQb = this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
+      .select(['cpe.fasset', raw('SUM(cpe.added_fasset_fee_uba) as fees')])
+      .groupBy('cpe.fasset')
+    if (timestamp !== undefined) {
+      enteredFeesQb = enteredFeesQb
+        .join('cpe.evmLog', 'el')
+        .join('el.block', 'block')
+        .where({ 'block.timestamp': { $lte: timestamp }})
+    }
+    const enteredFeesRes = await enteredFeesQb.execute()
+    return enteredFeesRes.map(x => ({
+      // @ts-ignore
+      claimedUBA: BigInt(x?.fees || 0),
+      fasset: FAssetType[x.fasset] as FAsset
+    }))
+  }
+
+  private async tokenSupplyAt(tokenId: number, timestamp: number, zeroAddressId: number): Promise<bigint> {
+    if (zeroAddressId === null) return BigInt(0)
+    const minted = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
+      .select([raw('SUM(t.value) as minted')])
+      .join('evmLog', 'el')
+      .join('el.block', 'block')
+      .where({ 't.from_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
+      .execute()
+    // @ts-ignore
+    const mintedValue = BigInt(minted[0]?.minted || 0)
+    if (mintedValue == BigInt(0)) return BigInt(0)
+    const burned = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
+      .select([raw('SUM(t.value) as burned')])
+      .where({ 't.to_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
+      .join('evmLog', 'el')
+      .join('el.block', 'block')
+      .execute()
+    // @ts-ignore
+    const burnedValue = BigInt(burned[0]?.burned || 0)
+    return mintedValue - burnedValue
   }
 }

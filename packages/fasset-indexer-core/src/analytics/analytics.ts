@@ -251,8 +251,11 @@ async function main() {
   const resp7 = await analytics.bestCollateralPools(10, 10)
   console.log(resp7)
 
-  const resp8 = await analytics.poolFeesDiff('0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E', Date.now() / 1000 - 3600 * 24 * 60, Date.now() / 1000)
+  const resp8 = await analytics.totalClaimedPoolFeesAggregateDiff(Date.now() / 1000 - 3600 * 24 * 60, Date.now() / 1000)
   console.log(resp8)
+
+  const resp9 = await analytics.totalClaimedPoolFees()
+  console.log(resp9)
   await context.orm.close()
 }
 
