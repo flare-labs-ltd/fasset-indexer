@@ -120,7 +120,7 @@ export class MiscController {
   }
 
   @Get('/full-liquidation-reason?')
-  fullLiquidationReason(@Query('agent') agent): Promise<ApiResponse<any>> {
+  fullLiquidationReason(@Query('agent') agent: string): Promise<ApiResponse<any>> {
     return apiResponse(this.appService.fullLiquidationReason(agent), 200)
   }
 
