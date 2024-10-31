@@ -1,5 +1,6 @@
-export const MAX_GRAPH_POINTS = 100
+export const MAX_TIMESERIES_PTS = 100
 export const MAX_RETURNED_OBJECTS = 100
+export const MAX_TIMESPAN_PTS = 10
 
 export const MINUTE = 60
 export const HOUR = 60 * MINUTE

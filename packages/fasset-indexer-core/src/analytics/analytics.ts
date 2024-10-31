@@ -251,35 +251,8 @@ async function main() {
     '0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E',
     '0x28637E84DeeB3499BCE0c3dA7C708823f354eF9C'
   )
-  console.log(resp)
-  const resp2 = await analytics.userCollateralPoolTokenPortfolio('0xded754459e83981176A5E6c0c39c397b945B7a8A')
-  console.log(resp2)
-  const resp3 = await analytics.mintedTimeSeries(1730100814, 10, 1728751614)
-  console.log(resp3)
-  const resp4 = await analytics.mintedAggregateTimeSeries(Date.now() / 1000, 10)
-  console.log(resp4)
-  const resp5 = await analytics.fAssetSupplyDiff(Date.now() / 1000 - 60 * 60 * 24 * 30, Date.now() / 1000)
-  console.log(resp5)
-  const resp6 = await analytics.poolTransactionsCount()
-  console.log(resp6)
-
-  const resp21 = await analytics.totalClaimedPoolFeesByPool('0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E')
-  console.log(resp21)
-
-  const resp7 = await analytics.bestCollateralPools(10, 10)
+  const resp7 = await analytics.totalClaimedPoolFeesAggregateTimespan([1728751614, 1730100814])
   console.log(resp7)
-
-  const resp8 = await analytics.totalClaimedPoolFeesAggregateDiff(Date.now() / 1000 - 3600 * 24 * 60, Date.now() / 1000)
-  console.log(resp8)
-
-  const resp9 = await analytics.totalClaimedPoolFees()
-  console.log(resp9)
-
-  const resp10 = await analytics.bestCollateralPools(10, 100)
-  console.log(resp10)
-
-  const resp11 = await analytics.fullLiquidationReason('0x06e968cc76157BA588D4FEfe874ef499669EB81a')
-  console.log(resp11)
 
   await context.orm.close()
 }
