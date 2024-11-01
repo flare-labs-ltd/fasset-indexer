@@ -1,15 +1,25 @@
-import { Controller, Get, Query } from '@nestjs/common'
+import { Controller, Get, Inject, Query } from '@nestjs/common'
+import { Cache } from '@nestjs/cache-manager'
 import { ApiTags } from '@nestjs/swagger'
-import { FAssetIndexerService } from '../app.service'
+import { FAssetIndexerService } from '../services/indexer.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
 import { LiquidationPerformed, FullLiquidationStarted, RedemptionDefault, FAssetType } from 'fasset-indexer-core'
+import { CacheService } from 'src/services/cache.service'
 
 
 @ApiTags("Misc")
 @Controller("api/indexer")
 export class MiscController {
 
-  constructor(private readonly appService: FAssetIndexerService) {}
+  constructor(
+    private readonly appService: FAssetIndexerService,
+    private readonly cacheService: CacheService
+  ) {}
+
+  @Get('/cache')
+  getCache(): Promise<any> {
+    return this.cacheService.keys()
+  }
 
   @Get('/current-block')
   getCurrentBlock(): Promise<ApiResponse<number | null>> {

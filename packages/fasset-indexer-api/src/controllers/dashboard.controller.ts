@@ -1,8 +1,9 @@
-import { Controller, Get, ParseBoolPipe, ParseIntPipe, Query } from '@nestjs/common'
+import { Controller, Get, ParseBoolPipe, ParseIntPipe, Query, UseInterceptors } from '@nestjs/common'
+import { CacheInterceptor } from '@nestjs/cache-manager'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { FAssetIndexerService } from '../app.service'
+import { FAssetIndexerService } from '../services/indexer.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
-import { MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../shared/constants'
+import { MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../constants'
 import type {
   AmountResult,
   TimeSeries, Timespan, TokenPortfolio,
@@ -12,6 +13,7 @@ import type {
 
 
 @ApiTags('Dashboard')
+@UseInterceptors(CacheInterceptor)
 @Controller('api/dashboard')
 export class DashboardController {
   constructor(private readonly appService: FAssetIndexerService) { }
@@ -89,8 +91,8 @@ export class DashboardController {
   @ApiOperation({ summary: 'Timespan of pool collateral along timestamps' })
   @ApiQuery({ name: 'timestamps', type: Number, isArray: true })
   getPoolCollateralDiff(
-    @Query('pool') pool: string,
-    @Query('timestamps') timestamps: string[]
+    @Query('timestamps') timestamps: string[],
+    @Query('pool') pool: string
   ): Promise<ApiResponse<FAssetTimespan<bigint>>> {
     const ts = timestamps.map(x => parseInt(x))
     const er = this.restrictTimespan(ts)
