@@ -13,10 +13,12 @@
     "start:prod": "node dist/src/main"
   },
   "dependencies": {
+    "@nestjs/cache-manager": "^2.3.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/swagger": "^7.3.1",
+    "cache-manager": "^5.1.0",
     "fasset-indexer-core": "workspace:*",
     "helmet": "^7.1.0",
     "reflect-metadata": "^0.2.0",

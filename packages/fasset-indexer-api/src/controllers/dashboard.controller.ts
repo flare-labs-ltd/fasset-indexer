@@ -1,17 +1,19 @@
-import { Controller, Get, ParseBoolPipe, ParseIntPipe, Query } from '@nestjs/common'
+import { Controller, Get, ParseBoolPipe, ParseIntPipe, Query, UseInterceptors } from '@nestjs/common'
+import { CacheInterceptor } from '@nestjs/cache-manager'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { FAssetIndexerService } from '../app.service'
-import { unixnow } from 'src/shared/utils'
+import { FAssetIndexerService } from '../services/indexer.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
-import { MAX_GRAPH_POINTS, MAX_RETURNED_OBJECTS, DAY, WEEK, MONTH, YEAR } from '../shared/constants'
+import { MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../constants'
 import type {
-  AggregateTimeSeries, ClaimedFees, PoolScore, TokenPortfolio,
-  FAssetHolderCount, FAssetDiff,
-  Diff
+  AmountResult,
+  TimeSeries, Timespan, TokenPortfolio,
+  FAssetTimespan, FAssetCollateralPoolScore,
+  FAssetValueResult, FAssetAmountResult
 } from 'fasset-indexer-core'
 
 
 @ApiTags('Dashboard')
+@UseInterceptors(CacheInterceptor)
 @Controller('api/dashboard')
 export class DashboardController {
   constructor(private readonly appService: FAssetIndexerService) { }
@@ -21,13 +23,13 @@ export class DashboardController {
 
   @Get('fasset-holder-count')
   @ApiOperation({ summary: 'Number of fasset token holders' })
-  getFAssetHolderCount(): Promise<ApiResponse<FAssetHolderCount>> {
+  getFAssetHolderCount(): Promise<ApiResponse<FAssetAmountResult>> {
     return apiResponse(this.appService.fAssetholderCount(), 200)
   }
 
   @Get('collateral-pool-transactions-count')
   @ApiOperation({ summary: 'Number of FAsset transactions related to collateral pools' })
-  getPoolTransactionCount(): Promise<ApiResponse<number>> {
+  getPoolTransactionCount(): Promise<ApiResponse<AmountResult>> {
     return apiResponse(this.appService.poolTransactionsCount(), 200)
   }
 
@@ -37,7 +39,7 @@ export class DashboardController {
   getBestCollateralPools(
     @Query('n', ParseIntPipe) n: number,
     @Query('minLots', new ParseIntPipe({ optional: true })) minLots?: number
-  ): Promise<ApiResponse<PoolScore>> {
+  ): Promise<ApiResponse<FAssetCollateralPoolScore>> {
     const err = this.restrictReturnedObjects(n)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
     return apiResponse(this.appService.bestCollateralPools(n, minLots ?? 100), 200)
@@ -58,7 +60,7 @@ export class DashboardController {
   getTotalClaimedPoolFees(
     @Query('pool') pool?: string,
     @Query('user') user?: string
-  ): Promise<ApiResponse<ClaimedFees>> {
+  ): Promise<ApiResponse<FAssetValueResult>> {
     if (pool === undefined && user === undefined) {
       return apiResponse(this.appService.totalClaimedPoolFees(), 200)
     } else if (user !== undefined && pool === undefined) {
@@ -71,91 +73,80 @@ export class DashboardController {
   }
 
   //////////////////////////////////////////////////////////////////////
-  // diffs
+  // timespan
 
-  @Get('/diff/fasset-supply?')
-  @ApiOperation({ summary: 'Difference in fasset supplies between now and now - lookback' })
-  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | 'day' | 'week' | 'month' | 'year'" })
-  @ApiQuery({ name: "now", type: Number, required: false })
+  @Get('/timespan/fasset-supply?')
+  @ApiOperation({ summary: 'Timespan of fasset supply along timestamps' })
+  @ApiQuery({ name: 'timestamps', type: Number, isArray: true })
   getFassetSupplyDiff(
-    @Query('lookback') lookback: string,
-    @Query('now', new ParseIntPipe({ optional: true })) now?: number
-  ): Promise<ApiResponse<FAssetDiff[]>> {
-    const seconds = this.stringToSeconds(lookback)
-    if (seconds === undefined) {
-      return apiResponse(Promise.reject(new Error(`Invalid input lookback=${lookback}`)), 400)
-    }
-    now = now ?? unixnow()
-    return apiResponse(this.appService.fAssetSupplyDiffs(now - seconds, now), 200)
+    @Query('timestamps') timestamps: string | string[]
+  ): Promise<ApiResponse<FAssetTimespan<bigint>>> {
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
+    return apiResponse(this.appService.fAssetSupplyTimespan(ts), 200)
   }
 
-  @Get('/diff/pool-collateral?')
-  @ApiOperation({ summary: 'Difference in pool collateral between now and now - lookback' })
-  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | 'day' | 'week' | 'month' | 'year'" })
-  @ApiQuery({ name: "now", type: Number, required: false })
+  @Get('/timespan/pool-collateral?')
+  @ApiOperation({ summary: 'Timespan of pool collateral along timestamps' })
+  @ApiQuery({ name: 'timestamps', type: Number, isArray: true })
+  @ApiQuery({ name: "pool", type: String, required: false })
   getPoolCollateralDiff(
-    @Query('pool') pool: string,
-    @Query('lookback') lookback: string,
-    @Query('now', new ParseIntPipe({ optional: true })) now?: number
-  ): Promise<ApiResponse<FAssetDiff>> {
-    const seconds = this.stringToSeconds(lookback)
-    if (seconds === undefined) {
-      return apiResponse(Promise.reject(new Error(`Invalid input lookback=${lookback}`)), 400)
-    }
-    now = now ?? unixnow()
-    return apiResponse(this.appService.poolCollateralDiff(pool, now - seconds, now), 200)
+    @Query('timestamps') timestamps: string | string[],
+    @Query('pool') pool?: string
+  ): Promise<ApiResponse<Timespan<bigint>>> {
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
+    return apiResponse(this.appService.poolCollateralTimespan(ts, pool), 200)
   }
 
-  @Get('/diff/collected-pool-fees?')
-  @ApiOperation({ summary: 'Difference in collected pool fees between now and now - lookback' })
-  @ApiQuery({ name: "lookback", type: String, required: true, description: "seconds | 'day' | 'week' | 'month' | 'year'" })
-  @ApiQuery({ name: "now", type: Number, required: false })
+  @Get('/timespan/claimed-pool-fees?')
+  @ApiOperation({ summary: 'Timespan of collected pool fees along timestamps' })
+  @ApiQuery({ name: "timestamps", type: Number, isArray: true })
   @ApiQuery({ name: "pool", type: String, required: false })
   @ApiQuery({ name: "usd", type: Boolean, required: false })
   getPoolFeesDiff(
-    @Query('lookback') lookback: string,
-    @Query('now', new ParseIntPipe({ optional: true })) now?: number,
+    @Query('timestamps') timestamps: string | string[],
     @Query('pool') pool?: string,
     @Query('usd', new ParseBoolPipe({ optional: true })) usd?: boolean
-  ): Promise<ApiResponse<FAssetDiff[] | Diff>> {
-    const seconds = this.stringToSeconds(lookback)
-    if (seconds === undefined) {
-      return apiResponse(Promise.reject(new Error(`Invalid input lookback=${lookback}`)), 400)
-    }
-    now = now ?? unixnow()
+  ): Promise<ApiResponse<FAssetTimespan<bigint> | Timespan<bigint>>> {
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
     if (pool !== undefined) {
-      return apiResponse(this.appService.totalClaimedPoolFeesByPoolDiff(pool, now - seconds, now).then(x => [x]), 200)
+      return apiResponse(this.appService.totalClaimedPoolFeesByPoolTimespan(pool, ts), 200)
     } else if (usd !== true) {
-      return apiResponse(this.appService.totalClaimedPoolFeesDiffs(now - seconds, now), 200)
+      return apiResponse(this.appService.totalClaimedPoolFeesTimespan(ts), 200)
     } else {
-      return apiResponse(this.appService.totalClaimedPoolFeesAggregateDiff(now - seconds, now), 200)
+      return apiResponse(this.appService.totalClaimedPoolFeesAggregateTimespan(ts), 200)
     }
   }
 
   ///////////////////////////////////////////////////////////////
-  // time-series
+  // timeseries
 
-  @Get('/time-series/redeemed?')
+  @Get('/timeseries/redeemed?')
   @ApiOperation({ summary: 'Time series of the total $ value of redeemed FAssets' })
   @ApiQuery({ name: "startTime", type: Number, required: false })
   getTimeSeriesRedeemed(
     @Query('endtime', ParseIntPipe) end: number,
     @Query('npoints', ParseIntPipe) npoints: number,
     @Query('startTime', new ParseIntPipe({ optional: true })) start?: number
-  ): Promise<ApiResponse<AggregateTimeSeries>> {
+  ): Promise<ApiResponse<TimeSeries<bigint>>> {
     const err = this.restrictPoints(end, npoints, start)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
     return apiResponse(this.appService.redeemedAggregateTimeSeries(end, npoints, start), 200)
   }
 
-  @Get('/time-series/minted?')
+  @Get('/timeseries/minted?')
   @ApiOperation({ summary: 'Time series of the total $ value of minted FAssets' })
   @ApiQuery({ name: "startTime", type: Number, required: false })
   getTimeSeriesMinted(
     @Query('endtime', ParseIntPipe) end: number,
     @Query('npoints', ParseIntPipe) npoints: number,
     @Query('startTime', new ParseIntPipe({ optional: true })) start?: number
-  ): Promise<ApiResponse<AggregateTimeSeries>> {
+  ): Promise<ApiResponse<TimeSeries<bigint>>> {
     const err = this.restrictPoints(end, npoints, start)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
     return apiResponse(this.appService.mintedAggregateTimeSeries(end, npoints, start), 200)
@@ -164,9 +155,23 @@ export class DashboardController {
   //////////////////////////////////////////////////////////////////////
   // helpers
 
+  protected parseTimestamps(timestamps: string | string[]): number[] {
+    if (typeof timestamps === 'string') {
+      return timestamps.split(',').map(parseInt)
+    }
+    return timestamps.map(parseInt)
+  }
+
+  private restrictTimespan(timespan: number[]): Error | null {
+    if (timespan.length > MAX_TIMESPAN_PTS) {
+      return new Error(`Timespan must be an array of maximum ${MAX_TIMESPAN_PTS} timestamps`)
+    }
+    return null
+  }
+
   private restrictPoints(end: number, npoints: number, start?: number): Error | null {
-    if (npoints > MAX_GRAPH_POINTS) {
-      return new Error(`Cannot request more than ${MAX_GRAPH_POINTS} points`)
+    if (npoints > MAX_TIMESERIES_PTS) {
+      return new Error(`Cannot request more than ${MAX_TIMESERIES_PTS} points`)
     }
     return null
   }
@@ -176,23 +181,5 @@ export class DashboardController {
       return new Error(`Cannot request more than ${MAX_RETURNED_OBJECTS} objects`)
     }
     return null
-  }
-
-  private stringToSeconds(s: string): number | undefined {
-    let seconds = null
-    if (s === "day") {
-      seconds = DAY
-    } else if (s === "week") {
-      seconds = WEEK
-    } else if (s === "month") {
-      seconds = MONTH
-    } else if (s === "year") {
-      seconds = YEAR
-    } else {
-      seconds = parseInt(s)
-      if (!isNaN(seconds))
-        return undefined
-    }
-    return seconds
   }
 }

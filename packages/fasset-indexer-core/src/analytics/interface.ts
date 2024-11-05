@@ -1,17 +1,23 @@
 import type { FAsset } from "../shared"
 
-export type TimeSeries = { [fasset in Partial<FAsset>]: { index: number, start: number, end: number, value: bigint }[] }
+type FAssetResult<T> = Record<Partial<FAsset>, T>
 
-export type AggregateTimeSeries = { index: number, start: number, end: number, value: bigint }[]
+export type TimeSeries<T> = { index: number, start: number, end: number, value: T }[]
 
-export type PoolScore = { [fasset in Partial<FAsset>]: { pool: string, claimed: bigint, score: bigint }[] }
+export type FAssetTimeSeries<T> = FAssetResult<TimeSeries<T>>
 
-export type TokenPortfolio = { token: string, balance: bigint }[]
+export type Timespan<T> = { timestamp: number, value: T }[]
 
-export type ClaimedFees = { fasset: FAsset, claimedUBA: bigint }[]
+export type FAssetTimespan<T> = FAssetResult<Timespan<T>>
 
-export type FAssetDiff = { fasset: FAsset, amountBefore: bigint, amountAfter: bigint }
+export type TokenPortfolio = Record<string, { balance: bigint }>
 
-export type Diff = { amountBefore: bigint, amountAfter: bigint }
+export type FAssetCollateralPoolScore = FAssetResult<{ pool: string, claimed: bigint, score: bigint }[]>
 
-export type FAssetHolderCount = { fasset: FAsset, nholders: number }[]
+export type ValueResult = { value: bigint }
+
+export type FAssetValueResult = FAssetResult<ValueResult>
+
+export type AmountResult = { amount: number }
+
+export type FAssetAmountResult = FAssetResult<AmountResult>
