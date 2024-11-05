@@ -5,6 +5,7 @@ import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
 import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
+import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../database/entities/events/challenge"
 import { DashboardAnalytics } from "./dashboard"
 import {
   FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
@@ -15,7 +16,6 @@ import {
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
 import type { FAssetType } from "../shared"
-import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../database/entities/events/challenge"
 
 
 export class Analytics extends DashboardAnalytics {

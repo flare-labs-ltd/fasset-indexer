@@ -79,9 +79,9 @@ export class DashboardController {
   @ApiOperation({ summary: 'Timespan of fasset supply along timestamps' })
   @ApiQuery({ name: 'timestamps', type: Number, isArray: true })
   getFassetSupplyDiff(
-    @Query('timestamps') timestamps: string[]
+    @Query('timestamps') timestamps: string | string[]
   ): Promise<ApiResponse<FAssetTimespan<bigint>>> {
-    const ts = timestamps.map(x => parseInt(x))
+    const ts = this.parseTimestamps(timestamps)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
     return apiResponse(this.appService.fAssetSupplyTimespan(ts), 200)
@@ -90,14 +90,15 @@ export class DashboardController {
   @Get('/timespan/pool-collateral?')
   @ApiOperation({ summary: 'Timespan of pool collateral along timestamps' })
   @ApiQuery({ name: 'timestamps', type: Number, isArray: true })
+  @ApiQuery({ name: "pool", type: String, required: false })
   getPoolCollateralDiff(
-    @Query('timestamps') timestamps: string[],
+    @Query('timestamps') timestamps: string | string[],
     @Query('pool') pool: string
-  ): Promise<ApiResponse<FAssetTimespan<bigint>>> {
-    const ts = timestamps.map(x => parseInt(x))
+  ): Promise<ApiResponse<Timespan<bigint>>> {
+    const ts = this.parseTimestamps(timestamps)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
-    return apiResponse(this.appService.poolCollateralTimespan(pool, ts), 200)
+    return apiResponse(this.appService.poolCollateralTimespan(ts, pool), 200)
   }
 
   @Get('/timespan/claimed-pool-fees?')
@@ -106,17 +107,17 @@ export class DashboardController {
   @ApiQuery({ name: "pool", type: String, required: false })
   @ApiQuery({ name: "usd", type: Boolean, required: false })
   getPoolFeesDiff(
-    @Query('timestamps') timestamps: string[],
+    @Query('timestamps') timestamps: string | string[],
     @Query('pool') pool?: string,
     @Query('usd', new ParseBoolPipe({ optional: true })) usd?: boolean
   ): Promise<ApiResponse<FAssetTimespan<bigint> | Timespan<bigint>>> {
-    const ts = timestamps.map(x => parseInt(x))
+    const ts = this.parseTimestamps(timestamps)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
     if (pool !== undefined) {
       return apiResponse(this.appService.totalClaimedPoolFeesByPoolTimespan(pool, ts), 200)
     } else if (usd !== true) {
-      return apiResponse(this.appService.totalClaimedPoolFeesTimespans(ts), 200)
+      return apiResponse(this.appService.totalClaimedPoolFeesTimespan(ts), 200)
     } else {
       return apiResponse(this.appService.totalClaimedPoolFeesAggregateTimespan(ts), 200)
     }
@@ -153,6 +154,13 @@ export class DashboardController {
 
   //////////////////////////////////////////////////////////////////////
   // helpers
+
+  protected parseTimestamps(timestamps: string | string[]): number[] {
+    if (typeof timestamps === 'string') {
+      return timestamps.split(',').map(parseInt)
+    }
+    return timestamps.map(parseInt)
+  }
 
   private restrictTimespan(timespan: number[]): Error | null {
     if (timespan.length > MAX_TIMESPAN_PTS) {
