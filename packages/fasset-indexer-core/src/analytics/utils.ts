@@ -21,7 +21,7 @@ export function fassetDecimals(fasset: FAssetType): number {
 }
 
 export async function fassetToUsdPrice(em: EntityManager, fasset: FAssetType): Promise<[mul: bigint, div: bigint]> {
-  if (fasset == FAssetType.FSIMCOINX) {
+  if (fasset == FAssetType.FSIMCOINX || fasset == FAssetType.FDOGE || fasset == FAssetType.FLTC || fasset == FAssetType.FALG) {
     return [ BigInt(0), BigInt(1) ]
   }
   const fassetToken = await em.findOneOrFail(CollateralTypeAdded, { fasset })

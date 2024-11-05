@@ -93,7 +93,7 @@ export class DashboardController {
   @ApiQuery({ name: "pool", type: String, required: false })
   getPoolCollateralDiff(
     @Query('timestamps') timestamps: string | string[],
-    @Query('pool') pool: string
+    @Query('pool') pool?: string
   ): Promise<ApiResponse<Timespan<bigint>>> {
     const ts = this.parseTimestamps(timestamps)
     const er = this.restrictTimespan(ts)

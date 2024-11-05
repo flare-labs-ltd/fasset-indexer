@@ -271,15 +271,15 @@ export abstract class DashboardAnalytics {
       const si = start + i * interval
       const ei = start + (i + 1) * interval
       const results = await query(si, ei).execute()
+      for (const fasset of FASSETS) {
+        if (i === 0) ret[fasset] = []
+        ret[fasset].push({ index: i, start: si, end: ei, value: BigInt(0) })
+      }
       for (const result of results) {
         // @ts-ignore - value
         const value = BigInt(result.value)
         const fasset = FAssetType[result.fasset] as FAsset
-        if (ret[fasset] === undefined) {
-          ret[fasset] = [{ index: i, start: si, end: ei, value }]
-          continue
-        }
-        ret[fasset].push({ index: i, start: si, end: ei, value })
+        ret[fasset][i].value += value
       }
     }
     return ret
@@ -394,6 +394,7 @@ export abstract class DashboardAnalytics {
     qb: SelectQueryBuilder<T>, pool?: string, timestamp?: number
   ): SelectQueryBuilder<T> {
     if (timestamp !== undefined || pool !== undefined) {
+      console.log('neki')
       qb = qb.join('cpe.evmLog', 'el')
       if (timestamp !== undefined) {
         qb = qb
@@ -403,7 +404,7 @@ export abstract class DashboardAnalytics {
       if (pool !== undefined) {
         qb = qb
           .join('el.address', 'ela')
-          .where({ 'ela.hex': pool })
+          .andWhere({ 'ela.hex': pool })
       }
     }
     return qb
