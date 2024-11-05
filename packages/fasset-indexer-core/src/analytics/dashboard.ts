@@ -393,7 +393,6 @@ export abstract class DashboardAnalytics {
     qb: SelectQueryBuilder<T>, pool?: string, timestamp?: number
   ): SelectQueryBuilder<T> {
     if (timestamp !== undefined || pool !== undefined) {
-      console.log('neki')
       qb = qb.join('cpe.evmLog', 'el')
       if (timestamp !== undefined) {
         qb = qb

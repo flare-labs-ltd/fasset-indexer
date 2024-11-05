@@ -95,7 +95,9 @@ export class DashboardController {
     @Query('timestamps') timestamps: string | string[],
     @Query('pool') pool?: string
   ): Promise<ApiResponse<Timespan<bigint>>> {
+    console.log(timestamps)
     const ts = this.parseTimestamps(timestamps)
+    console.log(ts)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
     return apiResponse(this.appService.poolCollateralTimespan(ts, pool), 200)
@@ -157,9 +159,9 @@ export class DashboardController {
 
   protected parseTimestamps(timestamps: string | string[]): number[] {
     if (typeof timestamps === 'string') {
-      return timestamps.split(',').map(parseInt)
+      return timestamps.split(',').map(x => parseInt(x))
     }
-    return timestamps.map(parseInt)
+    return timestamps.map(x => parseInt(x))
   }
 
   private restrictTimespan(timespan: number[]): Error | null {
