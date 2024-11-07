@@ -242,8 +242,6 @@ export class Analytics extends DashboardAnalytics {
 
 /* import { Context } from "../context/context"
 import { config } from "../config/config"
-import { AgentVault } from "../database/entities/agent"
-import { EvmAddress } from "../database/entities/address"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
@@ -253,6 +251,7 @@ async function main() {
   )
   const resp7 = await analytics.totalClaimedPoolFeesAggregateTimespan([1728751614, 1730100814])
   console.log(resp7)
+  await analytics.liquidationCount()
 
   await context.orm.close()
 }

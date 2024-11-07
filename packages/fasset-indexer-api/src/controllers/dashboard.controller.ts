@@ -27,6 +27,12 @@ export class DashboardController {
     return apiResponse(this.appService.fAssetholderCount(), 200)
   }
 
+  @Get('total-liquidation-count')
+  @ApiOperation({ summary: 'Number of performed liquidations' })
+  getLiquidationCount(): Promise<ApiResponse<AmountResult>> {
+    return apiResponse(this.appService.liquidationCount(), 200)
+  }
+
   @Get('collateral-pool-transactions-count')
   @ApiOperation({ summary: 'Number of FAsset transactions related to collateral pools' })
   getPoolTransactionCount(): Promise<ApiResponse<AmountResult>> {

@@ -18,8 +18,10 @@ import type {
   AmountResult,
   TimeSeries, Timespan, FAssetTimeSeries, FAssetTimespan,
   TokenPortfolio, FAssetCollateralPoolScore,
-  FAssetValueResult, FAssetAmountResult
+  FAssetValueResult, FAssetAmountResult,
+  ValueResult
 } from "./interface"
+import { LiquidationPerformed } from "../database/entities/events/liquidation"
 
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
@@ -51,6 +53,11 @@ export abstract class DashboardAnalytics {
       ret[FAssetType[fasset] as FAsset] = { amount }
     }
     return ret
+  }
+
+  async liquidationCount(): Promise<AmountResult> {
+    const amount = await this.orm.em.fork().count(LiquidationPerformed, { valueUBA: { $gt: 0 }})
+    return { amount }
   }
 
   ///////////////////////////////////////////////////////////////
