@@ -18,8 +18,7 @@ import type {
   AmountResult,
   TimeSeries, Timespan, FAssetTimeSeries, FAssetTimespan,
   TokenPortfolio, FAssetCollateralPoolScore,
-  FAssetValueResult, FAssetAmountResult,
-  ValueResult
+  FAssetValueResult, FAssetAmountResult
 } from "./interface"
 import { LiquidationPerformed } from "../database/entities/events/liquidation"
 
@@ -142,7 +141,7 @@ export abstract class DashboardAnalytics {
   async poolTransactionsCount(): Promise<AmountResult> {
     const em = this.orm.em.fork()
     const entered = await em.count(CollateralPoolExited)
-    const exited = await em.count(CollateralPoolExited)
+    const exited = await em.count(CollateralPoolEntered)
     return { amount: entered + exited }
   }
 
