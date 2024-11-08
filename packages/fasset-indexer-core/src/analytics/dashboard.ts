@@ -140,8 +140,8 @@ export abstract class DashboardAnalytics {
 
   async poolTransactionsCount(): Promise<AmountResult> {
     const em = this.orm.em.fork()
-    const entered = await em.count(CollateralPoolExited)
-    const exited = await em.count(CollateralPoolEntered)
+    const entered = await em.count(CollateralPoolEntered)
+    const exited = await em.count(CollateralPoolExited)
     return { amount: entered + exited }
   }
 
