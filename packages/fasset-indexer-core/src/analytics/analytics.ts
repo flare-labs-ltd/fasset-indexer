@@ -238,10 +238,34 @@ export class Analytics extends DashboardAnalytics {
     )
     return balance
   }
+
+/*   async getBalance(token: string, address: string) {
+    const em = this.orm.em.fork()
+    const balance = await em.findOne(TokenBalance, { token: { hex: token }, holder: { hex: address }})
+    console.log(balance)
+    const balance2 = await em.createQueryBuilder(ERC20Transfer, 't')
+      .select([raw('SUM(t.value) as balance')])
+      .join('evmLog', 'l')
+      .join('t.from', 'ad')
+      .join('l.address', 'tk')
+      .where({ 'tk.hex': token, 'ad.hex': address })
+      .execute()
+    const balance3 = await em.createQueryBuilder(ERC20Transfer, 't')
+      .select([raw('SUM(t.value) as balance')])
+      .join('evmLog', 'l')
+      .join('t.to', 'ad')
+      .join('l.address', 'tk')
+      .where({ 'tk.hex': token, 'ad.hex': address })
+      .execute()
+    // @ts-ignore
+    console.log(balance3[0].balance - balance2[0].balance)
+  } */
 }
 
 /* import { Context } from "../context/context"
 import { config } from "../config/config"
+import { ERC20Transfer } from "../database/entities/events/token"
+import { raw } from "@mikro-orm/core"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
@@ -249,9 +273,9 @@ async function main() {
     '0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E',
     '0x28637E84DeeB3499BCE0c3dA7C708823f354eF9C'
   )
-  const resp7 = await analytics.totalClaimedPoolFeesAggregateTimespan([1728751614, 1730100814])
-  console.log(resp7)
-  await analytics.liquidationCount()
+  //const resp7 = await analytics.totalClaimedPoolFeesAggregateTimespan([1728751614, 1730100814])
+  //console.log(resp7)
+  await analytics.getBalance('0x51B1ac96027e55c29Ece8a6fD99DdDdd01F22F6c', '0xe2465d57a8719B3f0cCBc12dD095EFa1CC55A997')
 
   await context.orm.close()
 }

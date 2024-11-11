@@ -335,37 +335,34 @@ export abstract class DashboardAnalytics {
   }
 
   private async poolCollateralEnteredAt(pool?: string, timestamp?: number): Promise<bigint> {
-    const enteredCollateralQb = this.limitPoolAndTimestamp(
+    const enteredCollateral = await this.limitPoolAndTimestamp(
       this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
         .select([raw('SUM(cpe.amount_nat_wei) as collateral')]),
-      pool, timestamp
-    )
-    const enteredCollateralRes = await enteredCollateralQb.execute()
+      'cpe', pool, timestamp
+    ).execute()
     // @ts-ignore
-    return BigInt(enteredCollateralRes[0]?.collateral || 0)
+    return BigInt(enteredCollateral[0]?.collateral || 0)
   }
 
   private async poolCollateralExitedAt(pool?: string, timestamp?: number): Promise<bigint> {
-    const exitedCollateralQb = this.limitPoolAndTimestamp(
+    const exitedCollateral = await this.limitPoolAndTimestamp(
       this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
         .select([raw('SUM(cpe.received_nat_wei) as collateral')]),
-      pool, timestamp
-    )
-    const exitedCollateralRes = await exitedCollateralQb.execute()
+      'cpe', pool, timestamp
+    ).execute()
     // @ts-ignore
-    return BigInt(exitedCollateralRes[0]?.collateral || 0)
+    return BigInt(exitedCollateral[0]?.collateral || 0)
   }
 
   private async totalClaimedPoolFeesAt(pool?: string, timestamp?: number): Promise<FAssetValueResult> {
-    const enteredFeesQb = this.limitPoolAndTimestamp(
+    const ret = {} as FAssetValueResult
+    const enteredFees = await this.limitPoolAndTimestamp(
       this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
         .select(['cpe.fasset', raw('SUM(cpe.received_fasset_fees_uba) as fees')])
         .groupBy('cpe.fasset'),
-      pool, timestamp
-    )
-    const enteredFeesRes = await enteredFeesQb.execute()
-    const ret = {} as FAssetValueResult
-    for (const x of enteredFeesRes) {
+      'cpe', pool, timestamp
+    ).execute()
+    for (const x of enteredFees) {
       // @ts-ignore
       const claimedFees = BigInt(x?.fees || 0)
       ret[FAssetType[x.fasset] as FAsset] = { value: claimedFees }
@@ -396,10 +393,11 @@ export abstract class DashboardAnalytics {
   }
 
   private limitPoolAndTimestamp<T extends object>(
-    qb: SelectQueryBuilder<T>, pool?: string, timestamp?: number
+    qb: SelectQueryBuilder<T>, alias: string,
+    pool?: string, timestamp?: number
   ): SelectQueryBuilder<T> {
     if (timestamp !== undefined || pool !== undefined) {
-      qb = qb.join('cpe.evmLog', 'el')
+      qb = qb.join(`${alias}.evmLog`, 'el')
       if (timestamp !== undefined) {
         qb = qb
           .join('el.block', 'block')

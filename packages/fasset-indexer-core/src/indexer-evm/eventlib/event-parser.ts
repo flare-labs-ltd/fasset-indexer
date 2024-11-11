@@ -6,35 +6,46 @@ import type { EntityManager } from "@mikro-orm/knex"
 import type { Log, LogDescription } from "ethers"
 import type { Event } from "./event-scraper"
 
+interface Block {
+  index: number
+  timestamp: number
+}
+
+interface Transaction {
+  hash: string
+  source: string
+  target: string | null
+}
 
 export class EventParser {
-  supportedEvents: Set<string>
+  private supportedEvents: Set<string>
+  private supportedTopics: Set<string> = new Set()
   // cache
-  private blockCache: {
-    index: number
-    timestamp: number
-  } | null = null
-  private transactionCache: {
-    hash: string
-    source: string
-    target: string | null
-  } | null = null
+  private blockCache: Block | null = null
+  private transactionCache: Transaction | null = null
 
   constructor(public readonly context: Context) {
     this.supportedEvents = new Set(Object.values(EVENTS))
     for (const event of IGNORE_EVENTS) {
       this.supportedEvents.delete(event)
     }
+    for (const event of this.supportedEvents) {
+      const topic = this.context.getEventTopic(event)
+      if (topic === null) {
+        throw new Error(`Failed to find topic for event ${event}`)
+      }
+      this.supportedTopics.add(topic)
+    }
   }
 
   async logToEvent(log: Log): Promise<Event | null> {
+    if (this.ignoreLog(log.topics[0]))
+      return null
     const logDescription = await this.parseLog(log)
     if (logDescription === null)
       return null
-    if (this.ignoreLog(logDescription.name))
-      return null
-    await this.updateCachedBlock(log.blockNumber)
-    await this.updateCachedTransaction(log.transactionHash)
+    const block = await this.getBlock(log.blockNumber)
+    const transaction = await this.getTransaction(log.transactionHash)
     return {
       name: logDescription.name,
       args: logDescription.args,
@@ -42,24 +53,24 @@ export class EventParser {
       transactionIndex: log.transactionIndex,
       logIndex: log.index,
       source: log.address,
-      blockTimestamp: this.blockCache!.timestamp,
+      blockTimestamp: block.timestamp,
       transactionHash: log.transactionHash,
-      transactionSource: this.transactionCache!.source,
-      transactionTarget: this.transactionCache!.target
+      transactionSource: transaction.source,
+      transactionTarget: transaction.target
     }
   }
 
   async parseLog(log: Log): Promise<LogDescription | null> {
     if (this.context.isAssetManager(log.address)) {
-      return this.context.assetManagerInterface.parseLog(log)
+      return this.context.interfaces.assetManagerInterface.parseLog(log)
     } else if (this.context.isFAssetToken(log.address)) {
-      return this.context.erc20Interface.parseLog(log)
+      return this.context.interfaces.erc20Interface.parseLog(log)
     }
     const em = this.context.orm.em.fork()
     // collateral types
     const collateralType = await em.findOne(CollateralTypeAdded, { address: { hex: log.address } })
     if (collateralType !== null) {
-      const parsed = this.context.erc20Interface.parseLog(log)
+      const parsed = this.context.interfaces.erc20Interface.parseLog(log)
       if (collateralType.collateralClass !== 1) {
         return parsed
       } else if (parsed !== null) {
@@ -73,17 +84,17 @@ export class EventParser {
     }
     // collateral pool token
     if (await this.isCollateralPoolToken(em, log.address)) {
-      return this.context.erc20Interface.parseLog(log)
+      return this.context.interfaces.erc20Interface.parseLog(log)
     }
     // collateral pool
     if (await this.isCollateralPool(em, log.address)) {
-      return this.context.collateralPoolInterface.parseLog(log)
+      return this.context.interfaces.collateralPoolInterface.parseLog(log)
     }
     return null
   }
 
-  protected ignoreLog(name: string): boolean {
-    return !this.supportedEvents.has(name)
+  protected ignoreLog(topic: string): boolean {
+    return !this.supportedTopics.has(topic)
   }
 
   protected async isCollateralPool(em: EntityManager, address: string): Promise<boolean> {
@@ -96,7 +107,7 @@ export class EventParser {
     return pool !== null
   }
 
-  private async updateCachedBlock(blockNumber: number): Promise<void> {
+  private async getBlock(blockNumber: number): Promise<Block> {
     if (this.blockCache === null || this.blockCache.index !== blockNumber) {
       const block = await this.context.provider.getBlock(blockNumber)
       if (block === null) {
@@ -107,9 +118,10 @@ export class EventParser {
         timestamp: block.timestamp
       }
     }
+    return this.blockCache
   }
 
-  private async updateCachedTransaction(transactionHash: string): Promise<void> {
+  private async getTransaction(transactionHash: string): Promise<Transaction> {
     if (this.transactionCache === null || this.transactionCache.hash !== transactionHash) {
       const transaction = await this.context.provider.getTransaction(transactionHash)
       if (transaction === null) {
@@ -121,6 +133,7 @@ export class EventParser {
         target: transaction.to
       }
     }
+    return this.transactionCache
   }
 
 }
