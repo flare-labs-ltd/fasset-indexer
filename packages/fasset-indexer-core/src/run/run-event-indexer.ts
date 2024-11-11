@@ -40,9 +40,6 @@ async function setTokenBalances(context: Context) {
     balance.amount -= BigInt(value)
     await em.persistAndFlush(balance)
   }
-  for (const m of await em.findAll(TokenBalance)) {
-    console.log(m)
-  }
 }
 
 async function runIndexer(start?: number) {
