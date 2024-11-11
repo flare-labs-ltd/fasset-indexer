@@ -36,16 +36,13 @@ export abstract class DashboardAnalytics {
 
   async fAssetholderCount(): Promise<FAssetAmountResult> {
     const ret = {} as FAssetAmountResult
-    console.log(this.contracts.fassetTokens)
-    const res = this.orm.em.createQueryBuilder(TokenBalance, 'tb')
+    const res = await this.orm.em.createQueryBuilder(TokenBalance, 'tb')
       .select(['tk.hex as token_address', raw('COUNT(DISTINCT tb.holder_id) as n_token_holders')])
       .join('tb.token', 'tk')
       .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.contracts.fassetTokens }})
       .groupBy('tk.hex')
-    console.log(res.toQuery())
-    const res2 = await res
       .execute()
-    for (const r of res2) {
+    for (const r of res) {
       // @ts-ignore
       const address = r.token_address
       if (!address) continue
