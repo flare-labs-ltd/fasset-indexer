@@ -32,6 +32,8 @@ export class EventIndexer {
         await this.runHistoric(startBlock)
       } catch (e: any) {
         console.error(`Error running event indexer: ${e}`)
+        await sleep(MID_CHAIN_FETCH_SLEEP_MS)
+        continue
       }
       await sleep(EVM_LOG_FETCH_SLEEP_MS)
     }

@@ -251,7 +251,7 @@ async function main() {
   )
   const resp7 = await analytics.totalClaimedPoolFeesAggregateTimespan([1728751614, 1730100814])
   console.log(resp7)
-  await analytics.liquidationCount()
+  await analytics.fAssetholderCount()
 
   await context.orm.close()
 }
