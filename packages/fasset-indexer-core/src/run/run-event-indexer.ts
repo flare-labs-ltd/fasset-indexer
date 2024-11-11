@@ -16,8 +16,6 @@ async function setTokenBalances(context: Context) {
   const plus = await em.createQueryBuilder(ERC20Transfer, 't')
     .select(['l.address_id as token_id', 't.to_id as user_id', raw('SUM(t.value) as value')])
     .join('t.evmLog', 'l')
-    .join('l.address', 'la')
-    .where({ 'la.hex': { $in: context.fassetTokens }})
     //.where({ 'l.address': tokenAccId, 't.to': testAccId })
     .groupBy(['l.address', 't.to'])
     .execute()
