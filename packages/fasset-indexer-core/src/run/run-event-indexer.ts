@@ -16,7 +16,7 @@ async function setTokenBalances(context: Context) {
     .join('t.to', 'a')
     .join('l.address', 'la')
     //.where({ 'a.hex': testAcc, 'la.hex': tokenAcc })
-    .groupBy(['l.address', 't.to'])
+    .groupBy(['l.address', 't.to', 'a.id', 'la.id'])
     .execute()
   for (const { token_id, user_id, token, user, value } of plus as any) {
     //console.log('plusing token', token, 'to', user, 'value', value)
@@ -29,7 +29,7 @@ async function setTokenBalances(context: Context) {
     .join('t.from', 'a')
     .join('l.address', 'la')
     //.where({ 'a.hex': testAcc, 'la.hex': tokenAcc })
-    .groupBy(['l.address', 't.from'])
+    .groupBy(['l.address', 't.from', 'a.hex', 'la.hex'])
     .execute()
   for (const { token_id, user_id, token, user, value } of minus as any) {
     //console.log('minusing token', token, 'from', user, 'value', value)
