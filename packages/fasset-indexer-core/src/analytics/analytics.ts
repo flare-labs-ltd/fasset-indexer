@@ -3,19 +3,19 @@ import { getVar } from "../utils"
 import { EvmLog } from "../database/entities/evm/log"
 import { AgentVaultInfo } from "../database/entities/state/agent"
 import { CollateralReserved, MintingExecuted } from "../database/entities/events/minting"
-import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
+import { RedemptionRequested } from "../database/entities/events/redemption"
 import { FullLiquidationStarted, LiquidationPerformed } from "../database/entities/events/liquidation"
 import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../database/entities/events/challenge"
 import { DashboardAnalytics } from "./dashboard"
 import {
-  FIRST_UNHANDLED_EVENT_BLOCK, FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE, END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
+  FIRST_UNHANDLED_EVENT_BLOCK,
+  FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE,
+  END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
   MAX_DATABASE_ENTRIES_FETCH,
-  FIRST_UNHANDLED_BTC_BLOCK,
-  EVENTS
+  FIRST_UNHANDLED_BTC_BLOCK
 } from "../config/constants"
 import type { ORM } from "../database/interface"
 import type { IUserDatabaseConfig } from "../config/interface"
-import type { FAssetType } from "../shared"
 
 
 export class Analytics extends DashboardAnalytics {
@@ -53,19 +53,6 @@ export class Analytics extends DashboardAnalytics {
   //////////////////////////////////////////////////////////////////////
   // aggregators
 
-  async totalUiRelevantTransactions(): Promise<number> {
-    const qb = this.orm.em.qb(EvmLog)
-    const result = await qb.count().where({ name: {
-      $in: [
-        EVENTS.COLLATERAL_POOL_EXIT,
-        EVENTS.COLLATERAL_POOL_ENTER,
-        EVENTS.REDEMPTION_REQUESTED,
-        EVENTS.COLLATERAL_RESERVED
-      ]
-    }}).execute()
-    return result[0].count
-  }
-
   async totalRedemptionRequesters(): Promise<number> {
     const qb = this.orm.em.qb(RedemptionRequested, 'r')
     const result = await qb.count('r.redeemer', true).execute()
@@ -99,64 +86,12 @@ export class Analytics extends DashboardAnalytics {
     )
   }
 
-  //////////////////////////////////////////////////////////////////////
-  // selectors
-
-  async redemptionDefault(id: number, fasset: FAssetType): Promise<RedemptionDefault | null> {
-    const em = this.orm.em.fork()
-    const redemptionDefault = await em.findOne(RedemptionDefault,
-      { fasset: fasset, redemptionRequested: { requestId: id }},
-      { populate: [
-        'redemptionRequested.redeemer',
-        'redemptionRequested.paymentAddress',
-        'redemptionRequested.agentVault.address',
-        'redemptionRequested.agentVault.underlyingAddress',
-        'redemptionRequested.executor'
-      ]}
-    )
-    return redemptionDefault
-  }
-
   ////////////////////////////////////////////////////////////////////
   // agent specific (liquidation count, mint count, redeem count, percent of successful redemptions
 
   async agentCollateralReservationCount(agentAddress: string): Promise<number> {
     const qb = this.orm.em.fork().qb(CollateralReserved)
     qb.count().where({ agentVault: { address: { hex: agentAddress }}})
-    const result = await qb.execute()
-    return result[0].count
-  }
-
-  async agentMintingExecutedCount(agentAddress: string): Promise<number> {
-    const qb = this.orm.em.fork().qb(MintingExecuted)
-    qb.count().where({ collateralReserved: { agentVault: { address: { hex: agentAddress }}}})
-    const result = await qb.execute()
-    return result[0].count
-  }
-
-  async agentRedemptionRequestCount(agentAddress: string): Promise<number> {
-    const qb = this.orm.em.fork().qb(RedemptionRequested)
-    qb.count().where({ agentVault: { address: { hex: agentAddress }}})
-    const result = await qb.execute()
-    return result[0].count
-  }
-
-  async agentRedemptionPerformedCount(agentAddress: string): Promise<number> {
-    const qb = this.orm.em.fork().qb(RedemptionPerformed)
-    qb.count().where({ redemptionRequested: { agentVault: { address: { hex: agentAddress }}}})
-    const result = await qb.execute()
-    return result[0].count
-  }
-
-  async agentRedemptionSuccessRate(agentAddress: string): Promise<number> {
-    const requested = await this.agentRedemptionRequestCount(agentAddress)
-    const executed = await this.agentRedemptionPerformedCount(agentAddress)
-    return Number(requested) > 0 ? Number(executed) / Number(requested) : 0
-  }
-
-  async agentLiquidationCount(agentAddress: string): Promise<number> {
-    const qb = this.orm.em.fork().qb(LiquidationPerformed)
-    qb.count().where({ agentVault: { address: { hex: agentAddress }}, valueUBA: { $gt: 0 } })
     const result = await qb.execute()
     return result[0].count
   }
@@ -238,45 +173,24 @@ export class Analytics extends DashboardAnalytics {
     )
     return balance
   }
-
-/*   async getBalance(token: string, address: string) {
-    const em = this.orm.em.fork()
-    const balance = await em.findOne(TokenBalance, { token: { hex: token }, holder: { hex: address }})
-    console.log(balance)
-    const balance2 = await em.createQueryBuilder(ERC20Transfer, 't')
-      .select([raw('SUM(t.value) as balance')])
-      .join('evmLog', 'l')
-      .join('t.from', 'ad')
-      .join('l.address', 'tk')
-      .where({ 'tk.hex': token, 'ad.hex': address })
-      .execute()
-    const balance3 = await em.createQueryBuilder(ERC20Transfer, 't')
-      .select([raw('SUM(t.value) as balance')])
-      .join('evmLog', 'l')
-      .join('t.to', 'ad')
-      .join('l.address', 'tk')
-      .where({ 'tk.hex': token, 'ad.hex': address })
-      .execute()
-    // @ts-ignore
-    console.log(balance3[0].balance - balance2[0].balance)
-  } */
 }
 
 /* import { Context } from "../context/context"
 import { config } from "../config/config"
-import { ERC20Transfer } from "../database/entities/events/token"
-import { raw } from "@mikro-orm/core"
 async function main() {
   const context = await Context.create(config)
   const analytics = new Analytics(context.orm)
-  const resp = await analytics.totalClaimedPoolFeesByPoolAndUser(
+  const resp = await analytics.totalClaimedPoolFees(
     '0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E',
-    '0x28637E84DeeB3499BCE0c3dA7C708823f354eF9C'
+    '0xe2465d57a8719B3f0cCBc12dD095EFa1CC55A997'
   )
-  //const resp7 = await analytics.totalClaimedPoolFeesAggregateTimespan([1728751614, 1730100814])
-  //console.log(resp7)
-  await analytics.getBalance('0x51B1ac96027e55c29Ece8a6fD99DdDdd01F22F6c', '0xe2465d57a8719B3f0cCBc12dD095EFa1CC55A997')
-
+  console.log(resp)
+  const resp1 = await analytics.totalClaimedPoolFees('0xE4EC8B31Ac446EC57b1063C978b818F3c2c2889E')
+  console.log(resp1)
+  const resp2 = await analytics.totalClaimedPoolFees(undefined, '0xe2465d57a8719B3f0cCBc12dD095EFa1CC55A997')
+  console.log(resp2)
+  const resp3 = await analytics.totalClaimedPoolFees()
+  console.log(resp3)
   await context.orm.close()
 }
 

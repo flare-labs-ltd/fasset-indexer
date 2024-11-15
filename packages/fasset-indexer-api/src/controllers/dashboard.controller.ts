@@ -4,11 +4,13 @@ import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../services/indexer.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
 import { MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../constants'
-import type {
-  AmountResult,
-  TimeSeries, Timespan, TokenPortfolio,
-  FAssetTimespan, FAssetCollateralPoolScore,
-  FAssetValueResult, FAssetAmountResult
+import {
+  type AmountResult,
+  type TimeSeries, type Timespan, type TokenPortfolio,
+  type FAssetTimespan, type FAssetCollateralPoolScore,
+  type FAssetValueResult, type FAssetAmountResult,
+  type RedemptionDefault,
+  FAssetType
 } from 'fasset-indexer-core'
 
 
@@ -18,8 +20,8 @@ import type {
 export class DashboardController {
   constructor(private readonly appService: FAssetIndexerService) { }
 
-  /////////////////////////////////////////////////////////////////
-  // info
+  //////////////////////////////////////////////////////////////////////
+  // system
 
   @Get('fasset-holder-count')
   @ApiOperation({ summary: 'Number of fasset token holders' })
@@ -32,6 +34,32 @@ export class DashboardController {
   getLiquidationCount(): Promise<ApiResponse<AmountResult>> {
     return apiResponse(this.appService.liquidationCount(), 200)
   }
+
+  @Get('redemption-default?')
+  redemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string): Promise<ApiResponse<RedemptionDefault>> {
+    return apiResponse(this.appService.redemptionDefault(id, FAssetType[fasset]), 200)
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  // agents
+
+  @Get('agent-minting-executed-count?')
+  getAgentMintingExecutedCount(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
+    return apiResponse(this.appService.agentMintingExecutedCount(agent), 200)
+  }
+
+  @Get('agent-redemption-success-rate?')
+  getAgentRedemptionSuccessRate(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
+    return apiResponse(this.appService.agentRedemptionSuccessRate(agent), 200)
+  }
+
+  @Get('agent-liquidation-count?')
+  getAgentLiquidationCount(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
+    return apiResponse(this.appService.agentLiquidationCount(agent), 200)
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  // collateral pools
 
   @Get('collateral-pool-transactions-count')
   @ApiOperation({ summary: 'Number of FAsset transactions related to collateral pools' })
@@ -67,15 +95,7 @@ export class DashboardController {
     @Query('pool') pool?: string,
     @Query('user') user?: string
   ): Promise<ApiResponse<FAssetValueResult>> {
-    if (pool === undefined && user === undefined) {
-      return apiResponse(this.appService.totalClaimedPoolFees(), 200)
-    } else if (user !== undefined && pool === undefined) {
-      return apiResponse(this.appService.totalClaimedPoolFeesByUser(user), 200)
-    } else if (pool !== undefined && user === undefined) {
-      return apiResponse(this.appService.totalClaimedPoolFeesByPool(pool), 400)
-    } else {
-      return apiResponse(this.appService.totalClaimedPoolFeesByPoolAndUser(pool, user), 200)
-    }
+    return apiResponse(this.appService.totalClaimedPoolFees(pool, user), 200)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -122,12 +142,10 @@ export class DashboardController {
     const ts = this.parseTimestamps(timestamps)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
-    if (pool !== undefined) {
-      return apiResponse(this.appService.totalClaimedPoolFeesByPoolTimespan(pool, ts), 200)
-    } else if (usd !== true) {
-      return apiResponse(this.appService.totalClaimedPoolFeesTimespan(ts), 200)
-    } else {
+    if (usd === true) {
       return apiResponse(this.appService.totalClaimedPoolFeesAggregateTimespan(ts), 200)
+    } else {
+      return apiResponse(this.appService.totalClaimedPoolFeesTimespan(ts, pool, undefined), 200)
     }
   }
 

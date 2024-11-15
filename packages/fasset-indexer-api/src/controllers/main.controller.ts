@@ -1,5 +1,4 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common'
-import { Cache } from '@nestjs/cache-manager'
+import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { FAssetIndexerService } from '../services/indexer.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
@@ -65,31 +64,6 @@ export class MiscController {
 
   //////////////////////////////////////////////////////////////////////////////
   // agents
-
-  @Get('/agent-minting-executed-count?')
-  getAgentMintingExecutedCount(@Query('agent') agent: string): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.agentMintingExecutedCount(agent), 200)
-  }
-
-  @Get('/agent-redemption-request-count?')
-  getAgentRedemptionRequestCount(@Query('agent') agent: string): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.agentRedemptionRequestCount(agent), 200)
-  }
-
-  @Get('/agent-redemption-performed-count?')
-  getAgentRedemptionPerformedCount(@Query('agent') agent: string): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.agentRedemptionPerformedCount(agent), 200)
-  }
-
-  @Get('/agent-redemption-success-rate?')
-  getAgentRedemptionSuccessRate(@Query('agent') agent: string): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.agentRedemptionSuccessRate(agent), 200)
-  }
-
-  @Get('/agent-liquidation-count?')
-  getAgentLiquidationCount(@Query('agent') agent: string): Promise<ApiResponse<number>> {
-    return apiResponse(this.appService.agentLiquidationCount(agent), 200)
-  }
 
   @Get('/events-per-interval?')
   getEventsPerSecond(@Query('seconds') seconds: number): Promise<ApiResponse<number>> {
