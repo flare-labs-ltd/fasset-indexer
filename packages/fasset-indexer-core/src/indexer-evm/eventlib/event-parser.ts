@@ -1,4 +1,3 @@
-import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context/context"
 import { EVENTS, IGNORE_EVENTS } from "../../config/constants"
