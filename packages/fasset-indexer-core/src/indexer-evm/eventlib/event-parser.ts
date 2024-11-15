@@ -67,21 +67,6 @@ export class EventParser {
       return this.context.interfaces.erc20Interface.parseLog(log)
     }
     const em = this.context.orm.em.fork()
-    // collateral types
-    const collateralType = await em.findOne(CollateralTypeAdded, { address: { hex: log.address } })
-    if (collateralType !== null) {
-      const parsed = this.context.interfaces.erc20Interface.parseLog(log)
-      if (collateralType.collateralClass !== 1) {
-        return parsed
-      } else if (parsed !== null) {
-        // track WNAT transfers from collateral pools and asset managers
-        const fromAddr = parsed.args[0]
-        if (await this.isCollateralPool(em, fromAddr)) {
-          return parsed
-        }
-      }
-      return null
-    }
     // collateral pool token
     if (await this.isCollateralPoolToken(em, log.address)) {
       return this.context.interfaces.erc20Interface.parseLog(log)
