@@ -2,7 +2,6 @@ export { OrmOptions, ORM } from "./database/interface"
 export { FAssetType } from "./shared"
 export { RedemptionDefault } from "./database/entities/events/redemption"
 export { FullLiquidationStarted, LiquidationPerformed } from "./database/entities/events/liquidation"
-export { Analytics } from "./analytics/analytics"
 export { createOrm } from "./database/utils"
 export { getOrmConfig, getUserDatabaseConfig } from "./config/utils"
 export { ContractLookup as Contracts } from "./context/contracts"
@@ -14,3 +13,7 @@ export type {
   FAssetTimeSeries, FAssetTimespan,
   FAssetCollateralPoolScore
 } from "./analytics/interface"
+
+export { DashboardAnalytics } from "./analytics/dashboard"
+export { NotificationAnalytics } from "./analytics/notification"
+export { MetadataAnalytics } from "./analytics/metadata"

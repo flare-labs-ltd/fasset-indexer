@@ -10,10 +10,10 @@ import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../
 import { CollateralPoolEntered, CollateralPoolExited } from "../database/entities/events/collateralPool"
 import { LiquidationPerformed } from "../database/entities/events/liquidation"
 import { TokenBalance } from "../database/entities/state/balance"
-import { fassetToUsdPrice } from "./utils"
+import { fassetToUsdPrice } from "./utils/prices"
 import { ContractLookup } from "../context/contracts"
 import { EVENTS, FASSETS, MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
-import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./rawSql"
+import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./utils/rawSql"
 import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
 import type {
@@ -27,7 +27,7 @@ import type {
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
  * It is seperated in case of UI's opensource release, and subsequent simplified indexer deployment.
  */
-export abstract class DashboardAnalytics {
+export class DashboardAnalytics {
   contracts: ContractLookup
   private zeroAddressId: number | null = null
 
@@ -58,7 +58,6 @@ export abstract class DashboardAnalytics {
       .join('tb.token', 'tk')
       .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.contracts.fassetTokens }})
       .groupBy('tk.hex')
-      .execute()
     for (const r of res) {
       // @ts-ignore
       const address = r.token_address
@@ -428,3 +427,15 @@ export abstract class DashboardAnalytics {
     return qb
   }
 }
+
+import { config } from "../config/config"
+import { Context } from "../context/context"
+async function main() {
+  const context = await Context.create(config)
+  const analytics = new DashboardAnalytics(context.orm)
+  const result = await analytics.fAssetholderCount()
+  console.log(result)
+  await context.orm.close()
+}
+
+main()

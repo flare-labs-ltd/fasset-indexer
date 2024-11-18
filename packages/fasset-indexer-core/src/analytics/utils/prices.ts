@@ -1,6 +1,6 @@
-import { FAssetType } from "../shared"
-import { CollateralTypeAdded } from "../database/entities/events/token"
-import { FtsoPrice } from "../database/entities/state/price"
+import { FAssetType } from "../../shared"
+import { CollateralTypeAdded } from "../../database/entities/events/token"
+import { FtsoPrice } from "../../database/entities/state/price"
 import type { EntityManager } from "@mikro-orm/core"
 
 

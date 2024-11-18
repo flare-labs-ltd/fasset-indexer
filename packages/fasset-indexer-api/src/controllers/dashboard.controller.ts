@@ -1,7 +1,7 @@
 import { Controller, Get, ParseBoolPipe, ParseIntPipe, Query, UseInterceptors } from '@nestjs/common'
 import { CacheInterceptor } from '@nestjs/cache-manager'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { FAssetIndexerService } from '../services/indexer.service'
+import { DashboardService } from '../services/dashboard.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
 import { MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../constants'
 import {
@@ -18,7 +18,7 @@ import {
 @UseInterceptors(CacheInterceptor)
 @Controller('api/dashboard')
 export class DashboardController {
-  constructor(private readonly appService: FAssetIndexerService) { }
+  constructor(private readonly service: DashboardService) { }
 
   //////////////////////////////////////////////////////////////////////
   // system
@@ -26,18 +26,18 @@ export class DashboardController {
   @Get('fasset-holder-count')
   @ApiOperation({ summary: 'Number of fasset token holders' })
   getFAssetHolderCount(): Promise<ApiResponse<FAssetAmountResult>> {
-    return apiResponse(this.appService.fAssetholderCount(), 200)
+    return apiResponse(this.service.fAssetholderCount(), 200)
   }
 
   @Get('total-liquidation-count')
   @ApiOperation({ summary: 'Number of performed liquidations' })
   getLiquidationCount(): Promise<ApiResponse<AmountResult>> {
-    return apiResponse(this.appService.liquidationCount(), 200)
+    return apiResponse(this.service.liquidationCount(), 200)
   }
 
   @Get('redemption-default?')
   redemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string): Promise<ApiResponse<RedemptionDefault>> {
-    return apiResponse(this.appService.redemptionDefault(id, FAssetType[fasset]), 200)
+    return apiResponse(this.service.redemptionDefault(id, FAssetType[fasset]), 200)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -45,17 +45,17 @@ export class DashboardController {
 
   @Get('agent-minting-executed-count?')
   getAgentMintingExecutedCount(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
-    return apiResponse(this.appService.agentMintingExecutedCount(agent), 200)
+    return apiResponse(this.service.agentMintingExecutedCount(agent), 200)
   }
 
   @Get('agent-redemption-success-rate?')
   getAgentRedemptionSuccessRate(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
-    return apiResponse(this.appService.agentRedemptionSuccessRate(agent), 200)
+    return apiResponse(this.service.agentRedemptionSuccessRate(agent), 200)
   }
 
   @Get('agent-liquidation-count?')
   getAgentLiquidationCount(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
-    return apiResponse(this.appService.agentLiquidationCount(agent), 200)
+    return apiResponse(this.service.agentLiquidationCount(agent), 200)
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ export class DashboardController {
   @Get('collateral-pool-transactions-count')
   @ApiOperation({ summary: 'Number of FAsset transactions related to collateral pools' })
   getPoolTransactionCount(): Promise<ApiResponse<AmountResult>> {
-    return apiResponse(this.appService.poolTransactionsCount(), 200)
+    return apiResponse(this.service.poolTransactionsCount(), 200)
   }
 
   @Get('best-performing-collateral-pools?')
@@ -76,7 +76,7 @@ export class DashboardController {
   ): Promise<ApiResponse<FAssetCollateralPoolScore>> {
     const err = this.restrictReturnedObjects(n)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
-    return apiResponse(this.appService.bestCollateralPools(n, minLots ?? 100), 200)
+    return apiResponse(this.service.bestCollateralPools(n, minLots ?? 100), 200)
   }
 
   @Get('user-collateral-pool-token-portfolio?')
@@ -84,7 +84,7 @@ export class DashboardController {
   getUserCollateralPoolTokenPortfolio(
     @Query('user') user: string
   ): Promise<ApiResponse<TokenPortfolio>> {
-    return apiResponse(this.appService.userCollateralPoolTokenPortfolio(user), 200)
+    return apiResponse(this.service.userCollateralPoolTokenPortfolio(user), 200)
   }
 
   @Get('total-claimed-pool-fees?')
@@ -95,7 +95,7 @@ export class DashboardController {
     @Query('pool') pool?: string,
     @Query('user') user?: string
   ): Promise<ApiResponse<FAssetValueResult>> {
-    return apiResponse(this.appService.totalClaimedPoolFees(pool, user), 200)
+    return apiResponse(this.service.totalClaimedPoolFees(pool, user), 200)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ export class DashboardController {
     const ts = this.parseTimestamps(timestamps)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
-    return apiResponse(this.appService.fAssetSupplyTimespan(ts), 200)
+    return apiResponse(this.service.fAssetSupplyTimespan(ts), 200)
   }
 
   @Get('/timespan/pool-collateral?')
@@ -126,7 +126,7 @@ export class DashboardController {
     console.log(ts)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
-    return apiResponse(this.appService.poolCollateralTimespan(ts, pool), 200)
+    return apiResponse(this.service.poolCollateralTimespan(ts, pool), 200)
   }
 
   @Get('/timespan/claimed-pool-fees?')
@@ -143,9 +143,9 @@ export class DashboardController {
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
     if (usd === true) {
-      return apiResponse(this.appService.totalClaimedPoolFeesAggregateTimespan(ts), 200)
+      return apiResponse(this.service.totalClaimedPoolFeesAggregateTimespan(ts), 200)
     } else {
-      return apiResponse(this.appService.totalClaimedPoolFeesTimespan(ts, pool, undefined), 200)
+      return apiResponse(this.service.totalClaimedPoolFeesTimespan(ts, pool, undefined), 200)
     }
   }
 
@@ -162,7 +162,7 @@ export class DashboardController {
   ): Promise<ApiResponse<TimeSeries<bigint>>> {
     const err = this.restrictPoints(end, npoints, start)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
-    return apiResponse(this.appService.redeemedAggregateTimeSeries(end, npoints, start), 200)
+    return apiResponse(this.service.redeemedAggregateTimeSeries(end, npoints, start), 200)
   }
 
   @Get('/timeseries/minted?')
@@ -175,7 +175,7 @@ export class DashboardController {
   ): Promise<ApiResponse<TimeSeries<bigint>>> {
     const err = this.restrictPoints(end, npoints, start)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
-    return apiResponse(this.appService.mintedAggregateTimeSeries(end, npoints, start), 200)
+    return apiResponse(this.service.mintedAggregateTimeSeries(end, npoints, start), 200)
   }
 
   //////////////////////////////////////////////////////////////////////
