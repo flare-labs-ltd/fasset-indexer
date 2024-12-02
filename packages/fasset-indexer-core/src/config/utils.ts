@@ -69,7 +69,7 @@ export function getUserConfig(): IUserConfig {
 
 export function getOrmConfig(config: IUserDatabaseConfig): OrmOptions {
   return defineConfig({
-    driver: ((config.dbType === "sqlite") ? SqliteDriver : PostgreSqlDriver) as any,
+    driver: (config.dbType === "sqlite" ? SqliteDriver : PostgreSqlDriver) as any,
     dbName: config.dbName,
     host: config.dbHost,
     port: config.dbPort,
