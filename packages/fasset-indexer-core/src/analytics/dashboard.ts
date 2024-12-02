@@ -53,7 +53,7 @@ export class DashboardAnalytics {
 
   async fAssetholderCount(): Promise<FAssetAmountResult> {
     const ret = {} as FAssetAmountResult
-    const res = await this.orm.em.createQueryBuilder(TokenBalance, 'tb')
+    const res = await this.orm.em.fork().createQueryBuilder(TokenBalance, 'tb')
       .select(['tk.hex as token_address', raw('COUNT(DISTINCT tb.holder_id) as n_token_holders')])
       .join('tb.token', 'tk')
       .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.contracts.fassetTokens }})
@@ -346,7 +346,7 @@ export class DashboardAnalytics {
 
   private async poolCollateralEnteredAt(pool?: string, user?: string, timestamp?: number): Promise<bigint> {
     const enteredCollateral = await this.filterEnterOrExitQueryBy(
-      this.orm.em.createQueryBuilder(CollateralPoolEntered, 'cpe')
+      this.orm.em.fork().createQueryBuilder(CollateralPoolEntered, 'cpe')
         .select([raw('SUM(cpe.amount_nat_wei) as collateral')]),
       'cpe', pool, user, timestamp
     ).execute()
@@ -356,7 +356,7 @@ export class DashboardAnalytics {
 
   private async poolCollateralExitedAt(pool?: string, user?: string, timestamp?: number): Promise<bigint> {
     const exitedCollateral = await this.filterEnterOrExitQueryBy(
-      this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
+      this.orm.em.fork().createQueryBuilder(CollateralPoolExited, 'cpe')
         .select([raw('SUM(cpe.received_nat_wei) as collateral')]),
       'cpe', pool, user, timestamp
     ).execute()
@@ -367,7 +367,7 @@ export class DashboardAnalytics {
   private async totalClaimedPoolFeesAt(pool?: string, user?: string, timestamp?: number): Promise<FAssetValueResult> {
     const ret = {} as FAssetValueResult
     const enteredFees = await this.filterEnterOrExitQueryBy(
-      this.orm.em.createQueryBuilder(CollateralPoolExited, 'cpe')
+      this.orm.em.fork().createQueryBuilder(CollateralPoolExited, 'cpe')
         .select(['cpe.fasset', raw('SUM(cpe.received_fasset_fees_uba) as fees')])
         .groupBy('cpe.fasset'),
       'cpe', pool, user, timestamp
@@ -382,7 +382,7 @@ export class DashboardAnalytics {
 
   private async tokenSupplyAt(tokenId: number, timestamp: number, zeroAddressId: number): Promise<bigint> {
     if (zeroAddressId === null) return BigInt(0)
-    const minted = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
+    const minted = await this.orm.em.fork().createQueryBuilder(ERC20Transfer, 't')
       .select([raw('SUM(t.value) as minted')])
       .join('evmLog', 'el')
       .join('el.block', 'block')
@@ -391,7 +391,7 @@ export class DashboardAnalytics {
     // @ts-ignore
     const mintedValue = BigInt(minted[0]?.minted || 0)
     if (mintedValue == BigInt(0)) return BigInt(0)
-    const burned = await this.orm.em.createQueryBuilder(ERC20Transfer, 't')
+    const burned = await this.orm.em.fork().createQueryBuilder(ERC20Transfer, 't')
       .select([raw('SUM(t.value) as burned')])
       .where({ 't.to_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
       .join('evmLog', 'el')

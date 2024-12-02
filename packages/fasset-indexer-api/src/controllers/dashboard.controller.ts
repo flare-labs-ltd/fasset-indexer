@@ -36,7 +36,7 @@ export class DashboardController {
   }
 
   @Get('redemption-default?')
-  redemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string): Promise<ApiResponse<RedemptionDefault>> {
+  getRedemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string): Promise<ApiResponse<RedemptionDefault>> {
     return apiResponse(this.service.redemptionDefault(id, FAssetType[fasset]), 200)
   }
 
