@@ -63,9 +63,7 @@ export function getUserConfig(): IUserConfig {
   return {
     ...getUserDatabaseConfig(),
     flrRpcUrl: process.env.RPC_URL!,
-    flrApiKey: process.env.RPC_API_KEY,
-    btcRpcUrl: process.env.BTC_RPC_URL!,
-    btcApiKey: process.env.BTC_RPC_API_KEY
+    flrApiKey: process.env.RPC_API_KEY
   }
 }
 
@@ -85,10 +83,6 @@ export function expandUserConfig(config: IUserConfig): IConfig {
     flrRpc: {
       url: config.flrRpcUrl,
       apiKey: config.flrApiKey,
-    },
-    btcRpc: {
-      url: config.btcRpcUrl,
-      apiKey: config.btcApiKey,
     },
     db: getOrmConfig(config),
     ignoreEvents: IGNORE_EVENTS

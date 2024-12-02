@@ -1,4 +1,4 @@
-import { EventIndexer } from "../evm-indexer"
+import { EventIndexer } from "../indexer"
 import { EventIndexerBackPopulation } from "./indexer-back-population"
 import type { Context } from "../../context/context"
 

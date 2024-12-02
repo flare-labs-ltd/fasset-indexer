@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import { sleep, getVar, setVar } from "../../utils"
-import { EventIndexer } from "../evm-indexer"
+import { EventIndexer } from "../indexer"
 import { EVM_LOG_FETCH_SLEEP_MS, MIN_EVM_BLOCK_NUMBER } from "../../config/constants"
 import type { Log } from "ethers"
 import type { Context } from "../../context/context"

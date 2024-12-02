@@ -37,7 +37,7 @@ import type {
 } from "../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/ERC20"
-import type { Event, EventArgs } from "../../src/indexer-evm/eventlib/event-scraper"
+import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
 
 
 export class EventFixture {

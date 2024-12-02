@@ -19,11 +19,6 @@ export class MetadataController {
     return apiResponse(this.service.currentBlock(), 200)
   }
 
-  @Get('/current-btc-block')
-  getCurrentBtcBlock(): Promise<ApiResponse<number | null>> {
-    return apiResponse(this.service.currentBtcBlock(), 200)
-  }
-
   @Get('/blocks-to-back-sync')
   getBlocksToBackSync(): Promise<ApiResponse<number | null>> {
     return apiResponse(this.service.blocksToBackSync(), 200)

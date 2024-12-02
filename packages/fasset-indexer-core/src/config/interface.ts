@@ -12,17 +12,11 @@ export interface IUserDatabaseConfig {
 
 export interface IUserConfig extends IUserDatabaseConfig {
   flrRpcUrl: string
-  btcRpcUrl: string
   flrApiKey?: string
-  btcApiKey?: string
 }
 
 export interface IConfig {
   flrRpc: {
-    url: string
-    apiKey?: string
-  }
-  btcRpc: {
     url: string
     apiKey?: string
   }

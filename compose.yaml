@@ -35,10 +35,6 @@ services:
     <<: *core-svc
     container_name: ${COMPOSE_PROJECT_NAME}-watchdog
     command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-evm-watchdog.js"]
-  btc-wathcdog:
-    <<: *core-svc
-    container_name: ${COMPOSE_PROJECT_NAME}-btc-watchdog
-    command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-btc-watchdog.js"]
   db:
     image: postgres:16
     container_name: ${COMPOSE_PROJECT_NAME}-db

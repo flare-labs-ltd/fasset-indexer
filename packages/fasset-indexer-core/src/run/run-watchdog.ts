@@ -1,4 +1,4 @@
-import { EvmStateWatchdog } from "../indexer-evm/evm-watchdog"
+import { EvmStateWatchdog } from "../indexer/watchdog"
 import { Context } from "../context/context"
 import { config } from "../config/config"
 

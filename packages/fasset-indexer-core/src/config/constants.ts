@@ -15,12 +15,6 @@ export const EVM_BLOCK_HEIGHT_OFFSET = 10 // log collection offset from the curr
 export const EVM_LOG_FETCH_SIZE = 30 // number of logs fetched from an evm chain (max is 30)
 export const IGNORE_EVENTS = [] // add events to ignore
 
-// btc scrape config
-export const MIN_BTC_BLOCK_NUMBER = 2874425
-export const BTC_BLOCK_HEIGHT_OFFSET = 2 // tx collection offset from the current block height
-export const BTC_BLOCK_FETCH_SLEEP_MS = 60 * 1000 // collect new btc blocks every 1 minute
-export const BTC_STATE_UPDATE_SLEEP_MS = 60 * 1000
-
 // db settings
 export const MIN_DATABASE_POOL_CONNECTIONS = 2
 export const MAX_DATABASE_POOL_CONNECTIONS = 30
@@ -30,7 +24,6 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
 export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddCCBs"
 export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddCCBs"
-export const FIRST_UNHANDLED_BTC_BLOCK = "firstUnhandledBtcBlock"
 
 // event names
 // agent

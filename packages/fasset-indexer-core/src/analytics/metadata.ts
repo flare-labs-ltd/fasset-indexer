@@ -2,8 +2,7 @@ import { getVar } from "../utils"
 import {
   FIRST_UNHANDLED_EVENT_BLOCK,
   FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE,
-  END_EVENT_BLOCK_FOR_CURRENT_UPDATE,
-  FIRST_UNHANDLED_BTC_BLOCK
+  END_EVENT_BLOCK_FOR_CURRENT_UPDATE
 } from "../config/constants"
 import type { ORM } from "../database/interface"
 
@@ -17,11 +16,6 @@ export class MetadataAnalytics {
 
   async currentBlock(): Promise<number | null> {
     const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK)
-    return (v && v.value) ? parseInt(v.value) : null
-  }
-
-  async currentBtcBlock(): Promise<number | null> {
-    const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_BTC_BLOCK)
     return (v && v.value) ? parseInt(v.value) : null
   }
 

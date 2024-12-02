@@ -33,8 +33,6 @@ import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
 import { TokenBalance } from "./entities/state/balance"
-import { BtcTx, BtcTxInput, BtcTxOutput, OpReturn } from "./entities/btc/transaction"
-import { BtcBlock } from "./entities/btc/block"
 import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
 import type { Options } from "@mikro-orm/core"
 import type { AbstractSqlDriver } from "@mikro-orm/knex"
@@ -54,8 +52,6 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
     AgentPing, AgentPingResponse, CurrentUnderlyingBlockUpdated,
     FtsoPrice, UntrackedAgentVault, TokenBalance,
-    // btc
-    BtcTxOutput, BtcTxInput, OpReturn, BtcBlock, BtcTx
   ],
   pool: {
     min: MIN_DATABASE_POOL_CONNECTIONS,

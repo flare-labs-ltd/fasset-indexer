@@ -1,19 +1,19 @@
-import { BtcIndexer } from "../indexer-btc/btc-indexer"
 import { Context } from "../context/context"
 import { config } from "../config/config"
+import { EventIndexer } from "../indexer/indexer"
 
 
-async function runBtcIndexer(start?: number) {
+async function runIndexer(start?: number) {
   const context = await Context.create(config)
-  const indexer = new BtcIndexer(context)
+  const indexer = new EventIndexer(context)
 
   process.on("SIGINT", async () => {
-    console.log("Stopping BTC indexer...")
+    console.log("Stopping indexer...")
     await context.orm.close()
     process.exit(0)
   })
 
-  await indexer.run(start)
+  await indexer.run()
 }
 
-runBtcIndexer()
+runIndexer()
