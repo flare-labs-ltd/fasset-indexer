@@ -7,12 +7,10 @@ import { MetadataService } from "../services/metadata.service"
 @Controller("api/indexer")
 export class MetadataController {
 
-  constructor(
-    private readonly service: MetadataService,
-  ) {}
+  constructor(private readonly service: MetadataService) {}
 
   @Get('/cache')
-  getCache(): Promise<any> {
+  getCache(): Promise<string[]> {
     return this.service.keys()
   }
 

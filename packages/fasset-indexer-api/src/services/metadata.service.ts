@@ -6,7 +6,10 @@ import { MetadataAnalytics, type ORM } from 'fasset-indexer-core'
 @Injectable()
 export class MetadataService extends MetadataAnalytics {
 
-  constructor(@Inject('ORM') orm: ORM, @Inject(CACHE_MANAGER) private cacheManager: Cache) {
+  constructor(
+    @Inject('ORM') orm: ORM,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {
     super(orm)
   }
 
