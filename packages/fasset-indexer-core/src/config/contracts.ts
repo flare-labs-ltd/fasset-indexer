@@ -1,7 +1,14 @@
-import { abi as ASSET_MANAGER_ABI } from '../../chain/artifacts/IAssetManager.json'
-import CONTRACTS from '../../chain/coston.json'
+import "dotenv/config"
 
-export const contracts = {
-  addresses: CONTRACTS,
-  abis: { assetManager: ASSET_MANAGER_ABI }
+const addressesJsonPath = process.env.ADDRESSES_JSON || '../../chain/coston.json'
+const addressesJson = require(addressesJsonPath)
+
+export const contracts: {
+  addresses: {
+    name: string
+    contractName: string
+    address: string
+  }[]
+} = {
+  addresses: addressesJson
 }
