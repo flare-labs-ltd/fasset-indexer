@@ -428,7 +428,7 @@ export class DashboardAnalytics {
   }
 }
 
-import { config } from "../config/config"
+/* import { config } from "../config/config"
 import { Context } from "../context/context"
 async function main() {
   const context = await Context.create(config)
@@ -438,4 +438,4 @@ async function main() {
   await context.orm.close()
 }
 
-main()
+main() */
