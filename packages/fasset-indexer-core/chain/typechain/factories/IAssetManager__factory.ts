@@ -3,7 +3,10 @@
 /* eslint-disable */
 
 import { Contract, Interface, type ContractRunner } from "ethers";
-import type { IAssetManager, IAssetManagerInterface } from "../IAssetManager";
+import type {
+  IAssetManager,
+  IAssetManagerInterface,
+} from "../IAssetManager";
 
 const _abi = [
   {
@@ -313,6 +316,11 @@ const _abi = [
             name: "poolTopupTokenPriceFactorBIPS",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "handshakeType",
+            type: "uint256",
+          },
         ],
         indexed: false,
         internalType: "struct IAssetManagerEvents.AgentVaultCreationData",
@@ -413,6 +421,31 @@ const _abi = [
         name: "collateralReservationId",
         type: "uint256",
       },
+    ],
+    name: "CollateralReservationCancelled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "minter",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "collateralReservationId",
+        type: "uint256",
+      },
       {
         indexed: false,
         internalType: "uint256",
@@ -421,6 +454,31 @@ const _abi = [
       },
     ],
     name: "CollateralReservationDeleted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "minter",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "collateralReservationId",
+        type: "uint256",
+      },
+    ],
+    name: "CollateralReservationRejected",
     type: "event",
   },
   {
@@ -636,48 +694,6 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
-        components: [
-          {
-            internalType: "address",
-            name: "facetAddress",
-            type: "address",
-          },
-          {
-            internalType: "enum IDiamond.FacetCutAction",
-            name: "action",
-            type: "uint8",
-          },
-          {
-            internalType: "bytes4[]",
-            name: "functionSelectors",
-            type: "bytes4[]",
-          },
-        ],
-        indexed: false,
-        internalType: "struct IDiamond.FacetCut[]",
-        name: "_diamondCut",
-        type: "tuple[]",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "_init",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "_calldata",
-        type: "bytes",
-      },
-    ],
-    name: "DiamondCut",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
         indexed: true,
         internalType: "address",
         name: "agentVault",
@@ -760,51 +776,43 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
-        internalType: "bytes",
-        name: "encodedCall",
-        type: "bytes",
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "minter",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "collateralReservationId",
+        type: "uint256",
       },
       {
         indexed: false,
-        internalType: "bytes32",
-        name: "encodedCallHash",
-        type: "bytes32",
+        internalType: "string[]",
+        name: "minterUnderlyingAddresses",
+        type: "string[]",
       },
       {
         indexed: false,
         internalType: "uint256",
-        name: "allowedAfterTimestamp",
+        name: "valueUBA",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "feeUBA",
         type: "uint256",
       },
     ],
-    name: "GovernanceCallTimelocked",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "initialGovernance",
-        type: "address",
-      },
-    ],
-    name: "GovernanceInitialised",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "address",
-        name: "governanceSettings",
-        type: "address",
-      },
-    ],
-    name: "GovernedProductionModeEntered",
+    name: "HandshakeRequired",
     type: "event",
   },
   {
@@ -858,6 +866,18 @@ const _abi = [
         indexed: false,
         internalType: "uint256",
         name: "valueUBA",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "paidVaultCollateralWei",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "paidPoolCollateralWei",
         type: "uint256",
       },
     ],
@@ -1097,19 +1117,6 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-    ],
-    name: "RedemptionPaymentExtensionSecondsChanged",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
         indexed: true,
         internalType: "address",
         name: "agentVault",
@@ -1240,6 +1247,86 @@ const _abi = [
       },
     ],
     name: "RedemptionRequestIncomplete",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "redeemer",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint64",
+        name: "requestId",
+        type: "uint64",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "paymentAddress",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "valueUBA",
+        type: "uint256",
+      },
+    ],
+    name: "RedemptionRequestRejected",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "redeemer",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint64",
+        name: "requestId",
+        type: "uint64",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "valueTakenOverUBA",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "newAgentVault",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint64",
+        name: "newRequestId",
+        type: "uint64",
+      },
+    ],
+    name: "RedemptionRequestTakenOver",
     type: "event",
   },
   {
@@ -1413,6 +1500,43 @@ const _abi = [
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "mintFromFreeUnderlying",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "mintedAmountUBA",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "depositedAmountUBA",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "poolFeeUBA",
+        type: "uint256",
+      },
+    ],
+    name: "SelfMint",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: false,
         internalType: "string",
         name: "name",
@@ -1452,25 +1576,55 @@ const _abi = [
     inputs: [
       {
         indexed: false,
-        internalType: "bytes32",
-        name: "encodedCallHash",
-        type: "bytes32",
+        internalType: "uint256",
+        name: "nextTransferFeeMillionths",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "scheduledAt",
+        type: "uint256",
       },
     ],
-    name: "TimelockedGovernanceCallCanceled",
+    name: "TransferFeeChangeScheduled",
     type: "event",
   },
   {
     anonymous: false,
     inputs: [
       {
+        indexed: true,
+        internalType: "address",
+        name: "agentVault",
+        type: "address",
+      },
+      {
         indexed: false,
-        internalType: "bytes32",
-        name: "encodedCallHash",
-        type: "bytes32",
+        internalType: "address",
+        name: "recipient",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "agentClaimedUBA",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "poolClaimedUBA",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "remainingUnclaimedEpochs",
+        type: "uint256",
       },
     ],
-    name: "TimelockedGovernanceCallExecuted",
+    name: "TransferFeesClaimed",
     type: "event",
   },
   {
@@ -1645,71 +1799,6 @@ const _abi = [
   {
     inputs: [
       {
-        components: [
-          {
-            internalType: "enum CollateralType.Class",
-            name: "collateralClass",
-            type: "uint8",
-          },
-          {
-            internalType: "contract IERC20",
-            name: "token",
-            type: "address",
-          },
-          {
-            internalType: "uint256",
-            name: "decimals",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "validUntil",
-            type: "uint256",
-          },
-          {
-            internalType: "bool",
-            name: "directPricePair",
-            type: "bool",
-          },
-          {
-            internalType: "string",
-            name: "assetFtsoSymbol",
-            type: "string",
-          },
-          {
-            internalType: "string",
-            name: "tokenFtsoSymbol",
-            type: "string",
-          },
-          {
-            internalType: "uint256",
-            name: "minCollateralRatioBIPS",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "ccbMinCollateralRatioBIPS",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "safetyMinCollateralRatioBIPS",
-            type: "uint256",
-          },
-        ],
-        internalType: "struct CollateralType.Data",
-        name: "_data",
-        type: "tuple",
-      },
-    ],
-    name: "addCollateralType",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "_agentVault",
         type: "address",
@@ -1746,6 +1835,129 @@ const _abi = [
     name: "agentPingResponse",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_firstRedemptionTicketId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_pageSize",
+        type: "uint256",
+      },
+    ],
+    name: "agentRedemptionQueue",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "redemptionTicketId",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "agentVault",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "ticketValueUBA",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct RedemptionTicketInfo.Data[]",
+        name: "_queue",
+        type: "tuple[]",
+      },
+      {
+        internalType: "uint256",
+        name: "_nextRedemptionTicketId",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_maxEpochsToClaim",
+        type: "uint256",
+      },
+    ],
+    name: "agentTransferFeeShare",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "_feeShareUBA",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_epoch",
+        type: "uint256",
+      },
+    ],
+    name: "agentTransferFeeShareForEpoch",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+    ],
+    name: "agentUnclaimedTransferFeeEpochs",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "_first",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_count",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -1877,6 +2089,19 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_collateralReservationId",
+        type: "uint256",
+      },
+    ],
+    name: "approveCollateralReservation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "assetManagerController",
     outputs: [
@@ -1916,55 +2141,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "assetPriceNatWei",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "_multiplier",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_divisor",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bool",
-        name: "attached",
-        type: "bool",
-      },
-    ],
-    name: "attachController",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "contract IERC20",
-        name: "_token",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_valueNATWei",
-        type: "uint256",
-      },
-    ],
-    name: "beforeCollateralWithdrawal",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -1980,12 +2156,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes",
-        name: "_encodedCall",
-        type: "bytes",
+        internalType: "uint256",
+        name: "_collateralReservationId",
+        type: "uint256",
       },
     ],
-    name: "cancelGovernanceCall",
+    name: "cancelCollateralReservation",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -2000,6 +2176,45 @@ const _abi = [
     ],
     name: "cancelUnderlyingWithdrawal",
     outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_recipient",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_maxEpochsToClaim",
+        type: "uint256",
+      },
+    ],
+    name: "claimTransferFees",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "_agentClaimedUBA",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_poolClaimedUBA",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_remainingUnclaimedEpochs",
+        type: "uint256",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -2071,7 +2286,7 @@ const _abi = [
                     type: "uint256",
                   },
                 ],
-                internalType: "struct Payment.RequestBody",
+                internalType: "struct IPayment.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -2090,6 +2305,11 @@ const _abi = [
                   {
                     internalType: "bytes32",
                     name: "sourceAddressHash",
+                    type: "bytes32",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
                     type: "bytes32",
                   },
                   {
@@ -2138,17 +2358,17 @@ const _abi = [
                     type: "uint8",
                   },
                 ],
-                internalType: "struct Payment.ResponseBody",
+                internalType: "struct IPayment.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct Payment.Response",
+            internalType: "struct IPayment.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct Payment.Proof",
+        internalType: "struct IPayment.Proof",
         name: "_payment",
         type: "tuple",
       },
@@ -2212,7 +2432,7 @@ const _abi = [
                     type: "uint256",
                   },
                 ],
-                internalType: "struct Payment.RequestBody",
+                internalType: "struct IPayment.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -2231,6 +2451,11 @@ const _abi = [
                   {
                     internalType: "bytes32",
                     name: "sourceAddressHash",
+                    type: "bytes32",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
                     type: "bytes32",
                   },
                   {
@@ -2279,17 +2504,17 @@ const _abi = [
                     type: "uint8",
                   },
                 ],
-                internalType: "struct Payment.ResponseBody",
+                internalType: "struct IPayment.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct Payment.Response",
+            internalType: "struct IPayment.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct Payment.Proof",
+        internalType: "struct IPayment.Proof",
         name: "_payment",
         type: "tuple",
       },
@@ -2353,7 +2578,7 @@ const _abi = [
                     type: "uint256",
                   },
                 ],
-                internalType: "struct Payment.RequestBody",
+                internalType: "struct IPayment.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -2372,6 +2597,11 @@ const _abi = [
                   {
                     internalType: "bytes32",
                     name: "sourceAddressHash",
+                    type: "bytes32",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
                     type: "bytes32",
                   },
                   {
@@ -2420,17 +2650,17 @@ const _abi = [
                     type: "uint8",
                   },
                 ],
-                internalType: "struct Payment.ResponseBody",
+                internalType: "struct IPayment.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct Payment.Response",
+            internalType: "struct IPayment.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct Payment.Proof",
+        internalType: "struct IPayment.Proof",
         name: "_payment",
         type: "tuple",
       },
@@ -2510,7 +2740,7 @@ const _abi = [
                     type: "string",
                   },
                 ],
-                internalType: "struct AddressValidity.RequestBody",
+                internalType: "struct IAddressValidity.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -2532,17 +2762,17 @@ const _abi = [
                     type: "bytes32",
                   },
                 ],
-                internalType: "struct AddressValidity.ResponseBody",
+                internalType: "struct IAddressValidity.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct AddressValidity.Response",
+            internalType: "struct IAddressValidity.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct AddressValidity.Proof",
+        internalType: "struct IAddressValidity.Proof",
         name: "_addressProof",
         type: "tuple",
       },
@@ -2598,6 +2828,11 @@ const _abi = [
             name: "poolTopupTokenPriceFactorBIPS",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "handshakeType",
+            type: "uint256",
+          },
         ],
         internalType: "struct AgentSettings.Data",
         name: "_settings",
@@ -2613,6 +2848,19 @@ const _abi = [
       },
     ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "currentTransferFeeEpoch",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -2641,29 +2889,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "enum CollateralType.Class",
-        name: "_collateralClass",
-        type: "uint8",
-      },
-      {
-        internalType: "contract IERC20",
-        name: "_token",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_invalidationTimeSec",
-        type: "uint256",
-      },
-    ],
-    name: "deprecateCollateralType",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "address",
         name: "_agentVault",
         type: "address",
@@ -2675,46 +2900,6 @@ const _abi = [
       },
     ],
     name: "destroyAgent",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            internalType: "address",
-            name: "facetAddress",
-            type: "address",
-          },
-          {
-            internalType: "enum IDiamond.FacetCutAction",
-            name: "action",
-            type: "uint8",
-          },
-          {
-            internalType: "bytes4[]",
-            name: "functionSelectors",
-            type: "bytes4[]",
-          },
-        ],
-        internalType: "struct IDiamond.FacetCut[]",
-        name: "_diamondCut",
-        type: "tuple[]",
-      },
-      {
-        internalType: "address",
-        name: "_init",
-        type: "address",
-      },
-      {
-        internalType: "bytes",
-        name: "_calldata",
-        type: "bytes",
-      },
-    ],
-    name: "diamondCut",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -2763,7 +2948,8 @@ const _abi = [
                     type: "bytes32",
                   },
                 ],
-                internalType: "struct BalanceDecreasingTransaction.RequestBody",
+                internalType:
+                  "struct IBalanceDecreasingTransaction.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -2796,17 +2982,17 @@ const _abi = [
                   },
                 ],
                 internalType:
-                  "struct BalanceDecreasingTransaction.ResponseBody",
+                  "struct IBalanceDecreasingTransaction.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct BalanceDecreasingTransaction.Response",
+            internalType: "struct IBalanceDecreasingTransaction.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct BalanceDecreasingTransaction.Proof",
+        internalType: "struct IBalanceDecreasingTransaction.Proof",
         name: "_payment1",
         type: "tuple",
       },
@@ -2852,7 +3038,8 @@ const _abi = [
                     type: "bytes32",
                   },
                 ],
-                internalType: "struct BalanceDecreasingTransaction.RequestBody",
+                internalType:
+                  "struct IBalanceDecreasingTransaction.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -2885,17 +3072,17 @@ const _abi = [
                   },
                 ],
                 internalType:
-                  "struct BalanceDecreasingTransaction.ResponseBody",
+                  "struct IBalanceDecreasingTransaction.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct BalanceDecreasingTransaction.Response",
+            internalType: "struct IBalanceDecreasingTransaction.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct BalanceDecreasingTransaction.Proof",
+        internalType: "struct IBalanceDecreasingTransaction.Proof",
         name: "_payment2",
         type: "tuple",
       },
@@ -2908,47 +3095,6 @@ const _abi = [
     name: "doublePaymentChallenge",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "bool",
-        name: "_byGovernance",
-        type: "bool",
-      },
-      {
-        internalType: "uint256",
-        name: "_duration",
-        type: "uint256",
-      },
-    ],
-    name: "emergencyPause",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "emergencyPauseDetails",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "_pausedUntil",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_totalPauseDuration",
-        type: "uint256",
-      },
-      {
-        internalType: "bool",
-        name: "_pausedByGovernance",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
     type: "function",
   },
   {
@@ -3011,19 +3157,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes",
-        name: "_encodedCall",
-        type: "bytes",
-      },
-    ],
-    name: "executeGovernanceCall",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         components: [
           {
             internalType: "bytes32[]",
@@ -3070,7 +3203,7 @@ const _abi = [
                     type: "uint256",
                   },
                 ],
-                internalType: "struct Payment.RequestBody",
+                internalType: "struct IPayment.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -3089,6 +3222,11 @@ const _abi = [
                   {
                     internalType: "bytes32",
                     name: "sourceAddressHash",
+                    type: "bytes32",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
                     type: "bytes32",
                   },
                   {
@@ -3137,17 +3275,17 @@ const _abi = [
                     type: "uint8",
                   },
                 ],
-                internalType: "struct Payment.ResponseBody",
+                internalType: "struct IPayment.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct Payment.Response",
+            internalType: "struct IPayment.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct Payment.Proof",
+        internalType: "struct IPayment.Proof",
         name: "_payment",
         type: "tuple",
       },
@@ -3267,6 +3405,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "_fee",
+        type: "uint256",
+      },
+    ],
+    name: "fassetTransferFeePaid",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "bytes32[]",
@@ -3308,7 +3459,7 @@ const _abi = [
                     type: "uint64",
                   },
                 ],
-                internalType: "struct ConfirmedBlockHeightExists.RequestBody",
+                internalType: "struct IConfirmedBlockHeightExists.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -3335,17 +3486,17 @@ const _abi = [
                     type: "uint64",
                   },
                 ],
-                internalType: "struct ConfirmedBlockHeightExists.ResponseBody",
+                internalType: "struct IConfirmedBlockHeightExists.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct ConfirmedBlockHeightExists.Response",
+            internalType: "struct IConfirmedBlockHeightExists.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct ConfirmedBlockHeightExists.Proof",
+        internalType: "struct IConfirmedBlockHeightExists.Proof",
         name: "_proof",
         type: "tuple",
       },
@@ -3358,6 +3509,19 @@ const _abi = [
     name: "finishRedemptionWithoutPayment",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "firstClaimableTransferFeeEpoch",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -3404,7 +3568,8 @@ const _abi = [
                     type: "bytes32",
                   },
                 ],
-                internalType: "struct BalanceDecreasingTransaction.RequestBody",
+                internalType:
+                  "struct IBalanceDecreasingTransaction.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -3437,17 +3602,17 @@ const _abi = [
                   },
                 ],
                 internalType:
-                  "struct BalanceDecreasingTransaction.ResponseBody",
+                  "struct IBalanceDecreasingTransaction.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct BalanceDecreasingTransaction.Response",
+            internalType: "struct IBalanceDecreasingTransaction.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct BalanceDecreasingTransaction.Proof[]",
+        internalType: "struct IBalanceDecreasingTransaction.Proof[]",
         name: "_payments",
         type: "tuple[]",
       },
@@ -3722,6 +3887,11 @@ const _abi = [
             name: "poolTopupTokenPriceFactorBIPS",
             type: "uint256",
           },
+          {
+            internalType: "uint256",
+            name: "handshakeType",
+            type: "uint256",
+          },
         ],
         internalType: "struct AgentInfo.Info",
         name: "",
@@ -3754,6 +3924,44 @@ const _abi = [
       {
         internalType: "uint256",
         name: "maxLiquidationAmountUBA",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+    ],
+    name: "getAgentMinPoolCollateralRatioBIPS",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+    ],
+    name: "getAgentMinVaultCollateralRatioBIPS",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
         type: "uint256",
       },
     ],
@@ -3850,6 +4058,11 @@ const _abi = [
             type: "address",
           },
           {
+            internalType: "address",
+            name: "ownerManagementAddress",
+            type: "address",
+          },
+          {
             internalType: "uint256",
             name: "feeBIPS",
             type: "uint256",
@@ -3868,6 +4081,11 @@ const _abi = [
             internalType: "uint256",
             name: "freeCollateralLots",
             type: "uint256",
+          },
+          {
+            internalType: "enum AgentInfo.Status",
+            name: "status",
+            type: "uint8",
           },
         ],
         internalType: "struct AvailableAgentInfo.Data[]",
@@ -3926,19 +4144,6 @@ const _abi = [
         internalType: "address",
         name: "",
         type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getCollateralPoolTokenTimelockSeconds",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -4086,25 +4291,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-    ],
-    name: "getFAssetsBackedByPool",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [],
     name: "getSettings",
     outputs: [
@@ -4152,7 +4338,7 @@ const _abi = [
           },
           {
             internalType: "address",
-            name: "scProofVerifier",
+            name: "fdcVerification",
             type: "address",
           },
           {
@@ -4380,49 +4566,35 @@ const _abi = [
             name: "emergencyPauseDurationResetAfterSeconds",
             type: "uint64",
           },
+          {
+            internalType: "uint64",
+            name: "cancelCollateralReservationAfterSeconds",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "rejectRedemptionRequestWindowSeconds",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "takeOverRedemptionRequestWindowSeconds",
+            type: "uint64",
+          },
+          {
+            internalType: "uint32",
+            name: "rejectedRedemptionDefaultFactorVaultCollateralBIPS",
+            type: "uint32",
+          },
+          {
+            internalType: "uint32",
+            name: "rejectedRedemptionDefaultFactorPoolBIPS",
+            type: "uint32",
+          },
         ],
         internalType: "struct AssetManagerSettings.Data",
         name: "",
         type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "getWNat",
-    outputs: [
-      {
-        internalType: "contract IWNat",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "governance",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "governanceSettings",
-    outputs: [
-      {
-        internalType: "contract IGovernanceSettings",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",
@@ -4472,7 +4644,8 @@ const _abi = [
                     type: "bytes32",
                   },
                 ],
-                internalType: "struct BalanceDecreasingTransaction.RequestBody",
+                internalType:
+                  "struct IBalanceDecreasingTransaction.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -4505,17 +4678,17 @@ const _abi = [
                   },
                 ],
                 internalType:
-                  "struct BalanceDecreasingTransaction.ResponseBody",
+                  "struct IBalanceDecreasingTransaction.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct BalanceDecreasingTransaction.Response",
+            internalType: "struct IBalanceDecreasingTransaction.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct BalanceDecreasingTransaction.Proof",
+        internalType: "struct IBalanceDecreasingTransaction.Proof",
         name: "_transaction",
         type: "tuple",
       },
@@ -4533,68 +4706,14 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_address",
-        type: "address",
+        internalType: "address[]",
+        name: "_agentVaults",
+        type: "address[]",
       },
     ],
-    name: "isAgentVaultOwner",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_address",
-        type: "address",
-      },
-    ],
-    name: "isExecutor",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-      {
-        internalType: "contract IERC20",
-        name: "_token",
-        type: "address",
-      },
-    ],
-    name: "isLockedVaultToken",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "view",
+    name: "initAgentsMintingHistory",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -4683,16 +4802,15 @@ const _abi = [
         name: "_agentVault",
         type: "address",
       },
-    ],
-    name: "maxRedemptionFromAgent",
-    outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
+        internalType: "uint64",
+        name: "_lots",
+        type: "uint64",
       },
     ],
-    stateMutability: "view",
+    name: "mintFromFreeUnderlying",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -4771,9 +4889,19 @@ const _abi = [
                     name: "standardPaymentReference",
                     type: "bytes32",
                   },
+                  {
+                    internalType: "bool",
+                    name: "checkSourceAddresses",
+                    type: "bool",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
+                    type: "bytes32",
+                  },
                 ],
                 internalType:
-                  "struct ReferencedPaymentNonexistence.RequestBody",
+                  "struct IReferencedPaymentNonexistence.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -4796,17 +4924,17 @@ const _abi = [
                   },
                 ],
                 internalType:
-                  "struct ReferencedPaymentNonexistence.ResponseBody",
+                  "struct IReferencedPaymentNonexistence.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct ReferencedPaymentNonexistence.Response",
+            internalType: "struct IReferencedPaymentNonexistence.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct ReferencedPaymentNonexistence.Proof",
+        internalType: "struct IReferencedPaymentNonexistence.Proof",
         name: "_proof",
         type: "tuple",
       },
@@ -4823,32 +4951,12 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "pauseMinting",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "priceReader",
     outputs: [
       {
         internalType: "address",
         name: "",
         type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "productionMode",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -4903,7 +5011,7 @@ const _abi = [
                     type: "uint256",
                   },
                 ],
-                internalType: "struct Payment.RequestBody",
+                internalType: "struct IPayment.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -4922,6 +5030,11 @@ const _abi = [
                   {
                     internalType: "bytes32",
                     name: "sourceAddressHash",
+                    type: "bytes32",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
                     type: "bytes32",
                   },
                   {
@@ -4970,17 +5083,17 @@ const _abi = [
                     type: "uint8",
                   },
                 ],
-                internalType: "struct Payment.ResponseBody",
+                internalType: "struct IPayment.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct Payment.Response",
+            internalType: "struct IPayment.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct Payment.Proof",
+        internalType: "struct IPayment.Proof",
         name: "_payment",
         type: "tuple",
       },
@@ -5017,62 +5130,6 @@ const _abi = [
       },
     ],
     stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_receiver",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_amountUBA",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "_receiverUnderlyingAddress",
-        type: "string",
-      },
-      {
-        internalType: "address payable",
-        name: "_executor",
-        type: "address",
-      },
-    ],
-    name: "redeemFromAgent",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "_receiver",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_amountUBA",
-        type: "uint256",
-      },
-    ],
-    name: "redeemFromAgentInCollateral",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -5138,9 +5195,19 @@ const _abi = [
                     name: "standardPaymentReference",
                     type: "bytes32",
                   },
+                  {
+                    internalType: "bool",
+                    name: "checkSourceAddresses",
+                    type: "bool",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
+                    type: "bytes32",
+                  },
                 ],
                 internalType:
-                  "struct ReferencedPaymentNonexistence.RequestBody",
+                  "struct IReferencedPaymentNonexistence.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -5163,17 +5230,17 @@ const _abi = [
                   },
                 ],
                 internalType:
-                  "struct ReferencedPaymentNonexistence.ResponseBody",
+                  "struct IReferencedPaymentNonexistence.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct ReferencedPaymentNonexistence.Response",
+            internalType: "struct IReferencedPaymentNonexistence.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct ReferencedPaymentNonexistence.Proof",
+        internalType: "struct IReferencedPaymentNonexistence.Proof",
         name: "_proof",
         type: "tuple",
       },
@@ -5199,6 +5266,65 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_firstRedemptionTicketId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_pageSize",
+        type: "uint256",
+      },
+    ],
+    name: "redemptionQueue",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "redemptionTicketId",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "agentVault",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "ticketValueUBA",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct RedemptionTicketInfo.Data[]",
+        name: "_queue",
+        type: "tuple[]",
+      },
+      {
+        internalType: "uint256",
+        name: "_nextRedemptionTicketId",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_collateralReservationId",
+        type: "uint256",
+      },
+    ],
+    name: "rejectCollateralReservation",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -5240,7 +5366,7 @@ const _abi = [
                     type: "string",
                   },
                 ],
-                internalType: "struct AddressValidity.RequestBody",
+                internalType: "struct IAddressValidity.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -5262,17 +5388,17 @@ const _abi = [
                     type: "bytes32",
                   },
                 ],
-                internalType: "struct AddressValidity.ResponseBody",
+                internalType: "struct IAddressValidity.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct AddressValidity.Response",
+            internalType: "struct IAddressValidity.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct AddressValidity.Proof",
+        internalType: "struct IAddressValidity.Proof",
         name: "_proof",
         type: "tuple",
       },
@@ -5283,6 +5409,32 @@ const _abi = [
       },
     ],
     name: "rejectInvalidRedemption",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_redemptionRequestId",
+        type: "uint256",
+      },
+    ],
+    name: "rejectRedemptionRequest",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_redemptionRequestId",
+        type: "uint256",
+      },
+    ],
+    name: "rejectedRedemptionPaymentDefault",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -5309,17 +5461,15 @@ const _abi = [
         name: "_executor",
         type: "address",
       },
+      {
+        internalType: "string[]",
+        name: "_minterUnderlyingAddresses",
+        type: "string[]",
+      },
     ],
     name: "reserveCollateral",
     outputs: [],
     stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "resetEmergencyPauseTotalDuration",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -5395,7 +5545,7 @@ const _abi = [
                     type: "uint256",
                   },
                 ],
-                internalType: "struct Payment.RequestBody",
+                internalType: "struct IPayment.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -5414,6 +5564,11 @@ const _abi = [
                   {
                     internalType: "bytes32",
                     name: "sourceAddressHash",
+                    type: "bytes32",
+                  },
+                  {
+                    internalType: "bytes32",
+                    name: "sourceAddressesRoot",
                     type: "bytes32",
                   },
                   {
@@ -5462,17 +5617,17 @@ const _abi = [
                     type: "uint8",
                   },
                 ],
-                internalType: "struct Payment.ResponseBody",
+                internalType: "struct IPayment.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct Payment.Response",
+            internalType: "struct IPayment.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct Payment.Proof",
+        internalType: "struct IPayment.Proof",
         name: "_payment",
         type: "tuple",
       },
@@ -5495,32 +5650,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "enum CollateralType.Class",
-        name: "_collateralClass",
-        type: "uint8",
-      },
-      {
-        internalType: "contract IERC20",
-        name: "_token",
-        type: "address",
-      },
-      {
         internalType: "uint256",
-        name: "_minCollateralRatioBIPS",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_ccbMinCollateralRatioBIPS",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_safetyMinCollateralRatioBIPS",
+        name: "_value",
         type: "uint256",
       },
     ],
-    name: "setCollateralRatiosForToken",
+    name: "setRedemptionPaymentExtensionSeconds",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -5532,8 +5667,13 @@ const _abi = [
         name: "_value",
         type: "uint256",
       },
+      {
+        internalType: "uint256",
+        name: "_scheduledAt",
+        type: "uint256",
+      },
     ],
-    name: "setRedemptionPaymentExtensionSeconds",
+    name: "setTransferFeeMillionths",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -5582,13 +5722,6 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "switchToProductionMode",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     inputs: [
       {
         internalType: "address",
@@ -5607,8 +5740,19 @@ const _abi = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "terminate",
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_redemptionRequestId",
+        type: "uint256",
+      },
+    ],
+    name: "takeOverRedemptionRequest",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -5627,10 +5771,158 @@ const _abi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_epoch",
+        type: "uint256",
+      },
+    ],
+    name: "transferFeeCalculationDataForAgent",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "totalFees",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "cumulativeMinted",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "totalCumulativeMinted",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "claimable",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "claimed",
+            type: "bool",
+          },
+        ],
+        internalType: "struct ITransferFees.TransferFeeCalculationDataForAgent",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_epoch",
+        type: "uint256",
+      },
+    ],
+    name: "transferFeeEpochData",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "startTs",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "endTs",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "totalFees",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "claimedFees",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "claimable",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "expired",
+            type: "bool",
+          },
+        ],
+        internalType: "struct ITransferFees.TransferFeeEpochData",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
-    name: "unpauseMinting",
-    outputs: [],
-    stateMutability: "nonpayable",
+    name: "transferFeeMillionths",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "transferFeeSettings",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "transferFeeMillionths",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "firstEpochStartTs",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "epochDuration",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "maxUnexpiredEpochs",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "firstClaimableEpoch",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct ITransferFees.TransferFeeSettings",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -5677,7 +5969,7 @@ const _abi = [
                     type: "uint64",
                   },
                 ],
-                internalType: "struct ConfirmedBlockHeightExists.RequestBody",
+                internalType: "struct IConfirmedBlockHeightExists.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -5704,17 +5996,17 @@ const _abi = [
                     type: "uint64",
                   },
                 ],
-                internalType: "struct ConfirmedBlockHeightExists.ResponseBody",
+                internalType: "struct IConfirmedBlockHeightExists.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct ConfirmedBlockHeightExists.Response",
+            internalType: "struct IConfirmedBlockHeightExists.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct ConfirmedBlockHeightExists.Proof",
+        internalType: "struct IConfirmedBlockHeightExists.Proof",
         name: "_proof",
         type: "tuple",
       },
@@ -5732,24 +6024,6 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-      {
-        internalType: "contract IERC20",
-        name: "_token",
-        type: "address",
-      },
-    ],
-    name: "updateCollateral",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         components: [
           {
             internalType: "bytes32[]",
@@ -5791,7 +6065,7 @@ const _abi = [
                     type: "uint64",
                   },
                 ],
-                internalType: "struct ConfirmedBlockHeightExists.RequestBody",
+                internalType: "struct IConfirmedBlockHeightExists.RequestBody",
                 name: "requestBody",
                 type: "tuple",
               },
@@ -5818,17 +6092,17 @@ const _abi = [
                     type: "uint64",
                   },
                 ],
-                internalType: "struct ConfirmedBlockHeightExists.ResponseBody",
+                internalType: "struct IConfirmedBlockHeightExists.ResponseBody",
                 name: "responseBody",
                 type: "tuple",
               },
             ],
-            internalType: "struct ConfirmedBlockHeightExists.Response",
+            internalType: "struct IConfirmedBlockHeightExists.Response",
             name: "data",
             type: "tuple",
           },
         ],
-        internalType: "struct ConfirmedBlockHeightExists.Proof",
+        internalType: "struct IConfirmedBlockHeightExists.Proof",
         name: "_proof",
         type: "tuple",
       },
@@ -5841,17 +6115,12 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes32",
-        name: "_method",
-        type: "bytes32",
-      },
-      {
-        internalType: "bytes",
-        name: "_params",
-        type: "bytes",
+        internalType: "address",
+        name: "_agentVault",
+        type: "address",
       },
     ],
-    name: "updateSettings",
+    name: "upgradeAgentVaultAndPool",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

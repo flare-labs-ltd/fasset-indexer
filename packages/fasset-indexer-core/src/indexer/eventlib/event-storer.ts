@@ -478,10 +478,11 @@ export class EventStorer {
 
   protected async onLiquidationPerformed(em: EntityManager, evmLog: EvmLog, logArgs: LiquidationPerformedEvent.OutputTuple): Promise<void> {
     const fasset = this.contracts.assetManagerAddressToFAssetType(evmLog.address.hex)
-    const [ agentVault, liquidator, valueUBA ] = logArgs
+    const [ agentVault, liquidator, valueUBA, paidVaultCollateralWei, paidPoolCollateralWei ] = logArgs
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
     const liquidatorEvmAddress = await findOrCreateEvmAddress(em, liquidator, AddressType.USER)
-    const liquidationPerformed = new LiquidationPerformed(evmLog, fasset, agentVaultEntity, liquidatorEvmAddress, valueUBA)
+    const liquidationPerformed = new LiquidationPerformed(evmLog, fasset,
+      agentVaultEntity, liquidatorEvmAddress, valueUBA, paidVaultCollateralWei, paidPoolCollateralWei)
     em.persist(liquidationPerformed)
   }
 

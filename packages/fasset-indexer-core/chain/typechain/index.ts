@@ -10,5 +10,5 @@ export * as factories from "./factories";
 export { ERC20__factory } from "./factories/ERC20__factory";
 export { IAgentOwnerRegistry__factory } from "./factories/IAgentOwnerRegistry__factory";
 export { IAssetManager__factory } from "./factories/IAssetManager__factory";
-export { ICollateralPool__factory } from "./factories/ICollateralPool__factory";
+export { CollateralPool__factory as ICollateralPool__factory } from "./factories/ICollateralPool__factory";
 export { IPriceReader__factory } from "./factories/IPriceReader__factory";

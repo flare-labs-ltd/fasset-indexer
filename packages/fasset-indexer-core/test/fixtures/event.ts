@@ -296,7 +296,9 @@ export class EventFixture {
     return [
       await this.getRandomAgentVault(),
       randomNativeAddress(),
-      BigInt(randomNumber(1, 1e9))
+      BigInt(randomNumber(1, 1e9)),
+      BigInt(randomNumber(1e5, 1e9)),
+      BigInt(randomNumber(1e5, 1e9)),
     ]
   }
 

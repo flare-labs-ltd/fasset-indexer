@@ -43,11 +43,27 @@ export class LiquidationPerformed extends FAssetEventBound {
   @Property({ type: new uint256() })
   valueUBA: bigint
 
-  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, liquidator: EvmAddress, valueUBA: bigint) {
+  @Property({ type: new uint256() })
+  paidVaultCollateralWei: bigint
+
+  @Property({ type: new uint256() })
+  paidPoolCollateralWei: bigint
+
+  constructor(
+    evmLog: EvmLog,
+    fasset: FAssetType,
+    agentVault: AgentVault,
+    liquidator: EvmAddress,
+    valueUBA: bigint,
+    paidVaultCollateralWei: bigint,
+    paidPoolCollateralWei: bigint
+  ) {
     super(evmLog, fasset)
     this.agentVault = agentVault
     this.liquidator = liquidator
     this.valueUBA = valueUBA
+    this.paidVaultCollateralWei = paidVaultCollateralWei
+    this.paidPoolCollateralWei = paidPoolCollateralWei
   }
 }
 

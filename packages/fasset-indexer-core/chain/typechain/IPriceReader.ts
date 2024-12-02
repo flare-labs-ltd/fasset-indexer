@@ -21,7 +21,10 @@ import type {
 
 export interface IPriceReaderInterface extends Interface {
   getFunction(
-    nameOrSignature: "getPrice" | "getPriceFromTrustedProviders"
+    nameOrSignature:
+      | "getPrice"
+      | "getPriceFromTrustedProviders"
+      | "getPriceFromTrustedProvidersWithQuality"
   ): FunctionFragment;
 
   encodeFunctionData(functionFragment: "getPrice", values: [string]): string;
@@ -29,10 +32,18 @@ export interface IPriceReaderInterface extends Interface {
     functionFragment: "getPriceFromTrustedProviders",
     values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getPriceFromTrustedProvidersWithQuality",
+    values: [string]
+  ): string;
 
   decodeFunctionResult(functionFragment: "getPrice", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPriceFromTrustedProviders",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPriceFromTrustedProvidersWithQuality",
     data: BytesLike
   ): Result;
 }
@@ -104,6 +115,19 @@ export interface IPriceReader extends BaseContract {
     "view"
   >;
 
+  getPriceFromTrustedProvidersWithQuality: TypedContractMethod<
+    [_symbol: string],
+    [
+      [bigint, bigint, bigint, bigint] & {
+        _price: bigint;
+        _timestamp: bigint;
+        _priceDecimals: bigint;
+        _numberOfSubmits: bigint;
+      }
+    ],
+    "view"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
@@ -130,6 +154,20 @@ export interface IPriceReader extends BaseContract {
         _price: bigint;
         _timestamp: bigint;
         _priceDecimals: bigint;
+      }
+    ],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getPriceFromTrustedProvidersWithQuality"
+  ): TypedContractMethod<
+    [_symbol: string],
+    [
+      [bigint, bigint, bigint, bigint] & {
+        _price: bigint;
+        _timestamp: bigint;
+        _priceDecimals: bigint;
+        _numberOfSubmits: bigint;
       }
     ],
     "view"

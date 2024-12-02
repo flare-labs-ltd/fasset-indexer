@@ -56,3 +56,5 @@ secrets.json
 
 *tsbuildinfo
 *.dump
+
+user-data

@@ -23,16 +23,51 @@ import type {
   TypedContractMethod,
 } from "./common";
 
+export declare namespace RewardsV2Interface {
+  export type RewardClaimStruct = {
+    rewardEpochId: BigNumberish;
+    beneficiary: BytesLike;
+    amount: BigNumberish;
+    claimType: BigNumberish;
+  };
+
+  export type RewardClaimStructOutput = [
+    rewardEpochId: bigint,
+    beneficiary: string,
+    amount: bigint,
+    claimType: bigint
+  ] & {
+    rewardEpochId: bigint;
+    beneficiary: string;
+    amount: bigint;
+    claimType: bigint;
+  };
+
+  export type RewardClaimWithProofStruct = {
+    merkleProof: BytesLike[];
+    body: RewardsV2Interface.RewardClaimStruct;
+  };
+
+  export type RewardClaimWithProofStructOutput = [
+    merkleProof: string[],
+    body: RewardsV2Interface.RewardClaimStructOutput
+  ] & {
+    merkleProof: string[];
+    body: RewardsV2Interface.RewardClaimStructOutput;
+  };
+}
+
 export interface ICollateralPoolInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "agentVault"
       | "claimAirdropDistribution"
-      | "claimFtsoRewards"
+      | "claimDelegationRewards"
       | "delegate"
       | "enter"
       | "exit"
       | "exitCollateralRatioBIPS"
+      | "exitTo"
       | "fAssetFeeDebtOf"
       | "fAssetFeesOf"
       | "fAssetRequiredForSelfCloseExit"
@@ -40,18 +75,23 @@ export interface ICollateralPoolInterface extends Interface {
       | "payFAssetFeeDebt"
       | "poolToken"
       | "selfCloseExit"
+      | "selfCloseExitTo"
       | "topupCollateralRatioBIPS"
       | "topupTokenPriceFactorBIPS"
       | "totalCollateral"
       | "totalFAssetFeeDebt"
       | "totalFAssetFees"
       | "undelegateAll"
-      | "withdrawCollateralWhenFAssetTerminated"
       | "withdrawFees"
+      | "withdrawFeesTo"
   ): FunctionFragment;
 
   getEvent(
-    nameOrSignatureOrTopic: "Entered" | "Exited" | "IncompleteSelfCloseExit"
+    nameOrSignatureOrTopic:
+      | "Donated"
+      | "Entered"
+      | "Exited"
+      | "IncompleteSelfCloseExit"
   ): EventFragment;
 
   encodeFunctionData(
@@ -63,8 +103,12 @@ export interface ICollateralPoolInterface extends Interface {
     values: [AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "claimFtsoRewards",
-    values: [AddressLike, BigNumberish]
+    functionFragment: "claimDelegationRewards",
+    values: [
+      AddressLike,
+      BigNumberish,
+      RewardsV2Interface.RewardClaimWithProofStruct[]
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "delegate",
@@ -81,6 +125,10 @@ export interface ICollateralPoolInterface extends Interface {
   encodeFunctionData(
     functionFragment: "exitCollateralRatioBIPS",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "exitTo",
+    values: [BigNumberish, AddressLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "fAssetFeeDebtOf",
@@ -108,6 +156,10 @@ export interface ICollateralPoolInterface extends Interface {
     values: [BigNumberish, boolean, string, AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "selfCloseExitTo",
+    values: [BigNumberish, boolean, AddressLike, string, AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "topupCollateralRatioBIPS",
     values?: undefined
   ): string;
@@ -132,12 +184,12 @@ export interface ICollateralPoolInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "withdrawCollateralWhenFAssetTerminated",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "withdrawFees",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawFeesTo",
+    values: [BigNumberish, AddressLike]
   ): string;
 
   decodeFunctionResult(functionFragment: "agentVault", data: BytesLike): Result;
@@ -146,7 +198,7 @@ export interface ICollateralPoolInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "claimFtsoRewards",
+    functionFragment: "claimDelegationRewards",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "delegate", data: BytesLike): Result;
@@ -156,6 +208,7 @@ export interface ICollateralPoolInterface extends Interface {
     functionFragment: "exitCollateralRatioBIPS",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "exitTo", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "fAssetFeeDebtOf",
     data: BytesLike
@@ -182,6 +235,10 @@ export interface ICollateralPoolInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "selfCloseExitTo",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "topupCollateralRatioBIPS",
     data: BytesLike
   ): Result;
@@ -206,13 +263,26 @@ export interface ICollateralPoolInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "withdrawCollateralWhenFAssetTerminated",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "withdrawFees",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawFeesTo",
+    data: BytesLike
+  ): Result;
+}
+
+export namespace DonatedEvent {
+  export type InputTuple = [donator: AddressLike, amountNatWei: BigNumberish];
+  export type OutputTuple = [donator: string, amountNatWei: bigint];
+  export interface OutputObject {
+    donator: string;
+    amountNatWei: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace EnteredEvent {
@@ -347,8 +417,12 @@ export interface ICollateralPool extends BaseContract {
     "nonpayable"
   >;
 
-  claimFtsoRewards: TypedContractMethod<
-    [_ftsoRewardManager: AddressLike, _lastRewardEpoch: BigNumberish],
+  claimDelegationRewards: TypedContractMethod<
+    [
+      _rewardManager: AddressLike,
+      _lastRewardEpoch: BigNumberish,
+      _proofs: RewardsV2Interface.RewardClaimWithProofStruct[]
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -374,6 +448,16 @@ export interface ICollateralPool extends BaseContract {
   >;
 
   exitCollateralRatioBIPS: TypedContractMethod<[], [bigint], "view">;
+
+  exitTo: TypedContractMethod<
+    [
+      _tokenShare: BigNumberish,
+      _recipient: AddressLike,
+      _exitType: BigNumberish
+    ],
+    [[bigint, bigint] & { _natShare: bigint; _fassetShare: bigint }],
+    "nonpayable"
+  >;
 
   fAssetFeeDebtOf: TypedContractMethod<
     [_account: AddressLike],
@@ -414,6 +498,18 @@ export interface ICollateralPool extends BaseContract {
     "payable"
   >;
 
+  selfCloseExitTo: TypedContractMethod<
+    [
+      _tokenShare: BigNumberish,
+      _redeemToCollateral: boolean,
+      _recipient: AddressLike,
+      _redeemerUnderlyingAddress: string,
+      _executor: AddressLike
+    ],
+    [void],
+    "payable"
+  >;
+
   topupCollateralRatioBIPS: TypedContractMethod<[], [bigint], "view">;
 
   topupTokenPriceFactorBIPS: TypedContractMethod<[], [bigint], "view">;
@@ -426,14 +522,14 @@ export interface ICollateralPool extends BaseContract {
 
   undelegateAll: TypedContractMethod<[], [void], "nonpayable">;
 
-  withdrawCollateralWhenFAssetTerminated: TypedContractMethod<
-    [],
+  withdrawFees: TypedContractMethod<
+    [_amount: BigNumberish],
     [void],
     "nonpayable"
   >;
 
-  withdrawFees: TypedContractMethod<
-    [_amount: BigNumberish],
+  withdrawFeesTo: TypedContractMethod<
+    [_amount: BigNumberish, _recipient: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -453,9 +549,13 @@ export interface ICollateralPool extends BaseContract {
     "nonpayable"
   >;
   getFunction(
-    nameOrSignature: "claimFtsoRewards"
+    nameOrSignature: "claimDelegationRewards"
   ): TypedContractMethod<
-    [_ftsoRewardManager: AddressLike, _lastRewardEpoch: BigNumberish],
+    [
+      _rewardManager: AddressLike,
+      _lastRewardEpoch: BigNumberish,
+      _proofs: RewardsV2Interface.RewardClaimWithProofStruct[]
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -485,6 +585,17 @@ export interface ICollateralPool extends BaseContract {
   getFunction(
     nameOrSignature: "exitCollateralRatioBIPS"
   ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "exitTo"
+  ): TypedContractMethod<
+    [
+      _tokenShare: BigNumberish,
+      _recipient: AddressLike,
+      _exitType: BigNumberish
+    ],
+    [[bigint, bigint] & { _natShare: bigint; _fassetShare: bigint }],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "fAssetFeeDebtOf"
   ): TypedContractMethod<[_account: AddressLike], [bigint], "view">;
@@ -516,6 +627,19 @@ export interface ICollateralPool extends BaseContract {
     "payable"
   >;
   getFunction(
+    nameOrSignature: "selfCloseExitTo"
+  ): TypedContractMethod<
+    [
+      _tokenShare: BigNumberish,
+      _redeemToCollateral: boolean,
+      _recipient: AddressLike,
+      _redeemerUnderlyingAddress: string,
+      _executor: AddressLike
+    ],
+    [void],
+    "payable"
+  >;
+  getFunction(
     nameOrSignature: "topupCollateralRatioBIPS"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -534,12 +658,23 @@ export interface ICollateralPool extends BaseContract {
     nameOrSignature: "undelegateAll"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "withdrawCollateralWhenFAssetTerminated"
-  ): TypedContractMethod<[], [void], "nonpayable">;
-  getFunction(
     nameOrSignature: "withdrawFees"
   ): TypedContractMethod<[_amount: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "withdrawFeesTo"
+  ): TypedContractMethod<
+    [_amount: BigNumberish, _recipient: AddressLike],
+    [void],
+    "nonpayable"
+  >;
 
+  getEvent(
+    key: "Donated"
+  ): TypedContractEvent<
+    DonatedEvent.InputTuple,
+    DonatedEvent.OutputTuple,
+    DonatedEvent.OutputObject
+  >;
   getEvent(
     key: "Entered"
   ): TypedContractEvent<
@@ -563,6 +698,17 @@ export interface ICollateralPool extends BaseContract {
   >;
 
   filters: {
+    "Donated(address,uint256)": TypedContractEvent<
+      DonatedEvent.InputTuple,
+      DonatedEvent.OutputTuple,
+      DonatedEvent.OutputObject
+    >;
+    Donated: TypedContractEvent<
+      DonatedEvent.InputTuple,
+      DonatedEvent.OutputTuple,
+      DonatedEvent.OutputObject
+    >;
+
     "Entered(address,uint256,uint256,uint256,uint256,uint256)": TypedContractEvent<
       EnteredEvent.InputTuple,
       EnteredEvent.OutputTuple,

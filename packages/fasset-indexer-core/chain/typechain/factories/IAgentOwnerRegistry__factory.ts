@@ -36,6 +36,12 @@ const _abi = [
         name: "iconUrl",
         type: "string",
       },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "termsOfUseUrl",
+        type: "string",
+      },
     ],
     name: "AgentDataChanged",
     type: "event",
@@ -138,6 +144,25 @@ const _abi = [
       },
     ],
     name: "getAgentName",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_managementAddress",
+        type: "address",
+      },
+    ],
+    name: "getAgentTermsOfUseUrl",
     outputs: [
       {
         internalType: "string",

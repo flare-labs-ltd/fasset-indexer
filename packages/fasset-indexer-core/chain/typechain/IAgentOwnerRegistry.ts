@@ -28,6 +28,7 @@ export interface IAgentOwnerRegistryInterface extends Interface {
       | "getAgentDescription"
       | "getAgentIconUrl"
       | "getAgentName"
+      | "getAgentTermsOfUseUrl"
       | "getManagementAddress"
       | "getWorkAddress"
       | "isWhitelisted"
@@ -54,6 +55,10 @@ export interface IAgentOwnerRegistryInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getAgentTermsOfUseUrl",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getManagementAddress",
     values: [AddressLike]
   ): string;
@@ -79,6 +84,10 @@ export interface IAgentOwnerRegistryInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getAgentTermsOfUseUrl",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getManagementAddress",
     data: BytesLike
   ): Result;
@@ -97,19 +106,22 @@ export namespace AgentDataChangedEvent {
     managementAddress: AddressLike,
     name: string,
     description: string,
-    iconUrl: string
+    iconUrl: string,
+    termsOfUseUrl: string
   ];
   export type OutputTuple = [
     managementAddress: string,
     name: string,
     description: string,
-    iconUrl: string
+    iconUrl: string,
+    termsOfUseUrl: string
   ];
   export interface OutputObject {
     managementAddress: string;
     name: string;
     description: string;
     iconUrl: string;
+    termsOfUseUrl: string;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -224,6 +236,12 @@ export interface IAgentOwnerRegistry extends BaseContract {
     "view"
   >;
 
+  getAgentTermsOfUseUrl: TypedContractMethod<
+    [_managementAddress: AddressLike],
+    [string],
+    "view"
+  >;
+
   getManagementAddress: TypedContractMethod<
     [_workAddress: AddressLike],
     [string],
@@ -254,6 +272,9 @@ export interface IAgentOwnerRegistry extends BaseContract {
   ): TypedContractMethod<[_managementAddress: AddressLike], [string], "view">;
   getFunction(
     nameOrSignature: "getAgentName"
+  ): TypedContractMethod<[_managementAddress: AddressLike], [string], "view">;
+  getFunction(
+    nameOrSignature: "getAgentTermsOfUseUrl"
   ): TypedContractMethod<[_managementAddress: AddressLike], [string], "view">;
   getFunction(
     nameOrSignature: "getManagementAddress"
@@ -295,7 +316,7 @@ export interface IAgentOwnerRegistry extends BaseContract {
   >;
 
   filters: {
-    "AgentDataChanged(address,string,string,string)": TypedContractEvent<
+    "AgentDataChanged(address,string,string,string,string)": TypedContractEvent<
       AgentDataChangedEvent.InputTuple,
       AgentDataChangedEvent.OutputTuple,
       AgentDataChangedEvent.OutputObject
