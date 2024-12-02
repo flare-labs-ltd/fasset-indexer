@@ -1,3 +1,4 @@
+import "dotenv/config"
 import { FAssetType, type FAsset } from "../shared"
 
 export const FASSETS = Object.keys(FAssetType).filter(([key]) => isNaN(Number(key))) as FAsset[]
@@ -8,7 +9,6 @@ export const MID_CHAIN_FETCH_SLEEP_MS = 100
 
 // evm event scrape config
 export const MIN_EVM_BLOCK_NUMBER = 20234651 // asset manager controller contract deployment block
-export const MIN_EVM_BLOCK_TIMESTAMP = 1723644248 // MIN_EVM_BLOCK_NUMBER block timestamp
 export const EVM_LOG_FETCH_SLEEP_MS = 30 * 1000 // collect logs every 30 seconds
 export const EVM_STATE_UPDATE_SLEEP_MS = 60 * 1000 // collect state every one minute
 export const EVM_BLOCK_HEIGHT_OFFSET = 10 // log collection offset from the current block height
@@ -21,9 +21,10 @@ export const MAX_DATABASE_POOL_CONNECTIONS = 30
 export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
-export const FIRST_UNHANDLED_EVENT_BLOCK = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE = "firstUnhandledEventBlockAddCCBs"
-export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE = "endEventBlockAddCCBs"
+export const FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY = "firstUnhandledEventBlock"
+export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE_DB_KEY = "firstUnhandledEventBlockAddCCBs"
+export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE_DB_KEY = "endEventBlockAddCCBs"
+export const MIN_EVM_BLOCK_NUMBER_DB_KEY = "minEvmBlockNumber"
 
 // event names
 // agent

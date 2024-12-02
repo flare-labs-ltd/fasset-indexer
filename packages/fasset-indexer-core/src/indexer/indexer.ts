@@ -5,8 +5,8 @@ import { StateUpdater } from './eventlib/state-updater'
 import { EventParser } from './eventlib/event-parser'
 import { EventScraper } from './eventlib/event-scraper'
 import {
-  FIRST_UNHANDLED_EVENT_BLOCK, EVM_LOG_FETCH_SIZE,
-  MID_CHAIN_FETCH_SLEEP_MS, MIN_EVM_BLOCK_NUMBER, EVM_LOG_FETCH_SLEEP_MS,
+  FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, EVM_LOG_FETCH_SIZE,
+  MID_CHAIN_FETCH_SLEEP_MS, EVM_LOG_FETCH_SLEEP_MS,
   EVM_BLOCK_HEIGHT_OFFSET
 } from '../config/constants'
 import type { Log } from 'ethers'
@@ -64,12 +64,12 @@ export class EventIndexer {
   }
 
   async getFirstUnhandledBlock(): Promise<number> {
-    const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK)
-    return firstUnhandled !== null ? parseInt(firstUnhandled!.value!) : MIN_EVM_BLOCK_NUMBER
+    const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY)
+    return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.context.minBlockNumber()
   }
 
   async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
-    await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK, blockNumber.toString())
+    await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, blockNumber.toString())
   }
 
   async storeLogs(logs: Log[]): Promise<void> {

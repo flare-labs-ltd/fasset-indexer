@@ -1,7 +1,7 @@
 import chalk from "chalk"
 import { sleep, getVar, setVar } from "../../utils"
 import { EventIndexer } from "../indexer"
-import { EVM_LOG_FETCH_SLEEP_MS, MIN_EVM_BLOCK_NUMBER } from "../../config/constants"
+import { EVM_LOG_FETCH_SLEEP_MS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../../config/constants"
 import type { Log } from "ethers"
 import type { Context } from "../../context/context"
 
@@ -45,7 +45,7 @@ export class EventIndexerBackPopulation extends EventIndexer {
 
   override async getFirstUnhandledBlock(): Promise<number> {
     const firstUnhandled = await getVar(this.context.orm.em.fork(), this.firstEventBlockForCurrentUpdateKey)
-    return firstUnhandled !== null ? parseInt(firstUnhandled!.value!) : MIN_EVM_BLOCK_NUMBER
+    return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.context.minBlockNumber()
   }
 
   override async setFirstUnhandledBlock(blockNumber: number): Promise<void> {

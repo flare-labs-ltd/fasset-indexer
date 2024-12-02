@@ -20,6 +20,6 @@ export interface IConfig {
     url: string
     apiKey?: string
   }
-  db: OrmOptions,
+  db: OrmOptions
   ignoreEvents?: string[]
 }

@@ -12,9 +12,9 @@ import { LiquidationPerformed } from "../database/entities/events/liquidation"
 import { TokenBalance } from "../database/entities/state/balance"
 import { fassetToUsdPrice } from "./utils/prices"
 import { ContractLookup } from "../context/contracts"
-import { EVENTS, FASSETS, MIN_EVM_BLOCK_TIMESTAMP, PRICE_FACTOR } from "../config/constants"
+import { EVENTS, FASSETS, MIN_EVM_BLOCK_NUMBER_DB_KEY, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./utils/rawSql"
-import type { SelectQueryBuilder } from "@mikro-orm/knex"
+import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
 import type {
   AmountResult,
@@ -22,6 +22,8 @@ import type {
   TokenPortfolio, FAssetCollateralPoolScore,
   FAssetValueResult, FAssetAmountResult
 } from "./interface"
+import { getVar } from "../utils"
+import { EvmBlock } from "../database/entities/evm/block"
 
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
@@ -239,6 +241,9 @@ export class DashboardAnalytics {
 
   async mintedTimeSeries(end: number, npoints: number, start?: number): Promise<FAssetTimeSeries<bigint>> {
     const em = this.orm.em.fork()
+    if (start == null) {
+      start = await this.getMinTimestamp(em)
+    }
     return this.getTimeSeries(
       ($gt, $lt) => em.createQueryBuilder(MintingExecuted, 'me')
         .select(['me.fasset', raw('SUM(cr.value_uba) as value')])
@@ -253,6 +258,9 @@ export class DashboardAnalytics {
 
   async redeemedTimeSeries(end: number, npoints: number, start?: number): Promise<FAssetTimeSeries<bigint>> {
     const em = this.orm.em.fork()
+    if (start == null) {
+      start = await this.getMinTimestamp(em)
+    }
     return this.getTimeSeries(
       ($gt, $lt) => em.createQueryBuilder(RedemptionRequested, 'rr')
         .select(['rr.fasset', raw('SUM(rr.value_uba) as value')])
@@ -275,12 +283,9 @@ export class DashboardAnalytics {
 
   protected async getTimeSeries<T extends FAssetEventBound>(
     query: (si: number, ei: number) => SelectQueryBuilder<T>,
-    end: number, npoints: number, start?: number
+    end: number, npoints: number, start: number
   ): Promise<FAssetTimeSeries<bigint>> {
     const ret = {} as FAssetTimeSeries<bigint>
-    if (start === undefined) {
-      start = MIN_EVM_BLOCK_TIMESTAMP
-    }
     const interval = (end - start) / npoints
     for (let i = 0; i < npoints; i++) {
       const si = start + i * interval
@@ -425,6 +430,14 @@ export class DashboardAnalytics {
         .andWhere({ 'th.hex': user })
     }
     return qb
+  }
+
+  private async getMinTimestamp(em: EntityManager): Promise<number> {
+    const minBlockVar = await getVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY)
+    if (minBlockVar === null) return 0
+    const minBlockNum = parseInt(minBlockVar.value!)
+    const block = await em.findOne(EvmBlock, { index: minBlockNum })
+    return block === null ? 0 : block.timestamp
   }
 }
 
