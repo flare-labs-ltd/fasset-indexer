@@ -77,11 +77,7 @@ export class Context extends ContractLookup {
     if (fromDb?.value != null) {
       return parseInt(fromDb.value)
     }
-    let other = MIN_EVM_BLOCK_NUMBER
-    const fromEnv = process.env.MIN_EVM_BLOCK_NUMBER
-    if (fromEnv != null) {
-      other = parseInt(fromEnv)
-    }
+    const other = this.config.minBlockNum || MIN_EVM_BLOCK_NUMBER
     await setVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY, other.toString())
     return other
   }

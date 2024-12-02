@@ -13,6 +13,10 @@ type ValidationOptions = {
   isOneOf?: string[]
 }
 
+const undefinedOrInt = (value: string | undefined): number | undefined => {
+  return value === undefined ? undefined : parseInt(value)
+}
+
 export function validateEnvVar(name: string, options: ValidationOptions): void {
   if (options.required) {
     if (!process.env[name]) {
@@ -52,7 +56,7 @@ export function getUserDatabaseConfig(): IUserDatabaseConfig {
     dbType: process.env.DB_TYPE as 'sqlite' | 'postgres',
     dbName: dbName,
     dbHost: process.env.DB_HOST,
-    dbPort: process.env.DB_PORT === undefined ? undefined : parseInt(process.env.DB_PORT),
+    dbPort: undefinedOrInt(process.env.DB_PORT),
     dbUser: process.env.DB_USER,
     dbPass: process.env.DB_PASSWORD
   }
@@ -63,7 +67,8 @@ export function getUserConfig(): IUserConfig {
   return {
     ...getUserDatabaseConfig(),
     flrRpcUrl: process.env.RPC_URL!,
-    flrApiKey: process.env.RPC_API_KEY
+    flrApiKey: process.env.RPC_API_KEY,
+    minBlockNum: undefinedOrInt(process.env.MIN_BLOCK_NUMBER)
   }
 }
 
@@ -85,6 +90,7 @@ export function expandUserConfig(config: IUserConfig): IConfig {
       apiKey: config.flrApiKey,
     },
     db: getOrmConfig(config),
-    ignoreEvents: IGNORE_EVENTS
+    ignoreEvents: IGNORE_EVENTS,
+    minBlockNum: config.minBlockNum
   }
 }

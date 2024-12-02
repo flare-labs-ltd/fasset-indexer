@@ -13,6 +13,7 @@ export interface IUserDatabaseConfig {
 export interface IUserConfig extends IUserDatabaseConfig {
   flrRpcUrl: string
   flrApiKey?: string
+  minBlockNum?: number
 }
 
 export interface IConfig {
@@ -22,4 +23,5 @@ export interface IConfig {
   }
   db: OrmOptions
   ignoreEvents?: string[]
+  minBlockNum?: number
 }
