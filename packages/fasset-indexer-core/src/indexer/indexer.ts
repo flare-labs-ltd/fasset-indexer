@@ -7,7 +7,8 @@ import { EventScraper } from './eventlib/event-scraper'
 import {
   FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, EVM_LOG_FETCH_SIZE,
   MID_CHAIN_FETCH_SLEEP_MS, EVM_LOG_FETCH_SLEEP_MS,
-  EVM_BLOCK_HEIGHT_OFFSET
+  EVM_BLOCK_HEIGHT_OFFSET,
+  MIN_EVM_BLOCK_NUMBER_DB_KEY
 } from '../config/constants'
 import type { Log } from 'ethers'
 import type { Context } from '../context/context'
@@ -65,7 +66,7 @@ export class EventIndexer {
 
   async getFirstUnhandledBlock(): Promise<number> {
     const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY)
-    return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.context.minBlockNumber()
+    return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.minBlockNumber()
   }
 
   async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
@@ -83,6 +84,16 @@ export class EventIndexer {
         lastHandledBlock = log.blockNumber
         await this.setFirstUnhandledBlock(lastHandledBlock)
       }
+    }
+  }
+
+  protected async minBlockNumber(): Promise<number> {
+    const em = this.context.orm.em.fork()
+    const fromDb = await getVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY)
+    if (fromDb?.value != null) {
+      return parseInt(fromDb.value)
+    } else {
+      throw new Error(`Could not find min block number in database`)
     }
   }
 

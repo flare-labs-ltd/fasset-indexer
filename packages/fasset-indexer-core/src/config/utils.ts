@@ -44,6 +44,7 @@ export function validateDatabaseEnv(): void {
 export function validateEnv(): void {
   validateDatabaseEnv()
   validateEnvVar('RPC_URL', { required: true })
+  validateEnvVar('CHAIN', { required: true })
 }
 
 export function getUserDatabaseConfig(): IUserDatabaseConfig {
@@ -66,8 +67,9 @@ export function getUserConfig(): IUserConfig {
   validateEnv()
   return {
     ...getUserDatabaseConfig(),
-    flrRpcUrl: process.env.RPC_URL!,
-    flrApiKey: process.env.RPC_API_KEY,
+    chain: process.env.CHAIN!,
+    rpcUrl: process.env.RPC_URL!,
+    apiKey: process.env.RPC_API_KEY,
     minBlockNum: undefinedOrInt(process.env.MIN_BLOCK_NUMBER)
   }
 }
@@ -85,9 +87,10 @@ export function getOrmConfig(config: IUserDatabaseConfig): OrmOptions {
 
 export function expandUserConfig(config: IUserConfig): IConfig {
   return {
-    flrRpc: {
-      url: config.flrRpcUrl,
-      apiKey: config.flrApiKey,
+    chain: config.chain,
+    rpc: {
+      url: config.rpcUrl,
+      apiKey: config.apiKey,
     },
     db: getOrmConfig(config),
     ignoreEvents: IGNORE_EVENTS,

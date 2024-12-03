@@ -11,13 +11,15 @@ export interface IUserDatabaseConfig {
 }
 
 export interface IUserConfig extends IUserDatabaseConfig {
-  flrRpcUrl: string
-  flrApiKey?: string
+  chain: string
+  rpcUrl: string
+  apiKey?: string
   minBlockNum?: number
 }
 
 export interface IConfig {
-  flrRpc: {
+  chain: string
+  rpc: {
     url: string
     apiKey?: string
   }

@@ -1,4 +1,5 @@
 import { EvmStateWatchdog } from "../indexer/watchdog"
+import { ensureDatabaseIntegrity } from "./integrity"
 import { Context } from "../context/context"
 import { config } from "../config/config"
 
@@ -12,6 +13,7 @@ async function runWatchdog() {
     process.exit(0)
   })
   console.log('starting watchdog')
+  await ensureDatabaseIntegrity(context)
   await watchdog.run()
 }
 

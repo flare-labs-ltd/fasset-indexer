@@ -1,13 +1,11 @@
 import { id as ethersId, JsonRpcProvider, FetchRequest, Interface as ContractInterface } from "ethers"
 import { createOrm } from "../database/utils"
-import { getVar, setVar } from "../utils"
 import { ContractLookup } from "./contracts"
 import {
   IAssetManager__factory, ERC20__factory,
   IAgentOwnerRegistry__factory, ICollateralPool__factory,
   IPriceReader__factory
 } from "../../chain/typechain"
-import { MIN_EVM_BLOCK_NUMBER, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
 import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../../chain/typechain"
 import type { IAssetManagerInterface } from "../../chain/typechain/IAssetManager"
 import type { ICollateralPoolInterface } from "../../chain/typechain/ICollateralPool"
@@ -29,7 +27,7 @@ export class Context extends ContractLookup {
 
   constructor(public config: IConfig, public orm: ORM) {
     super()
-    this.provider = this.getEthersApiProvider(config.flrRpc.url, config.flrRpc.apiKey)
+    this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
     this.interfaces = {
       assetManagerInterface: IAssetManager__factory.createInterface(),
       erc20Interface: ERC20__factory.createInterface(),
@@ -69,17 +67,6 @@ export class Context extends ContractLookup {
 
   eventsToTopics(eventNames: string[]): string[] {
     return eventNames.map(event => this.getEventTopic(event)!)
-  }
-
-  async minBlockNumber(): Promise<number> {
-    const em = this.orm.em.fork()
-    const fromDb = await getVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY)
-    if (fromDb?.value != null) {
-      return parseInt(fromDb.value)
-    }
-    const other = this.config.minBlockNum || MIN_EVM_BLOCK_NUMBER
-    await setVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY, other.toString())
-    return other
   }
 
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {

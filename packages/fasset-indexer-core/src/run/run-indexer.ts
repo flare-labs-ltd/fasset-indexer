@@ -1,5 +1,6 @@
 import { Context } from "../context/context"
 import { config } from "../config/config"
+import { ensureDatabaseIntegrity } from "./integrity"
 import { EventIndexer } from "../indexer/indexer"
 
 
@@ -13,6 +14,7 @@ async function runIndexer(start?: number) {
     process.exit(0)
   })
 
+  await ensureDatabaseIntegrity(context)
   await indexer.run()
 }
 
