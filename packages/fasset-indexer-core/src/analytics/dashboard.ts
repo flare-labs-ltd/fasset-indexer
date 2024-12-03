@@ -12,7 +12,7 @@ import { LiquidationPerformed } from "../database/entities/events/liquidation"
 import { TokenBalance } from "../database/entities/state/balance"
 import { fassetToUsdPrice } from "./utils/prices"
 import { ContractLookup } from "../context/contracts"
-import { EVENTS, FASSETS, MIN_EVM_BLOCK_NUMBER_DB_KEY, PRICE_FACTOR } from "../config/constants"
+import { EVENTS, FASSETS, PRICE_FACTOR } from "../config/constants"
 import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./utils/rawSql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../database/interface"
@@ -22,7 +22,6 @@ import type {
   TokenPortfolio, FAssetCollateralPoolScore,
   FAssetValueResult, FAssetAmountResult
 } from "./interface"
-import { getVar } from "../utils"
 import { EvmBlock } from "../database/entities/evm/block"
 
 /**
