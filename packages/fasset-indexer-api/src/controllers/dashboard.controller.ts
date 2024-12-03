@@ -23,19 +23,32 @@ export class DashboardController {
   //////////////////////////////////////////////////////////////////////
   // system
 
+  @Get('transaction-count')
+  @ApiOperation({ summary: 'Number of FAsset transactions' })
+  getTransactionCount(): Promise<ApiResponse<AmountResult>> {
+    return apiResponse(this.service.transactionCount(), 200)
+  }
+
   @Get('fasset-holder-count')
   @ApiOperation({ summary: 'Number of fasset token holders' })
   getFAssetHolderCount(): Promise<ApiResponse<FAssetAmountResult>> {
     return apiResponse(this.service.fAssetholderCount(), 200)
   }
 
-  @Get('total-liquidation-count')
+  @Get('performed-liquidation-count')
   @ApiOperation({ summary: 'Number of performed liquidations' })
   getLiquidationCount(): Promise<ApiResponse<AmountResult>> {
     return apiResponse(this.service.liquidationCount(), 200)
   }
 
+  @Get('minting-executed-count')
+  @ApiOperation({ summary: 'Number of executed mintings' })
+  getMintingExecutedCount(): Promise<ApiResponse<AmountResult>> {
+    return apiResponse(this.service.mintingExecutedCount(), 200)
+  }
+
   @Get('redemption-default?')
+  @ApiOperation({ summary: 'Redemption deault data' })
   getRedemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string): Promise<ApiResponse<RedemptionDefault>> {
     return apiResponse(this.service.redemptionDefault(id, FAssetType[fasset]), 200)
   }
@@ -44,16 +57,19 @@ export class DashboardController {
   // agents
 
   @Get('agent-minting-executed-count?')
+  @ApiOperation({ summary: 'Number of executed mintings by agent' })
   getAgentMintingExecutedCount(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
     return apiResponse(this.service.agentMintingExecutedCount(agent), 200)
   }
 
   @Get('agent-redemption-success-rate?')
+  @ApiOperation({ summary: 'Redemption success rate by agent' })
   getAgentRedemptionSuccessRate(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
     return apiResponse(this.service.agentRedemptionSuccessRate(agent), 200)
   }
 
-  @Get('agent-liquidation-count?')
+  @Get('agent-performed-liquidation-count?')
+  @ApiOperation({ summary: 'Number of performed liquidations by agent' })
   getAgentLiquidationCount(@Query('agent') agent: string): Promise<ApiResponse<AmountResult>> {
     return apiResponse(this.service.agentLiquidationCount(agent), 200)
   }
@@ -121,9 +137,7 @@ export class DashboardController {
     @Query('timestamps') timestamps: string | string[],
     @Query('pool') pool?: string
   ): Promise<ApiResponse<Timespan<bigint>>> {
-    console.log(timestamps)
     const ts = this.parseTimestamps(timestamps)
-    console.log(ts)
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
     return apiResponse(this.service.poolCollateralTimespan(ts, pool), 200)

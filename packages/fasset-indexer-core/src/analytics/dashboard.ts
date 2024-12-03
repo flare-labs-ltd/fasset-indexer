@@ -40,7 +40,7 @@ export class DashboardAnalytics {
   //////////////////////////////////////////////////////////////////////
   // system
 
-  async totalUiRelevantTransactions(): Promise<number> {
+  async transactionCount(): Promise<AmountResult> {
     const qb = this.orm.em.qb(EvmLog)
     const result = await qb.count().where({ name: {
       $in: [
@@ -50,7 +50,7 @@ export class DashboardAnalytics {
         EVENTS.COLLATERAL_RESERVED
       ]
     }}).execute()
-    return result[0].count
+    return { amount: result[0].count }
   }
 
   async fAssetholderCount(): Promise<FAssetAmountResult> {
@@ -74,6 +74,11 @@ export class DashboardAnalytics {
 
   async liquidationCount(): Promise<AmountResult> {
     const amount = await this.orm.em.fork().count(LiquidationPerformed, { valueUBA: { $gt: 0 }})
+    return { amount }
+  }
+
+  async mintingExecutedCount(): Promise<AmountResult> {
+    const amount = await this.orm.em.fork().count(MintingExecuted)
     return { amount }
   }
 
