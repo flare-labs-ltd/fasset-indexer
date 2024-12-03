@@ -438,7 +438,7 @@ export class DashboardAnalytics {
   }
 
   protected async getMinTimestamp(em: EntityManager): Promise<number> {
-    const minBlockVar = await em.find(EvmBlock,  {}, { orderBy: { index: 'desc' }, limit: 1 })
+    const minBlockVar = await em.find(EvmBlock, {}, { orderBy: { index: 'desc' }, limit: 1 })
     return minBlockVar[0]?.timestamp ?? 0
   }
 }
