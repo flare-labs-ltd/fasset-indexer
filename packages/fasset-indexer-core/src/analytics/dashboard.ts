@@ -437,23 +437,8 @@ export class DashboardAnalytics {
     return qb
   }
 
-  private async getMinTimestamp(em: EntityManager): Promise<number> {
-    const minBlockVar = await getVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY)
-    if (minBlockVar === null) return 0
-    const minBlockNum = parseInt(minBlockVar.value!)
-    const block = await em.findOne(EvmBlock, { index: minBlockNum })
-    return block === null ? 0 : block.timestamp
+  protected async getMinTimestamp(em: EntityManager): Promise<number> {
+    const minBlockVar = await em.find(EvmBlock,  {}, { orderBy: { index: 'desc' }, limit: 1 })
+    return minBlockVar[0]?.timestamp ?? 0
   }
 }
-
-/* import { config } from "../config/config"
-import { Context } from "../context/context"
-async function main() {
-  const context = await Context.create(config)
-  const analytics = new DashboardAnalytics(context.orm)
-  const result = await analytics.fAssetholderCount()
-  console.log(result)
-  await context.orm.close()
-}
-
-main() */
