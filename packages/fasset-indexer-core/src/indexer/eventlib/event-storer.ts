@@ -46,7 +46,7 @@ import type {
   FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
   SelfCloseEvent, AgentPingEvent, AgentPingResponseEvent,
   IllegalPaymentConfirmedEvent, DuplicatePaymentConfirmedEvent, UnderlyingBalanceTooLowEvent,
-  AgentInCCBEvent
+  AgentInCCBEvent, SelfMintEvent
 } from "../../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/ERC20"
@@ -97,6 +97,9 @@ export class EventStorer {
         break
       } case EVENTS.MINTING_EXECUTED: {
         await this.onMintingExecuted(em, evmLog, log.args as MintingExecutedEvent.OutputTuple)
+        break
+      } case EVENTS.SELF_MINT: {
+        await this.onSelfMint(em, evmLog, log.args as SelfMintEvent.OutputTuple)
         break
       } case EVENTS.MINTING_PAYMENT_DEFAULT: {
         await this.onMintingPaymentDefault(em, evmLog, log.args as MintingPaymentDefaultEvent.OutputTuple)
@@ -340,8 +343,6 @@ export class EventStorer {
   }
 
   protected async onMintingExecuted(em: EntityManager, evmLog: EvmLog, logArgs: MintingExecutedEvent.OutputTuple): Promise<void> {
-    if (logArgs[1] === BigInt(0))
-      return this.onSelfMint(em, evmLog, [logArgs[0], logArgs[2], logArgs[3], logArgs[4]])
     const fasset = this.contracts.assetManagerAddressToFAssetType(evmLog.address.hex)
     const [ , collateralReservationId,,, poolFeeUBA ] = logArgs
     const collateralReserved = await em.findOneOrFail(CollateralReserved, { collateralReservationId: Number(collateralReservationId), fasset })
@@ -365,13 +366,11 @@ export class EventStorer {
     em.persist(collateralReservationDeleted)
   }
 
-  protected async onSelfMint(em: EntityManager, evmLog: EvmLog, logArgs: [
-    agentVault: string, amountUBA: bigint, agentFeeUBA: bigint, poolFeeUBA: bigint
-  ]): Promise<void> {
+  protected async onSelfMint(em: EntityManager, evmLog: EvmLog, logArgs: SelfMintEvent.OutputTuple): Promise<void> {
     const fasset = this.contracts.assetManagerAddressToFAssetType(evmLog.address.hex)
-    const [ agentVault, amountUBA, agentFeeUBA, poolFeeUBA ] = logArgs
+    const [ agentVault, mintFromFreeUnderlying, mintedAmountUBA, depositedAmountUBA, poolFeeUBA ] = logArgs
     const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
-    const selfMint = new SelfMint(evmLog, fasset, agentVaultEntity, amountUBA, agentFeeUBA, poolFeeUBA)
+    const selfMint = new SelfMint(evmLog, fasset, agentVaultEntity, mintFromFreeUnderlying, mintedAmountUBA, depositedAmountUBA, poolFeeUBA)
     em.persist(selfMint)
   }
 

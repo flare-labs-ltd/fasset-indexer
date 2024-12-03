@@ -1,4 +1,3 @@
-import "dotenv/config"
 import { FAssetType, type FAsset } from "../shared"
 
 export const FASSETS = Object.keys(FAssetType).filter(([key]) => isNaN(Number(key))) as FAsset[]
@@ -38,6 +37,7 @@ export const EVENTS = {
   // minting
   COLLATERAL_RESERVED: "CollateralReserved",
   MINTING_EXECUTED: "MintingExecuted",
+  SELF_MINT: "SelfMint",
   MINTING_PAYMENT_DEFAULT: "MintingPaymentDefault",
   COLLATERAL_RESERVATION_DELETED: "CollateralReservationDeleted",
   // redemption

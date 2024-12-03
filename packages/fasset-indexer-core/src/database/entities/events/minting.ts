@@ -127,21 +127,28 @@ export class SelfMint extends FAssetEventBound {
   @ManyToOne({ entity: () => AgentVault })
   agentVault: AgentVault
 
+  @Property({ type: 'boolean' })
+  mintFromFreeUnderlying: boolean
+
   @Property({ type: new uint256() })
   mintedUBA: bigint
 
   @Property({ type: new uint256() })
-  agentFeeUBA: bigint
+  depositedUBA: bigint
 
   @Property({ type: new uint256() })
   poolFeeUBA: bigint
 
 
-  constructor(evmLog: EvmLog, fasset: FAssetType, agentVault: AgentVault, mintedUBA: bigint, agentFeeUBA: bigint, poolFeeUBA: bigint) {
+  constructor(evmLog: EvmLog, fasset: FAssetType,
+    agentVault: AgentVault, mintFromFreeUnderlying: boolean,
+    mintedUBA: bigint, depositedUBA: bigint, poolFeeUBA: bigint
+  ) {
     super(evmLog, fasset)
     this.agentVault = agentVault
+    this.mintFromFreeUnderlying = mintFromFreeUnderlying
     this.mintedUBA = mintedUBA
-    this.agentFeeUBA = agentFeeUBA
+    this.depositedUBA = depositedUBA
     this.poolFeeUBA = poolFeeUBA
   }
 
