@@ -38,7 +38,7 @@ Note that the repo also features a watchdog, which keeps track of prices and reg
 
 ## FAsset Indexer Api
 
-Needs only the environment variables to establish database connection:
+Needs the environment variables to establish database connection and API configuration:
 
 ```
 # database
@@ -49,6 +49,10 @@ DB_HOST=
 DB_PORT=
 DB_USER=
 DB_PASSWORD=
+
+# api
+API_ROOT_PATH=
+API_PORT=
 ```
 
 To run the API, run `yarn run-api`.
