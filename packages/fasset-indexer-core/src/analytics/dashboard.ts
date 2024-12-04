@@ -59,6 +59,7 @@ export class DashboardAnalytics {
       .join('tb.token', 'tk')
       .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.contracts.fassetTokens }})
       .groupBy('tk.hex')
+      .execute()
     for (const r of res) {
       // @ts-ignore
       const address = r.token_address
