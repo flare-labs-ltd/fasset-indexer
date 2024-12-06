@@ -1,5 +1,5 @@
 import { EvmStateWatchdog } from "../indexer/watchdog"
-import { ensureDatabaseIntegrity } from "./integrity"
+import { ensureDatabaseIntegrity } from "./db-integrity"
 import { Context } from "../context/context"
 import { config } from "../config/config"
 

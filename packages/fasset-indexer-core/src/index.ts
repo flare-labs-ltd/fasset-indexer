@@ -14,6 +14,6 @@ export type {
   FAssetCollateralPoolScore
 } from "./analytics/interface"
 
-export { DashboardAnalytics } from "./analytics/dashboard"
-export { NotificationAnalytics } from "./analytics/notification"
-export { MetadataAnalytics } from "./analytics/metadata"
+export { DashboardAnalytics } from "./analytics/impl/dashboard"
+export { NotificationAnalytics } from "./analytics/impl/notification"
+export { MetadataAnalytics } from "./analytics/impl/metadata"

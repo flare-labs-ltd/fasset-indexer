@@ -29,7 +29,7 @@ import {
 import {
   DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow
 } from "../../database/entities/events/challenge"
-import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateralPool"
+import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
 import { ContractLookup } from "../../context/contracts"

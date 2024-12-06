@@ -1,35 +1,35 @@
 import { raw } from "@mikro-orm/core"
 import { ZeroAddress } from "ethers"
-import { FAsset, FAssetType } from "../shared"
-import { EvmAddress } from "../database/entities/address"
-import { EvmLog } from "../database/entities/evm/log"
-import { ERC20Transfer } from "../database/entities/events/token"
-import { FAssetEventBound } from "../database/entities/events/_bound"
-import { MintingExecuted } from "../database/entities/events/minting"
-import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../database/entities/events/redemption"
-import { CollateralPoolEntered, CollateralPoolExited } from "../database/entities/events/collateralPool"
-import { LiquidationPerformed } from "../database/entities/events/liquidation"
-import { TokenBalance } from "../database/entities/state/balance"
-import { fassetToUsdPrice } from "./utils/prices"
-import { ContractLookup } from "../context/contracts"
-import { EVENTS, FASSETS, PRICE_FACTOR } from "../config/constants"
-import { BEST_COLLATERAL_POOLS, COLLATERAL_POOL_PORTFOLIO_SQL } from "./utils/rawSql"
+import { FAsset, FAssetType } from "../../shared"
+import { EvmAddress } from "../../database/entities/address"
+import { EvmLog } from "../../database/entities/evm/log"
+import { ERC20Transfer } from "../../database/entities/events/token"
+import { FAssetEventBound } from "../../database/entities/events/_bound"
+import { MintingExecuted } from "../../database/entities/events/minting"
+import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../../database/entities/events/redemption"
+import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
+import { LiquidationPerformed } from "../../database/entities/events/liquidation"
+import { TokenBalance } from "../../database/entities/state/balance"
+import { fassetToUsdPrice } from "../utils/prices"
+import { ContractLookup } from "../../context/contracts"
+import { EVENTS, FASSETS, PRICE_FACTOR } from "../../config/constants"
+import { BEST_COLLATERAL_POOLS_SQL, COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
-import type { ORM } from "../database/interface"
+import type { ORM } from "../../database/interface"
 import type {
   AmountResult,
   TimeSeries, Timespan, FAssetTimeSeries, FAssetTimespan,
   TokenPortfolio, FAssetCollateralPoolScore,
   FAssetValueResult, FAssetAmountResult
-} from "./interface"
-import { EvmBlock } from "../database/entities/evm/block"
+} from "../interface"
+import { EvmBlock } from "../../database/entities/evm/block"
 
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
  * It is seperated in case of UI's opensource release, and subsequent simplified indexer deployment.
  */
 export class DashboardAnalytics {
-  contracts: ContractLookup
+  protected contracts: ContractLookup
   private zeroAddressId: number | null = null
 
   constructor(public readonly orm: ORM) {
@@ -55,16 +55,14 @@ export class DashboardAnalytics {
   async fAssetholderCount(): Promise<FAssetAmountResult> {
     const ret = {} as FAssetAmountResult
     const res = await this.orm.em.fork().createQueryBuilder(TokenBalance, 'tb')
-      .select(['tk.hex as token_address', raw('COUNT(DISTINCT tb.holder_id) as n_token_holders')])
+      .select(['tk.hex as token_address', raw('count(distinct tb.holder_id) as n_token_holders')])
       .join('tb.token', 'tk')
       .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.contracts.fassetTokens }})
       .groupBy('tk.hex')
-      .execute()
+      .execute() as { token_address: string, n_token_holders: number }[]
     for (const r of res) {
-      // @ts-ignore
       const address = r.token_address
       if (!address) continue
-      // @ts-ignore
       const amount = Number(r.n_token_holders || 0)
       const fasset = this.contracts.fAssetAddressToFAssetType(address)
       ret[FAssetType[fasset] as FAsset] = { amount }
@@ -148,7 +146,7 @@ export class DashboardAnalytics {
   async bestCollateralPools(n: number, minLots: number): Promise<FAssetCollateralPoolScore> {
     const ret = {} as FAssetCollateralPoolScore
     const con = this.orm.em.getConnection('read')
-    const res = await con.execute(BEST_COLLATERAL_POOLS, [minLots, n])
+    const res = await con.execute(BEST_COLLATERAL_POOLS_SQL, [minLots, n])
     for (const r of res) {
       const fasset = FAssetType[r.fasset] as FAsset
       const claimedResp = await this.totalClaimedPoolFeesAt(r.hex)
@@ -246,39 +244,38 @@ export class DashboardAnalytics {
 
   async mintedTimeSeries(end: number, npoints: number, start?: number): Promise<FAssetTimeSeries<bigint>> {
     const em = this.orm.em.fork()
-    if (start == null) {
-      start = await this.getMinTimestamp(em)
-    }
     return this.getTimeSeries(
       ($gt, $lt) => em.createQueryBuilder(MintingExecuted, 'me')
-        .select(['me.fasset', raw('SUM(cr.value_uba) as value')])
+        .select(['me.fasset', raw('sum(cr.value_uba) as value')])
         .join('me.collateralReserved', 'cr')
         .join('me.evmLog', 'el')
         .join('el.block', 'block')
         .where({ 'block.timestamp': { $gt, $lt } })
         .groupBy('fasset'),
-      end, npoints, start
+      end, npoints, start ?? await this.getMinTimestamp(em)
     )
   }
 
   async redeemedTimeSeries(end: number, npoints: number, start?: number): Promise<FAssetTimeSeries<bigint>> {
     const em = this.orm.em.fork()
-    if (start == null) {
-      start = await this.getMinTimestamp(em)
-    }
     return this.getTimeSeries(
       ($gt, $lt) => em.createQueryBuilder(RedemptionRequested, 'rr')
-        .select(['rr.fasset', raw('SUM(rr.value_uba) as value')])
+        .select(['rr.fasset', raw('sum(rr.value_uba) as value')])
         .join('rr.evmLog', 'log')
         .join('log.block', 'block')
         .where({ 'block.timestamp': { $gt, $lt } })
         .groupBy('fasset'),
-      end, npoints, start
+      end, npoints, start ?? await this.getMinTimestamp(em)
     )
   }
 
   //////////////////////////////////////////////////////////////////////
   // helpers
+
+  protected async getMinTimestamp(em: EntityManager): Promise<number> {
+    const minBlockVar = await em.find(EvmBlock, {}, { orderBy: { index: 'desc' }, limit: 1 })
+    return minBlockVar[0]?.timestamp ?? 0
+  }
 
   protected async ensureZeroAddressId(): Promise<void> {
     if (this.zeroAddressId !== null) return
@@ -295,13 +292,12 @@ export class DashboardAnalytics {
     for (let i = 0; i < npoints; i++) {
       const si = start + i * interval
       const ei = start + (i + 1) * interval
-      const results = await query(si, ei).execute()
+      const results = await query(si, ei).execute() as { fasset: number, value: bigint }[]
       for (const fasset of FASSETS) {
         if (i === 0) ret[fasset] = []
         ret[fasset].push({ index: i, start: si, end: ei, value: BigInt(0) })
       }
       for (const result of results) {
-        // @ts-ignore - value
         const value = BigInt(result.value)
         const fasset = FAssetType[result.fasset] as FAsset
         ret[fasset][i].value += value
@@ -357,20 +353,18 @@ export class DashboardAnalytics {
   private async poolCollateralEnteredAt(pool?: string, user?: string, timestamp?: number): Promise<bigint> {
     const enteredCollateral = await this.filterEnterOrExitQueryBy(
       this.orm.em.fork().createQueryBuilder(CollateralPoolEntered, 'cpe')
-        .select([raw('SUM(cpe.amount_nat_wei) as collateral')]),
+        .select([raw('sum(cpe.amount_nat_wei) as collateral')]),
       'cpe', pool, user, timestamp
-    ).execute()
-    // @ts-ignore
+    ).execute() as { collateral: bigint }[]
     return BigInt(enteredCollateral[0]?.collateral || 0)
   }
 
   private async poolCollateralExitedAt(pool?: string, user?: string, timestamp?: number): Promise<bigint> {
     const exitedCollateral = await this.filterEnterOrExitQueryBy(
       this.orm.em.fork().createQueryBuilder(CollateralPoolExited, 'cpe')
-        .select([raw('SUM(cpe.received_nat_wei) as collateral')]),
+        .select([raw('sum(cpe.received_nat_wei) as collateral')]),
       'cpe', pool, user, timestamp
-    ).execute()
-    // @ts-ignore
+    ).execute() as { collateral: bigint }[]
     return BigInt(exitedCollateral[0]?.collateral || 0)
   }
 
@@ -378,12 +372,11 @@ export class DashboardAnalytics {
     const ret = {} as FAssetValueResult
     const enteredFees = await this.filterEnterOrExitQueryBy(
       this.orm.em.fork().createQueryBuilder(CollateralPoolExited, 'cpe')
-        .select(['cpe.fasset', raw('SUM(cpe.received_fasset_fees_uba) as fees')])
+        .select(['cpe.fasset', raw('sum(cpe.received_fasset_fees_uba) as fees')])
         .groupBy('cpe.fasset'),
       'cpe', pool, user, timestamp
-    ).execute()
+    ).execute() as { fasset: number, fees: bigint }[]
     for (const x of enteredFees) {
-      // @ts-ignore
       const claimedFees = BigInt(x?.fees || 0)
       ret[FAssetType[x.fasset] as FAsset] = { value: claimedFees }
     }
@@ -393,21 +386,19 @@ export class DashboardAnalytics {
   private async tokenSupplyAt(tokenId: number, timestamp: number, zeroAddressId: number): Promise<bigint> {
     if (zeroAddressId === null) return BigInt(0)
     const minted = await this.orm.em.fork().createQueryBuilder(ERC20Transfer, 't')
-      .select([raw('SUM(t.value) as minted')])
+      .select([raw('sum(t.value) as minted')])
       .join('evmLog', 'el')
       .join('el.block', 'block')
       .where({ 't.from_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
-      .execute()
-    // @ts-ignore
+      .execute() as { minted: bigint }[]
     const mintedValue = BigInt(minted[0]?.minted || 0)
     if (mintedValue == BigInt(0)) return BigInt(0)
     const burned = await this.orm.em.fork().createQueryBuilder(ERC20Transfer, 't')
-      .select([raw('SUM(t.value) as burned')])
+      .select([raw('sum(t.value) as burned')])
       .where({ 't.to_id': zeroAddressId, 'el.address': tokenId, 'block.timestamp': { $lte: timestamp } })
       .join('evmLog', 'el')
       .join('el.block', 'block')
-      .execute()
-    // @ts-ignore
+      .execute() as { burned: bigint }[]
     const burnedValue = BigInt(burned[0]?.burned || 0)
     return mintedValue - burnedValue
   }
@@ -435,10 +426,5 @@ export class DashboardAnalytics {
         .andWhere({ 'th.hex': user })
     }
     return qb
-  }
-
-  protected async getMinTimestamp(em: EntityManager): Promise<number> {
-    const minBlockVar = await em.find(EvmBlock, {}, { orderBy: { index: 'desc' }, limit: 1 })
-    return minBlockVar[0]?.timestamp ?? 0
   }
 }

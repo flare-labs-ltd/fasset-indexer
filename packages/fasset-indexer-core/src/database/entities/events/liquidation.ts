@@ -43,10 +43,10 @@ export class LiquidationPerformed extends FAssetEventBound {
   @Property({ type: new uint256() })
   valueUBA: bigint
 
-  @Property({ type: new uint256() })
+  @Property({ type: new uint256(), nullable: true })
   paidVaultCollateralWei: bigint
 
-  @Property({ type: new uint256() })
+  @Property({ type: new uint256(), nullable: true })
   paidPoolCollateralWei: bigint
 
   constructor(

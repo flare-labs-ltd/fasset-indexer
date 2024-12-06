@@ -26,7 +26,7 @@ import {
   UnderlyingBalanceTooLow
 } from "./entities/events/challenge"
 import { CollateralTypeAdded, ERC20Transfer } from "./entities/events/token"
-import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateralPool"
+import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "./entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "./entities/events/system"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"

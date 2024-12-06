@@ -1,10 +1,10 @@
-import { getVar } from "../utils"
+import { getVar } from "../../utils"
 import {
   FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY,
   FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE_DB_KEY,
   END_EVENT_BLOCK_FOR_CURRENT_UPDATE_DB_KEY
-} from "../config/constants"
-import type { ORM } from "../database/interface"
+} from "../../config/constants"
+import type { ORM } from "../../database/interface"
 
 
 export class MetadataAnalytics {

@@ -13,7 +13,7 @@ async function bootstrap() {
     apiDoc = apiConfig.rootPath + '/' + apiDoc
   }
   const config = new DocumentBuilder()
-    .setTitle('FAsset Indexer')
+    .setTitle('FAsset Indexer Api')
     .setDescription('Api for the FAsset indexer')
     .setVersion('1.0')
     .build()
