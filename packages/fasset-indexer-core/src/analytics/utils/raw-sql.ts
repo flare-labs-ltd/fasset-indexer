@@ -56,17 +56,16 @@ ${name} as (
         ea.hex = ?
 )`
 
-export const LIQUIDATION_DURATION_SQL = `
-with
-${LIQUIDATION_DATA_SQL('liquidation_started', 'agent_liquidation_started')},
-${LIQUIDATION_DATA_SQL('liquidation_ended', 'agent_liquidation_ended')},
+export const LIQUIDATION_DURATION_SQL = `with
+${LIQUIDATION_DATA_SQL('liquidation_started', 'als')},
+${LIQUIDATION_DATA_SQL('liquidation_ended', 'ale')},
 liquidation_duration AS (
     select
         ls.timestamp as ls_timestamp, min(le.timestamp) as le_timestamp
     from
-        agent_liquidation_started ls
+        als ls
     join
-        agent_liquidation_ended le
+        ale le
     on
         le.timestamp > ls.timestamp
     group by
