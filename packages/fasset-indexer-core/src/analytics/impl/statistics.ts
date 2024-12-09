@@ -3,7 +3,9 @@ import { AgentVault } from "../../database/entities/agent"
 import { MintingExecuted } from "../../database/entities/events/minting"
 import { RedemptionDefault, RedemptionPerformed } from "../../database/entities/events/redemption"
 import { LiquidationPerformed } from "../../database/entities/events/liquidation"
+import { CollateralPoolEntered } from "../../database/entities/events/collateral-pool"
 import { weightedAverage } from "../utils/weighted-average"
+import { LIQUIDATION_DURATION_SQL } from "../utils/raw-sql"
 import type { ORM } from "../../database/interface"
 
 export class Statistics {
@@ -116,15 +118,3 @@ export class Statistics {
   }
 }
 
-import { config } from "../../config/config"
-import { Context } from "../../context/context"
-import { CollateralPoolEntered } from "../../database/entities/events/collateral-pool"
-import { LIQUIDATION_DURATION_SQL } from "../utils/raw-sql"
-async function main() {
-  const context = await Context.create(config)
-  const statistics = new Statistics(context.orm)
-  console.log(await statistics.liquidationDurationWA('0x1846f4d14C6888a48067F64e1690c4Ea1d33815b', 1733321140, 1733321140, 10))
-  await context.orm.close()
-}
-
-main()
