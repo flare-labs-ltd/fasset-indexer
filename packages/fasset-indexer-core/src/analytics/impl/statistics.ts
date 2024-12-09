@@ -23,8 +23,8 @@ export class Statistics {
       .addSelect(raw('rr.value_uba * bl.timestamp as _impact'))
       .orderBy({ [raw('_impact')]: 'desc' })
       .limit(lim)
-      .execute()
-    const timespan = result.map((r: any) => ({ timestamp: r.timestamp, value: BigInt(r.value_uba) }))
+      .execute() as { timestamp: number, value_uba: string }[]
+    const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.value_uba) }))
     return weightedAverage(timespan, now, delta, lim)
   }
 
@@ -42,8 +42,8 @@ export class Statistics {
       .addSelect(raw('(rp_bl.timestamp - rr_bl.timestamp) * rp_bl.timestamp::numeric(25) as _impact'))
       .orderBy({ [raw('_impact')]: 'desc' })
       .limit(lim)
-      .execute()
-    const timespan = result.map((r: any) => ({ timestamp: r.timestamp, value: BigInt(r.period) }))
+      .execute() as { timestamp: number, period: string }[]
+    const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.period) }))
     return weightedAverage(timespan, now, delta, lim)
   }
 
@@ -58,8 +58,8 @@ export class Statistics {
       .addSelect(raw('lp.value_uba * bl.timestamp as _impact'))
       .orderBy({ [raw('_impact')]: 'desc' })
       .limit(lim)
-      .execute()
-    const timespan = result.map((r: any) => ({ timestamp: r.timestamp, value: BigInt(r.valueUBA) }))
+      .execute() as { timestamp: number, valueUBA: string }[]
+    const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.valueUBA) }))
     return weightedAverage(timespan, now, delta, lim)
   }
 
@@ -99,10 +99,10 @@ export class Statistics {
       .addSelect(raw('me.pool_fee_uba * bl.timestamp as _impact'))
       .orderBy({ [raw('_impact')]: 'desc' })
       .limit(lim)
-      .execute()
+      .execute() as { timestamp: number, poolFeeUBA: string }[]
     // should also calculate the amount of airdrops claimed, amount of donations, and amount of liquidations
     // that stole collateral from users (this is a hard one)
-    const timespan = receivedFAssets.map((r: any) => ({ timestamp: r.timestamp, value: BigInt(r.poolFeeUBA) }))
+    const timespan = receivedFAssets.map(r => ({ timestamp: r.timestamp, value: BigInt(r.poolFeeUBA) }))
     return weightedAverage(timespan, now, delta)
   }
 
