@@ -1,9 +1,15 @@
+/**
+ * This module provides a function to produce a time-sensitive statistic given some timeseries.
+ * The returned statistic should be more sensitive to recent timestamps and should be a pseudo-average
+ * of the given data point values.
+ */
+
 import type { Timespan } from "../interface"
 
 const CALC_PRECISION = BigInt(1)
 
 export function weightedAverage(timespan: Timespan<bigint>, T: number, d: number, N?: number): bigint {
-  const fun = (t: bigint) => weight(Number(t), T, d)
+  const fun = (t: bigint) => weightFun(Number(t), T, d)
   const weights = timespan.map(({ timestamp }) => BigInt(timestamp))
   const values = timespan.map(({ value }) => value)
   let wa = _weightedAverage(values, weights, fun)
@@ -13,15 +19,12 @@ export function weightedAverage(timespan: Timespan<bigint>, T: number, d: number
   return wa
 }
 
-function _weightedAverage(values: bigint[], weights: bigint[], weightFun: (w: bigint) => bigint): bigint {
-  if (values.length !== weights.length) {
-    throw new Error("Values and weights must have the same length")
-  }
+function _weightedAverage(values: bigint[], weights: bigint[], _weightFun: (w: bigint) => [bigint, bigint]): bigint {
   let mul = BigInt(0), div = BigInt(0)
   for (let i = 0; i < values.length; i++) {
-    const weight = weightFun(weights[i])
-    mul += weight * values[i]
-    div += weight
+    const [weightMul, weightDiv] = _weightFun(weights[i])
+    mul += weightMul * values[i]
+    div += weightDiv
   }
   return div > BigInt(0) ? CALC_PRECISION * mul / div : BigInt(0)
 }
@@ -32,9 +35,9 @@ function _weightedAverage(values: bigint[], weights: bigint[], weightFun: (w: bi
  * @param t timestamp/weight
  * @param T latest time
  * @param d delta
- * @returns weight
+ * @returns [mul, div] weights
  */
-function weight(t: number, T: number, d: number): bigint {
+function weightFun(t: number, T: number, d: number): [mul: bigint, div: bigint] {
   const w = BigInt(t - (T - d))
-  return w * w
+  return [w * w, w * BigInt(d)]
 }
