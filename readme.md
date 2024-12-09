@@ -53,6 +53,9 @@ DB_PASSWORD=
 # api
 API_ROOT_PATH=
 API_PORT=
+
+# chain
+ADDRESSES_JSON=
 ```
 
 To run the API, run `yarn run-api`.
