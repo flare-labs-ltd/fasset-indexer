@@ -31,6 +31,10 @@ export function randomNumber(min: number, max: number) {
   return min + Math.floor(Math.random() * (max - min))
 }
 
+export function randomBoolean() {
+  return Math.random() > 0.5
+}
+
 export function randomChoice<T>(arr: T[]): T {
   return arr[randomNumber(0, arr.length)]
 }

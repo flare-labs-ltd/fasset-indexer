@@ -5,7 +5,7 @@ import { CollateralTypeAdded } from "../../src/database/entities/events/token"
 import { AgentManager, AgentOwner, AgentVault } from "../../src/database/entities/agent"
 import { CollateralReserved } from "../../src/database/entities/events/minting"
 import { RedemptionRequested } from "../../src/database/entities/events/redemption"
-import { randomChoice, randomHash, randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress } from "./utils"
+import { randomBoolean, randomChoice, randomHash, randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress } from "./utils"
 import { ASSET_MANAGERS, AGENT_SETTINGS, WNAT_TOKEN } from "./constants"
 import type {
   AgentVaultCreatedEvent,
@@ -33,7 +33,8 @@ import type {
   AgentAvailableEvent,
   CurrentUnderlyingBlockUpdatedEvent,
   AgentPingEvent,
-  AgentPingResponseEvent
+  AgentPingResponseEvent,
+  SelfMintEvent
 } from "../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/ERC20"
@@ -196,6 +197,16 @@ export class EventFixture {
       collateralReserved.minter.hex,
       BigInt(collateralReserved.collateralReservationId),
       collateralReserved.valueUBA
+    ]
+  }
+
+  protected async generateSelfMint(): Promise<SelfMintEvent.OutputTuple> {
+    return [
+      await this.getRandomAgentVault(),
+      randomBoolean(),
+      BigInt(randomNumber(1, 1e6)),
+      BigInt(randomNumber(1, 1e6)),
+      BigInt(randomNumber(1, 1e6))
     ]
   }
 

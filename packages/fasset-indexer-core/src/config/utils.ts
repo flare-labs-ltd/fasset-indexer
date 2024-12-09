@@ -17,7 +17,7 @@ const undefinedOrInt = (value: string | undefined): number | undefined => {
   return value === undefined ? undefined : parseInt(value)
 }
 
-export function validateEnvVar(name: string, options: ValidationOptions): void {
+function validateEnvVar(name: string, options: ValidationOptions): void {
   if (options.required) {
     if (!process.env[name]) {
       throw new Error(`environment variable ${name} is required`)
@@ -30,7 +30,7 @@ export function validateEnvVar(name: string, options: ValidationOptions): void {
   }
 }
 
-export function validateDatabaseEnv(): void {
+function validateDatabaseEnv(): void {
   validateEnvVar('DB_TYPE', { isOneOf: ['sqlite', 'postgres'] })
   validateEnvVar('DB_NAME', { required: true })
   if (process.env.DB_TYPE !== "sqlite") {
@@ -41,7 +41,7 @@ export function validateDatabaseEnv(): void {
   }
 }
 
-export function validateEnv(): void {
+function validateEnv(): void {
   validateDatabaseEnv()
   validateEnvVar('RPC_URL', { required: true })
   validateEnvVar('CHAIN', { required: true })

@@ -10,7 +10,8 @@ import { CollateralTypeAdded, ERC20Transfer } from "../src/database/entities/eve
 import { EventFixture } from "./fixtures/event"
 import {
   CollateralReservationDeleted, CollateralReserved,
-  MintingExecuted, MintingPaymentDefault
+  MintingExecuted, MintingPaymentDefault,
+  SelfMint
 } from "../src/database/entities/events/minting"
 import {
   RedeemedInCollateral,
@@ -349,6 +350,25 @@ describe("FAsset evm events", () => {
     expect(currentUnderlyingBlockUpdated.underlyingBlockNumber).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[0]))
     expect(currentUnderlyingBlockUpdated.underlyingBlockTimestamp).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[1]))
     expect(currentUnderlyingBlockUpdated.updatedAt).to.equal(Number(currentUnderlyingBlockUpdatedEvent.args[2]))
+  })
+
+  it("should store self mint event", async () => {
+    const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+    await fixture.storeInitialAgents(FAssetType.FXRP)
+    const em = context.orm.em.fork()
+    const selfMintEvent = await fixture.generateEvent(EVENTS.SELF_MINT, assetManagerXrp)
+    await storer.processEventUnsafe(em, selfMintEvent)
+    const selfMint = await em.findOneOrFail(SelfMint,
+      { evmLog: { index: selfMintEvent.logIndex, block: { index: selfMintEvent.blockNumber }}},
+      { populate: ['evmLog.block', 'agentVault.address'] })
+    expect(selfMint).to.exist
+    expect(selfMint.evmLog.index).to.equal(selfMintEvent.logIndex)
+    expect(selfMint.evmLog.block.index).to.equal(selfMintEvent.blockNumber)
+    expect(selfMint.agentVault.address.hex).to.equal(selfMintEvent.args[0])
+    expect(selfMint.mintFromFreeUnderlying).to.equal(selfMintEvent.args[1])
+    expect(selfMint.mintedUBA).to.equal(selfMintEvent.args[2])
+    expect(selfMint.depositedUBA).to.equal(selfMintEvent.args[3])
+    expect(selfMint.poolFeeUBA).to.equal(selfMintEvent.args[4])
   })
 
   describe("liquidations", () => {

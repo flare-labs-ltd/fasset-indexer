@@ -2,9 +2,12 @@ import "dotenv/config"
 import { resolve } from "path"
 
 const chain = process.env.CHAIN || 'coston'
-const defaultPath = `./packages/fasset-indexer-core/chain/${chain}.json`
-const addressesJsonPath = resolve(process.env.ADDRESSES_JSON || defaultPath)
-const addressesJson = require(addressesJsonPath)
+let addressesJson = require(`../../chain/${chain}.json`)
+
+if (process.env.ADDRESSES_JSON !== undefined) {
+  console.warn('Using ADDRESSES_JSON environment variable to load contracts')
+  addressesJson = require(resolve(process.env.ADDRESSES_JSON))
+}
 
 export const contracts: {
   addresses: {

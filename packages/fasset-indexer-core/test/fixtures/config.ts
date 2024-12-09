@@ -1,7 +1,10 @@
 import { resolve } from "path"
-import { SqliteDriver } from "@mikro-orm/sqlite"
-import { config as _config } from "../../src/config/config"
+import { expandUserConfig } from "../../src/config/utils"
 
-_config.db.dbName = resolve("fasset-open-beta-monitor.test.db")
-_config.db.driver = SqliteDriver
-export const CONFIG = _config
+
+export const CONFIG = expandUserConfig({
+    chain: 'coston',
+    dbType: 'sqlite',
+    dbName: resolve("fasset-open-beta-monitor.test.db"),
+    rpcUrl: '',
+})
