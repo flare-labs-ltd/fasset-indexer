@@ -3,13 +3,17 @@ import { AgentVault } from "../../database/entities/agent"
 import { MintingExecuted } from "../../database/entities/events/minting"
 import { RedemptionDefault, RedemptionPerformed } from "../../database/entities/events/redemption"
 import { LiquidationPerformed } from "../../database/entities/events/liquidation"
-import { CollateralPoolEntered } from "../../database/entities/events/collateral-pool"
+import { CollateralTypeAdded } from "../../database/entities/events/token"
+import { SharedAnalytics } from "./shared"
 import { weightedAverage } from "../utils/weighted-average"
+import { fassetToUsd, tokenToUsd } from "../utils/prices"
 import { LIQUIDATION_DURATION_SQL } from "../utils/raw-sql"
 import type { ORM } from "../../database/interface"
+import { EvmAddress } from "../../database/entities/address"
 
-export class Statistics {
-  constructor(public readonly orm: ORM) { }
+
+export class Statistics extends SharedAnalytics {
+  constructor(public readonly orm: ORM) { super(orm) }
 
   async redemptionDefaultWA(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
     const result = await this.orm.em.fork().createQueryBuilder(RedemptionDefault, 'rd')
@@ -85,6 +89,20 @@ export class Statistics {
   /////////////////////////////////////////////////////////////////////////////////////////////////////
   // collateral pools
 
+  async collateralPoolScore(pool: string, now: number, delta: number, lim: number): Promise<bigint> {
+    const em = this.orm.em.fork()
+    // get usd value of pool yield
+    const poolYieldFAsset = await this.collateralPoolYieldWA(pool, now, delta, lim)
+    const vault = await em.findOneOrFail(AgentVault, { address: { hex: pool }})
+    const poolYieldUsd = await fassetToUsd(em, vault.fasset, poolYieldFAsset)
+    // get usd value of pool collateral
+    const poolCollateralNat = await this.poolCollateralAt(pool, undefined, now)
+    const token = await em.findOneOrFail(CollateralTypeAdded, { collateralClass: 1 }, { populate: ['address'] })
+    const poolCollateralUsd = await tokenToUsd(em, token.address.hex, poolCollateralNat)
+    // return
+    return poolYieldUsd / poolCollateralUsd
+  }
+
   async collateralPoolYieldWA(pool: string, now: number, delta: number, lim: number): Promise<bigint> {
     const em = this.orm.em.fork()
     const vault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: pool }})
@@ -103,18 +121,7 @@ export class Statistics {
     // should also calculate the amount of airdrops claimed, amount of donations, and amount of liquidations
     // that stole collateral from users (this is a hard one)
     const timespan = receivedFAssets.map(r => ({ timestamp: r.timestamp, value: BigInt(r.poolFeeUBA) }))
-    return weightedAverage(timespan, now, delta)
-  }
-
-  protected async collateralPoolTotalCollateral(pool: string, now: number): Promise<bigint> {
-    const receivedCollateral = await this.orm.em.fork().createQueryBuilder(CollateralPoolEntered, 'cpe')
-      .join('cpe.evmLog', 'el')
-      .join('el.address', 'ela')
-      .join('el.block', 'bl')
-      .where({ 'ela.hex': pool, 'bl.timestamp': { $lte: now }})
-      .select(raw('sum(cpe.amountNatWei) as total'))
-      .execute() as { total: bigint }[]
-    return BigInt(receivedCollateral[0]?.total || 0)
+    return weightedAverage(timespan, now, delta, timespan.length)
   }
 }
 

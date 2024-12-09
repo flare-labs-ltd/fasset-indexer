@@ -8,11 +8,7 @@ import type { ORM } from "../../database/interface"
 
 
 export class MetadataAnalytics {
-  orm: ORM
-
-  constructor(orm: ORM) {
-    this.orm = orm
-  }
+  constructor(public readonly orm: ORM) { }
 
   async currentBlock(): Promise<number | null> {
     const v = await getVar(this.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY)

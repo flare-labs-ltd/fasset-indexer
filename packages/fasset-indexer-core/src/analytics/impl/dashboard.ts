@@ -2,6 +2,7 @@ import { raw } from "@mikro-orm/core"
 import { ZeroAddress } from "ethers"
 import { FAsset, FAssetType } from "../../shared"
 import { EvmAddress } from "../../database/entities/address"
+import { EvmBlock } from "../../database/entities/evm/block"
 import { EvmLog } from "../../database/entities/evm/log"
 import { ERC20Transfer } from "../../database/entities/events/token"
 import { FAssetEventBound } from "../../database/entities/events/_bound"
@@ -12,6 +13,7 @@ import { LiquidationPerformed } from "../../database/entities/events/liquidation
 import { TokenBalance } from "../../database/entities/state/balance"
 import { fassetToUsdPrice } from "../utils/prices"
 import { ContractLookup } from "../../context/lookup"
+import { SharedAnalytics } from "./shared"
 import { EVENTS, FASSETS, PRICE_FACTOR } from "../../config/constants"
 import { BEST_COLLATERAL_POOLS_SQL, COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
@@ -22,17 +24,17 @@ import type {
   TokenPortfolio, FAssetCollateralPoolScore,
   FAssetValueResult, FAssetAmountResult
 } from "../interface"
-import { EvmBlock } from "../../database/entities/evm/block"
 
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
  * It is seperated in case of UI's opensource release, and subsequent simplified indexer deployment.
  */
-export class DashboardAnalytics {
+export class DashboardAnalytics extends SharedAnalytics {
   protected contracts: ContractLookup
   private zeroAddressId: number | null = null
 
   constructor(public readonly orm: ORM, chain: string, addressesJson?: string) {
+    super(orm)
     this.contracts = new ContractLookup(chain, addressesJson)
   }
 
@@ -343,31 +345,6 @@ export class DashboardAnalytics {
   //////////////////////////////////////////////////////////////////////
   // generalizations
 
-  private async poolCollateralAt(pool?: string, user?: string, timestamp?: number): Promise<bigint> {
-    const entered = await this.poolCollateralEnteredAt(pool, user, timestamp)
-    if (entered === BigInt(0)) return BigInt(0)
-    const exited = await this.poolCollateralExitedAt(pool, user, timestamp)
-    return entered - exited
-  }
-
-  private async poolCollateralEnteredAt(pool?: string, user?: string, timestamp?: number): Promise<bigint> {
-    const enteredCollateral = await this.filterEnterOrExitQueryBy(
-      this.orm.em.fork().createQueryBuilder(CollateralPoolEntered, 'cpe')
-        .select([raw('sum(cpe.amount_nat_wei) as collateral')]),
-      'cpe', pool, user, timestamp
-    ).execute() as { collateral: bigint }[]
-    return BigInt(enteredCollateral[0]?.collateral || 0)
-  }
-
-  private async poolCollateralExitedAt(pool?: string, user?: string, timestamp?: number): Promise<bigint> {
-    const exitedCollateral = await this.filterEnterOrExitQueryBy(
-      this.orm.em.fork().createQueryBuilder(CollateralPoolExited, 'cpe')
-        .select([raw('sum(cpe.received_nat_wei) as collateral')]),
-      'cpe', pool, user, timestamp
-    ).execute() as { collateral: bigint }[]
-    return BigInt(exitedCollateral[0]?.collateral || 0)
-  }
-
   private async totalClaimedPoolFeesAt(pool?: string, user?: string, timestamp?: number): Promise<FAssetValueResult> {
     const ret = {} as FAssetValueResult
     const enteredFees = await this.filterEnterOrExitQueryBy(
@@ -401,30 +378,5 @@ export class DashboardAnalytics {
       .execute() as { burned: bigint }[]
     const burnedValue = BigInt(burned[0]?.burned || 0)
     return mintedValue - burnedValue
-  }
-
-  private filterEnterOrExitQueryBy<T extends object>(
-    qb: SelectQueryBuilder<T>, alias: string,
-    pool?: string, user?: string, timestamp?: number
-  ): SelectQueryBuilder<T> {
-    if (timestamp !== undefined || pool !== undefined) {
-      qb = qb.join(`${alias}.evmLog`, 'el')
-      if (timestamp !== undefined) {
-        qb = qb
-          .join('el.block', 'block')
-          .where({ 'block.timestamp': { $lte: timestamp }})
-      }
-      if (pool !== undefined) {
-        qb = qb
-          .join('el.address', 'ela')
-          .andWhere({ 'ela.hex': pool })
-      }
-    }
-    if (user !== undefined) {
-      qb = qb
-        .join(`${alias}.tokenHolder`, 'th')
-        .andWhere({ 'th.hex': user })
-    }
-    return qb
   }
 }

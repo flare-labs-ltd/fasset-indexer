@@ -7,7 +7,6 @@ import type { IUserDatabaseConfig } from "../../config/interface"
 
 
 export class NotificationAnalytics {
-
   constructor(public readonly orm: ORM) {}
 
   async create(config: IUserDatabaseConfig): Promise<NotificationAnalytics> {
