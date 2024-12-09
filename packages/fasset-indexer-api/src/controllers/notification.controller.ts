@@ -7,10 +7,7 @@ import { NotificationService } from 'src/services/notification.service'
 @ApiTags("Notification")
 @Controller("api/notification")
 export class NotificationController {
-
-  constructor(
-    private readonly service: NotificationService,
-  ) {}
+  constructor(private readonly service: NotificationService) {}
 
   @Get('/events-per-interval?')
   getEventsPerSecond(@Query('seconds') seconds: number): Promise<ApiResponse<number>> {

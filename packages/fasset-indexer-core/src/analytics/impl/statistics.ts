@@ -9,7 +9,6 @@ import { weightedAverage } from "../utils/weighted-average"
 import { fassetToUsd, tokenToUsd } from "../utils/prices"
 import { LIQUIDATION_DURATION_SQL } from "../utils/raw-sql"
 import type { ORM } from "../../database/interface"
-import { EvmAddress } from "../../database/entities/address"
 
 
 export class Statistics extends SharedAnalytics {

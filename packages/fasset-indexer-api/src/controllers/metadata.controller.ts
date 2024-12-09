@@ -4,9 +4,8 @@ import { ApiResponse, apiResponse } from "../shared/api-response"
 import { MetadataService } from "../services/metadata.service"
 
 @ApiTags("Metadata")
-@Controller("api/indexer")
+@Controller("api/metadata")
 export class MetadataController {
-
   constructor(private readonly service: MetadataService) {}
 
   @Get('/cache')

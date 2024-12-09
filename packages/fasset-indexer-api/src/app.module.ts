@@ -3,12 +3,14 @@ import { CacheModule } from '@nestjs/cache-manager'
 import { DashboardService } from './services/dashboard.service'
 import { NotificationService } from './services/notification.service'
 import { MetadataService } from './services/metadata.service'
+import { StatisticsService } from './services/statistics.service'
 import { NotificationController } from './controllers/notification.controller'
 import { DashboardController } from './controllers/dashboard.controller'
-import { createOrm, getUserDatabaseConfig, getOrmConfig, getVar } from 'fasset-indexer-core'
-import { CACHE_MAX_ENTRIES, CACHE_TTL_MS } from './constants'
+import { StatisticsController } from './controllers/statistics.controller'
 import { MetadataController } from './controllers/metadata.controller'
+import { createOrm, getUserDatabaseConfig, getOrmConfig, getVar } from 'fasset-indexer-core'
 import { apiConfig, DatabaseConfig } from './config'
+import { CACHE_MAX_ENTRIES, CACHE_TTL_MS } from './constants'
 
 
 const configProvider = {
@@ -26,7 +28,7 @@ const configProvider = {
 
 @Module({
   imports: [CacheModule.register({ ttl: CACHE_TTL_MS, max: CACHE_MAX_ENTRIES })],
-  controllers: [DashboardController, NotificationController, MetadataController],
-  providers: [configProvider, DashboardService, NotificationService, MetadataService]
+  controllers: [DashboardController, NotificationController, MetadataController, StatisticsController],
+  providers: [configProvider, DashboardService, NotificationService, MetadataService, StatisticsService]
 })
 export class FAssetIndexerModule {}
