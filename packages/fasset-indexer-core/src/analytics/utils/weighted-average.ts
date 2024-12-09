@@ -14,6 +14,7 @@ export function weightedAverage(timespan: Timespan<bigint>, T: number, d: number
   const values = timespan.map(({ value }) => value)
   let wa = _weightedAverage(values, weights, fun)
   if (N !== undefined) {
+    if (N === 0) return BigInt(0)
     wa *= BigInt(timespan.length) / BigInt(N)
   }
   return wa

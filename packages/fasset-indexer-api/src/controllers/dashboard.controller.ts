@@ -1,9 +1,10 @@
 import { Controller, Get, ParseBoolPipe, ParseIntPipe, Query, UseInterceptors } from '@nestjs/common'
-import { CacheInterceptor } from '@nestjs/cache-manager'
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { unixnow } from 'src/shared/utils'
 import { DashboardService } from '../services/dashboard.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
-import { MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../constants'
+import { CP_SCORE_MIN_POOL_COLLATERAL_WEI, MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../constants'
 import {
   type AmountResult,
   type TimeSeries, type Timespan, type TokenPortfolio,
@@ -84,15 +85,12 @@ export class DashboardController {
   }
 
   @Get('best-performing-collateral-pools?')
+  @CacheTTL(3600) // heavy calculation, cache for an hour
   @ApiOperation({ summary: 'The main collateral pools to advertise' })
-  @ApiQuery({ name: "minLots", type: Number, required: false })
-  getBestCollateralPools(
-    @Query('n', ParseIntPipe) n: number,
-    @Query('minLots', new ParseIntPipe({ optional: true })) minLots?: number
-  ): Promise<ApiResponse<FAssetCollateralPoolScore>> {
+  getBestCollateralPools(@Query('n', ParseIntPipe) n: number): Promise<ApiResponse<FAssetCollateralPoolScore>> {
     const err = this.restrictReturnedObjects(n)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
-    return apiResponse(this.service.bestCollateralPools(n, minLots ?? 100), 200)
+    return apiResponse(this.service.bestCollateralPools(n, CP_SCORE_MIN_POOL_COLLATERAL_WEI, unixnow(), 3600 * 24 * 7, 100), 200)
   }
 
   @Get('user-collateral-pool-token-portfolio?')

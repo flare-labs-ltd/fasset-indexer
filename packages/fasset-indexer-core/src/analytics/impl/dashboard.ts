@@ -11,11 +11,13 @@ import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
 import { LiquidationPerformed } from "../../database/entities/events/liquidation"
 import { TokenBalance } from "../../database/entities/state/balance"
+import { AgentVaultInfo } from "../../database/entities/state/agent"
 import { fassetToUsdPrice } from "../utils/prices"
 import { ContractLookup } from "../../context/lookup"
 import { SharedAnalytics } from "./shared"
+import { Statistics } from "./statistics"
 import { EVENTS, FASSETS, PRICE_FACTOR } from "../../config/constants"
-import { BEST_COLLATERAL_POOLS_SQL, COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
+import { COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../../database/interface"
 import type {
@@ -30,12 +32,14 @@ import type {
  * It is seperated in case of UI's opensource release, and subsequent simplified indexer deployment.
  */
 export class DashboardAnalytics extends SharedAnalytics {
-  protected contracts: ContractLookup
+  protected lookup: ContractLookup
+  private statistics: Statistics
   private zeroAddressId: number | null = null
 
   constructor(public readonly orm: ORM, chain: string, addressesJson?: string) {
     super(orm)
-    this.contracts = new ContractLookup(chain, addressesJson)
+    this.lookup = new ContractLookup(chain, addressesJson)
+    this.statistics = new Statistics(orm)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -59,14 +63,14 @@ export class DashboardAnalytics extends SharedAnalytics {
     const res = await this.orm.em.fork().createQueryBuilder(TokenBalance, 'tb')
       .select(['tk.hex as token_address', raw('count(distinct tb.holder_id) as n_token_holders')])
       .join('tb.token', 'tk')
-      .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.contracts.fassetTokens }})
+      .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.lookup.fassetTokens }})
       .groupBy('tk.hex')
       .execute() as { token_address: string, n_token_holders: number }[]
     for (const r of res) {
       const address = r.token_address
       if (!address) continue
       const amount = Number(r.n_token_holders || 0)
-      const fasset = this.contracts.fAssetAddressToFAssetType(address)
+      const fasset = this.lookup.fAssetAddressToFAssetType(address)
       ret[FAssetType[fasset] as FAsset] = { amount }
     }
     return ret
@@ -145,18 +149,25 @@ export class DashboardAnalytics extends SharedAnalytics {
     return { amount: entered + exited }
   }
 
-  async bestCollateralPools(n: number, minLots: number): Promise<FAssetCollateralPoolScore> {
+  async bestCollateralPools(n: number, minTotalPoolNatWei: bigint, now: number, delta: number, lim: number): Promise<FAssetCollateralPoolScore> {
+    const vaults = await this.orm.em.fork().find(AgentVaultInfo,
+      { totalPoolCollateralNATWei: { $gte: minTotalPoolNatWei }, status: 0, publiclyAvailable: true },
+      { populate: ['agentVault.collateralPool']})
+    const scores = []
+    for (const vault of vaults) {
+      const pool = vault.agentVault.collateralPool.hex
+      const score = await this.statistics.collateralPoolScore(pool, now, delta, lim)
+      const fasset = vault.agentVault.fasset
+      scores.push({ pool, score, fasset })
+    }
+    scores.sort((a, b) => a > b ? -1 : a < b ? 1 : 0).splice(n)
     const ret = {} as FAssetCollateralPoolScore
-    const con = this.orm.em.getConnection('read')
-    const res = await con.execute(BEST_COLLATERAL_POOLS_SQL, [minLots, n])
-    for (const r of res) {
-      const fasset = FAssetType[r.fasset] as FAsset
-      const claimedResp = await this.totalClaimedPoolFeesAt(r.hex)
-      const claimed = claimedResp[fasset]?.value || BigInt(0)
-      if (ret[fasset] === undefined) {
-        ret[fasset] = []
-      }
-      ret[fasset].push({ pool: r.hex, score: r.fee_score, claimed })
+    for (const { pool, score, fasset } of scores) {
+      const res = await this.totalClaimedPoolFees(pool)
+      const fas = FAssetType[fasset] as FAsset
+      const claimed = res[fas]?.value || BigInt(0)
+      ret[fas] ??= []
+      ret[fas].push({ pool, score, claimed })
     }
     return ret
   }
@@ -186,7 +197,7 @@ export class DashboardAnalytics extends SharedAnalytics {
     for (const fasset of FASSETS) {
       let fAssetAddress: string | null = null
       try {
-        fAssetAddress = this.contracts.fAssetTypeToFAssetAddress(FAssetType[fasset])
+        fAssetAddress = this.lookup.fAssetTypeToFAssetAddress(FAssetType[fasset])
       } catch (err: any) {
         continue // fasset not supported yet
       }

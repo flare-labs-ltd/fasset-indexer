@@ -92,19 +92,19 @@ export class Statistics extends SharedAnalytics {
     const em = this.orm.em.fork()
     // get usd value of pool yield
     const poolYieldFAsset = await this.collateralPoolYieldWA(pool, now, delta, lim)
-    const vault = await em.findOneOrFail(AgentVault, { address: { hex: pool }})
+    const vault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: pool }})
     const poolYieldUsd = await fassetToUsd(em, vault.fasset, poolYieldFAsset)
     // get usd value of pool collateral
     const poolCollateralNat = await this.poolCollateralAt(pool, undefined, now)
     const token = await em.findOneOrFail(CollateralTypeAdded, { collateralClass: 1 }, { populate: ['address'] })
     const poolCollateralUsd = await tokenToUsd(em, token.address.hex, poolCollateralNat)
     // return
-    return poolYieldUsd / poolCollateralUsd
+    return BigInt(1e5) * poolYieldUsd / poolCollateralUsd
   }
 
   async collateralPoolYieldWA(pool: string, now: number, delta: number, lim: number): Promise<bigint> {
     const em = this.orm.em.fork()
-    const vault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: pool }})
+    const vault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: pool }}, { populate: ['address'] })
     const receivedFAssets = await em.createQueryBuilder(MintingExecuted, 'me')
       .join('me.collateralReserved', 'cr')
       .join('cr.agentVault', 'av')

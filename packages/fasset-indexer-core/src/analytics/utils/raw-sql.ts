@@ -16,24 +16,6 @@ where token_id in (select * from cpt)
 and a.hex = ?
 `
 
-export const BEST_COLLATERAL_POOLS_SQL = `
-SELECT grouped.fasset, grouped.hex, grouped.fee_score
-FROM (
-    SELECT
-        av.fasset,
-        cpa.hex,
-        avs.fee_bips * avs.pool_fee_share_bips AS fee_score
-    FROM agent_vault av
-    INNER JOIN evm_address cpa ON av.collateral_pool_id = cpa.id
-    INNER JOIN agent_vault_info avi ON av.address_id = avi.agent_vault_address_id
-    INNER JOIN agent_vault_settings avs ON av.address_id = avs.agent_vault_address_id
-    WHERE avi.status = 0 AND avi.free_collateral_lots > ?
-    GROUP BY av.fasset, cpa.hex, avs.fee_bips, avs.pool_fee_share_bips
-) AS grouped
-ORDER BY fee_score DESC
-LIMIT ?
-`
-
 const LIQUIDATION_DATA_SQL = (table: string, name: string) => `
 ${name} as (
     select

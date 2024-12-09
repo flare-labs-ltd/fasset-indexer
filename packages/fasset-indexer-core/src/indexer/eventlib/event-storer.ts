@@ -55,7 +55,6 @@ import type { ORM } from "../../database/interface"
 
 
 export class EventStorer {
-
   constructor(readonly orm: ORM, public readonly lookup: ContractLookup) { }
 
   async processEvent(log: Event): Promise<void> {
