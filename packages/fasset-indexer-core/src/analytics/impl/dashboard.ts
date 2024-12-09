@@ -11,7 +11,7 @@ import { CollateralPoolEntered, CollateralPoolExited } from "../../database/enti
 import { LiquidationPerformed } from "../../database/entities/events/liquidation"
 import { TokenBalance } from "../../database/entities/state/balance"
 import { fassetToUsdPrice } from "../utils/prices"
-import { ContractLookup } from "../../context/contracts"
+import { ContractLookup } from "../../context/lookup"
 import { EVENTS, FASSETS, PRICE_FACTOR } from "../../config/constants"
 import { BEST_COLLATERAL_POOLS_SQL, COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
@@ -32,8 +32,8 @@ export class DashboardAnalytics {
   protected contracts: ContractLookup
   private zeroAddressId: number | null = null
 
-  constructor(public readonly orm: ORM) {
-    this.contracts = new ContractLookup()
+  constructor(public readonly orm: ORM, chain: string, addressesJson?: string) {
+    this.contracts = new ContractLookup(chain, addressesJson)
   }
 
   //////////////////////////////////////////////////////////////////////

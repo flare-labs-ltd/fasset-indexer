@@ -14,6 +14,7 @@ export interface IUserConfig extends IUserDatabaseConfig {
   chain: string
   rpcUrl: string
   apiKey?: string
+  addressesJson?: string
   minBlockNum?: number
 }
 
@@ -25,5 +26,6 @@ export interface IConfig {
   }
   db: OrmOptions
   ignoreEvents?: string[]
+  addressesJson?: string
   minBlockNum?: number
 }

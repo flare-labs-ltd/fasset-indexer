@@ -1,11 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { NotificationAnalytics, type ORM } from 'fasset-indexer-core'
+import { NotificationAnalytics } from 'fasset-indexer-core'
+import type { DatabaseConfig } from '../config'
 
 
 @Injectable()
 export class NotificationService extends NotificationAnalytics {
 
-  constructor(@Inject('ORM') orm: ORM) {
-    super(orm)
+  constructor(@Inject('config') config: DatabaseConfig) {
+    super(config.orm)
   }
 }

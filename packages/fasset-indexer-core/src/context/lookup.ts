@@ -1,5 +1,5 @@
+import { ContractInfo, getContractInfo } from "../config/contracts"
 import { FAssetType } from "../shared"
-import { contracts } from "../config/contracts"
 
 
 export class ContractLookup {
@@ -13,11 +13,13 @@ export class ContractLookup {
   private isFAssetToken__cache: Set<string> = new Set()
   // public
   public fassetTokens: string[] = []
+  public contractInfos!: ContractInfo[]
 
-  constructor() {
+  constructor(chain: string, file?: string) {
     if (ContractLookup.singleton !== null) {
       return ContractLookup.singleton
     }
+    this.contractInfos = getContractInfo(chain, file)
     // populate caches for faster lookups
     this.populateFAssetTypeToAssetManagerCache()
     this.populateFAssetTypeToFAssetTokenCache()
@@ -68,7 +70,7 @@ export class ContractLookup {
   }
 
   getContractAddress(name: string): string {
-    for (const contract of contracts.addresses) {
+    for (const contract of this.contractInfos) {
       if (contract.name === name)
         return contract.address
     }
@@ -76,7 +78,7 @@ export class ContractLookup {
   }
 
   protected populateFAssetTypeToAssetManagerCache(): void {
-    for (const contract of contracts.addresses) {
+    for (const contract of this.contractInfos) {
       let fasset = null
       if (contract.name === 'AssetManager_FTestXRP') {
         fasset = FAssetType.FXRP
@@ -95,7 +97,7 @@ export class ContractLookup {
   }
 
   protected populateFAssetTypeToFAssetTokenCache(): void {
-    for (const contract of contracts.addresses) {
+    for (const contract of this.contractInfos) {
       let fasset = null
       if (contract.name === 'FTestXRP') {
         fasset = FAssetType.FXRP
@@ -114,7 +116,7 @@ export class ContractLookup {
   }
 
   protected populateIsAssetManagerCache(): void {
-    for (const contract of contracts.addresses) {
+    for (const contract of this.contractInfos) {
       if (contract.name.startsWith('AssetManager_')) {
         this.isAssetManager__cache.add(contract.address)
       }
@@ -122,7 +124,7 @@ export class ContractLookup {
   }
 
   protected populateIsFAssetTokenCache(): void {
-    for (const contract of contracts.addresses) {
+    for (const contract of this.contractInfos) {
       if (contract.contractName === "FAssetProxy.sol") {
         this.isFAssetToken__cache.add(contract.address)
       }

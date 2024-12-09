@@ -44,7 +44,7 @@ describe("FAsset evm events", () => {
   beforeEach(async () => {
     context = await Context.create(CONFIG)
     fixture = new EventFixture(context.orm)
-    storer = new EventStorer(context.orm)
+    storer = new EventStorer(context.orm, context)
   })
 
   afterEach(async () => {

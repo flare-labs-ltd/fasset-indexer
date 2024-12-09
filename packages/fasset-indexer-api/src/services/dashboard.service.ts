@@ -1,11 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { DashboardAnalytics, type ORM } from 'fasset-indexer-core'
+import { DashboardAnalytics } from 'fasset-indexer-core'
+import type { DatabaseConfig } from '../config'
 
 
 @Injectable()
 export class DashboardService extends DashboardAnalytics {
 
-  constructor(@Inject('ORM') orm: ORM) {
-    super(orm)
+  constructor(@Inject('config') config: DatabaseConfig) {
+    super(config.orm, config.chain, config.addressesJson)
   }
 }

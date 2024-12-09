@@ -70,7 +70,8 @@ export function getUserConfig(): IUserConfig {
     chain: process.env.CHAIN!,
     rpcUrl: process.env.RPC_URL!,
     apiKey: process.env.RPC_API_KEY,
-    minBlockNum: undefinedOrInt(process.env.MIN_BLOCK_NUMBER)
+    addressesJson: process.env.ADDRESSES_JSON,
+    minBlockNum: undefinedOrInt(process.env.MIN_BLOCK_NUMBER),
   }
 }
 

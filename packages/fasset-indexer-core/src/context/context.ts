@@ -1,6 +1,6 @@
 import { id as ethersId, JsonRpcProvider, FetchRequest, Interface as ContractInterface } from "ethers"
 import { createOrm } from "../database/utils"
-import { ContractLookup } from "./contracts"
+import { ContractLookup } from "./lookup"
 import {
   IAssetManager__factory, ERC20__factory,
   IAgentOwnerRegistry__factory, ICollateralPool__factory,
@@ -26,7 +26,7 @@ export class Context extends ContractLookup {
   }
 
   constructor(public config: IConfig, public orm: ORM) {
-    super()
+    super(config.chain, config.addressesJson)
     this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
     this.interfaces = {
       assetManagerInterface: IAssetManager__factory.createInterface(),
