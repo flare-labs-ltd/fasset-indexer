@@ -17,7 +17,7 @@ export const logger = createLogger({
   transports: [
     new DailyRotateFile({
       ...opts,
-      level: "error",
+      level: "info",
       json: true,
       format: format.combine(
         format.timestamp(),
