@@ -1,4 +1,3 @@
-import chalk, { Chalk } from 'chalk'
 import { sleep } from '../utils'
 import { getVar, setVar } from '../utils'
 import { StateUpdater } from './eventlib/state-updater'
@@ -12,10 +11,10 @@ import {
 } from '../config/constants'
 import type { Log } from 'ethers'
 import type { Context } from '../context/context'
+import { logger } from '../logger'
 
 
 export class EventIndexer {
-  color: Chalk = chalk.green
   readonly eventScraper: EventScraper
   readonly eventParser: EventParser
   readonly stateUpdater: StateUpdater
@@ -27,12 +26,11 @@ export class EventIndexer {
   }
 
   async run(startBlock?: number): Promise<void> {
-    console.log(chalk.cyan('starting event indexer'))
     while (true) {
       try {
         await this.runHistoric(startBlock)
       } catch (e: any) {
-        console.error(`Error running event indexer: ${e}`)
+        logger.error(`error running event indexer: ${e}`)
         await sleep(MID_CHAIN_FETCH_SLEEP_MS)
         continue
       }
@@ -54,7 +52,7 @@ export class EventIndexer {
       const logs = await this.eventScraper.getLogs(i, endLoopBlock)
       await this.storeLogs(logs)
       await this.setFirstUnhandledBlock(endLoopBlock + 1)
-      console.log(this.color(`Processed logs from block ${i} to block ${endLoopBlock}`))
+      logger.info(`indexer processed logs from block ${i} to block ${endLoopBlock}`)
       if (endLoopBlock < endBlock) await sleep(MID_CHAIN_FETCH_SLEEP_MS)
     }
   }

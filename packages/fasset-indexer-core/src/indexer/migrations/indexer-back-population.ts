@@ -1,9 +1,9 @@
-import chalk from "chalk"
 import { sleep, getVar, setVar } from "../../utils"
 import { EventIndexer } from "../indexer"
 import { EVM_LOG_FETCH_SLEEP_MS } from "../../config/constants"
 import type { Log } from "ethers"
 import type { Context } from "../../context/context"
+import { logger } from "../../logger"
 
 
 export class EventIndexerBackPopulation extends EventIndexer {
@@ -13,21 +13,20 @@ export class EventIndexerBackPopulation extends EventIndexer {
 
   constructor(context: Context, public insertionEvents: string[], public updateName: string) {
     super(context)
-    this.color = chalk.yellow
     this.insertionTopics = new Set(context.eventsToTopics(insertionEvents))
     this.endEventBlockForCurrentUpdateKey = `endEventBlock_${updateName}`
     this.firstEventBlockForCurrentUpdateKey = `firstUnhandledEventBlock_${updateName}`
   }
 
   override async run(startBlock?: number): Promise<void> {
-    console.log(chalk.cyan('starting indexer with back-insertions'))
+    logger.info('starting indexer with back-insertions')
     while (true) {
       try {
         await this.runHistoric(startBlock)
-        console.log(this.color('finished with back-insertions'))
+        logger.info('finished with back-insertions')
         return
       } catch (e: any) {
-        console.error(`Error running indexer insertion: ${e}`)
+        logger.error(`error running indexer back-insertion: ${e}`)
       }
       await sleep(EVM_LOG_FETCH_SLEEP_MS)
     }

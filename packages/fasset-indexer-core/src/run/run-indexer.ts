@@ -2,6 +2,7 @@ import { Context } from "../context/context"
 import { config } from "../config/config"
 import { ensureDatabaseIntegrity } from "./db-integrity"
 import { EventIndexer } from "../indexer/indexer"
+import { logger } from "../logger"
 
 
 async function runIndexer(start?: number) {
@@ -9,12 +10,14 @@ async function runIndexer(start?: number) {
   const indexer = new EventIndexer(context)
 
   process.on("SIGINT", async () => {
-    console.log("Stopping indexer...")
+    logger.info("stopping indexer...")
     await context.orm.close()
     process.exit(0)
   })
 
+  logger.info("ensuring database integrity...")
   await ensureDatabaseIntegrity(context)
+  logger.info("starting indexer...")
   await indexer.run()
 }
 
