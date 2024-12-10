@@ -15,7 +15,7 @@ export class ContractLookup {
   public fassetTokens: string[] = []
   public contractInfos!: ContractInfo[]
 
-  constructor(chain: string, file?: string) {
+  constructor(public readonly chain: string, file?: string) {
     if (ContractLookup.singleton !== null) {
       return ContractLookup.singleton
     }
@@ -78,34 +78,34 @@ export class ContractLookup {
   }
 
   protected populateFAssetTypeToAssetManagerCache(): void {
-    for (const contract of this.contractInfos) {
+    for (const info of this.contractInfos) {
       let fasset = null
-      if (contract.name === 'AssetManager_FTestXRP') {
+      if (info.name === `AssetManager_${this.FXRP}`) {
         fasset = FAssetType.FXRP
-      } else if (contract.name === 'AssetManager_FTestBTC') {
+      } else if (info.name === `AssetManager_${this.FDOGE}`) {
         fasset = FAssetType.FBTC
-      } else if (contract.name === 'AssetManager_FTestDOGE') {
+      } else if (info.name === `AssetManager_${this.FBTC}`) {
         fasset = FAssetType.FDOGE
-      } else if (contract.name === 'AssetManager_FSimCoinX') {
+      } else if (info.name === `AssetManager_${this.FSIMCOINX}`) {
         fasset = FAssetType.FSIMCOINX
       } else {
         continue
       }
-      this.assetManagerToFAsset__cache.set(contract.address, fasset)
-      this.fAssetToAssetManager__cache.set(fasset, contract.address)
+      this.assetManagerToFAsset__cache.set(info.address, fasset)
+      this.fAssetToAssetManager__cache.set(fasset, info.address)
     }
   }
 
   protected populateFAssetTypeToFAssetTokenCache(): void {
     for (const contract of this.contractInfos) {
       let fasset = null
-      if (contract.name === 'FTestXRP') {
+      if (contract.name === this.FXRP) {
         fasset = FAssetType.FXRP
-      } else if (contract.name === 'FTestBTC') {
+      } else if (contract.name === this.FBTC) {
         fasset = FAssetType.FBTC
-      } else if (contract.name === 'FTestDOGE') {
+      } else if (contract.name === this.FDOGE) {
         fasset = FAssetType.FDOGE
-      } else if (contract.name === 'FSimCoinX') {
+      } else if (contract.name === this.FSIMCOINX) {
         fasset = FAssetType.FSIMCOINX
       } else {
         continue
@@ -130,4 +130,18 @@ export class ContractLookup {
       }
     }
   }
+
+  protected get FXRP(): string {
+    return this.chain === 'coston' || this.chain === 'coston2' ? 'FTestXRP' : 'FXRP'
+  }
+  protected get FDOGE(): string {
+    return this.chain === 'coston' || this.chain === 'coston2' ? 'FTestDOGE' : 'FDOGE'
+  }
+  protected get FBTC(): string {
+    return this.chain === 'coston' || this.chain === 'coston2' ? 'FTestBTC' : 'FBTC'
+  }
+  protected get FSIMCOINX(): string {
+    return 'FSimCoinX'
+  }
+
 }
