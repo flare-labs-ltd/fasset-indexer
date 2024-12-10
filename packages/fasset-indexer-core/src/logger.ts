@@ -3,10 +3,10 @@ import { Console } from "winston/lib/winston/transports"
 import DailyRotateFile from "winston-daily-rotate-file"
 
 
-const logger_name = require.main?.filename ?? "".replace(/\\/g, "/")
+const logger_name = (require.main?.filename ?? "").split('/').pop()?.split('.').shift()
 
 const opts = {
-  filename: `./log/$${logger_name}%DATE%.log`,
+  filename: `./log/${logger_name}@%DATE%.log`,
   datePattern: "YYYY-MM-DD",
   zippedArchive: true,
   maxSize: "50m",
