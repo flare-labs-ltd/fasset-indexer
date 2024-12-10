@@ -19,14 +19,14 @@ export class EventIndexerBackPopulation extends EventIndexer {
   }
 
   override async run(startBlock?: number): Promise<void> {
-    logger.info('starting indexer with back-insertions')
+    logger.info(`starting ${this.context.chain} indexer with back-population`)
     while (true) {
       try {
         await this.runHistoric(startBlock)
-        logger.info('finished with back-insertions')
+        logger.info('finished with back-population')
         return
       } catch (e: any) {
-        logger.error(`error running indexer back-insertion: ${e}`)
+        logger.error(`error running indexer with back-population: ${e}`)
       }
       await sleep(EVM_LOG_FETCH_SLEEP_MS)
     }

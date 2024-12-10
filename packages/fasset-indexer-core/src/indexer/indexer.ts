@@ -52,7 +52,7 @@ export class EventIndexer {
       const logs = await this.eventScraper.getLogs(i, endLoopBlock)
       await this.storeLogs(logs)
       await this.setFirstUnhandledBlock(endLoopBlock + 1)
-      logger.info(`indexer processed logs from block ${i} to block ${endLoopBlock}`)
+      logger.info(`indexer processed ${this.context.chain} logs from block ${i} to ${endLoopBlock}`)
       if (endLoopBlock < endBlock) await sleep(MID_CHAIN_FETCH_SLEEP_MS)
     }
   }

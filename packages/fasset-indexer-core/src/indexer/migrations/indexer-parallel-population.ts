@@ -1,6 +1,7 @@
 import { EventIndexer } from "../indexer"
 import { EventIndexerBackPopulation } from "./indexer-back-population"
 import type { Context } from "../../context/context"
+import { logger } from "../../logger"
 
 
 const BLOCK_INDEX_NUMBER = 92
@@ -25,7 +26,7 @@ export class EventIndexerParallelPopulation {
           await this.backIndexer.runHistoric(firstUnhandledBlockBack, firstUnhandledBlockBack + BLOCK_INDEX_NUMBER)
         }
       } catch (e: any) {
-        console.error(`Error running back indexer: ${e}`)
+        logger.error(`Error running back indexer: ${e}`)
       }
       // then front index
       try {
@@ -35,7 +36,7 @@ export class EventIndexerParallelPopulation {
           await this.eventIndexer.runHistoric(firstUnhandledBlock, firstUnhandledBlock + BLOCK_INDEX_NUMBER)
         }
       } catch (e: any) {
-        console.error(`Error running front indexer: ${e}`)
+        logger.error(`Error running front indexer: ${e}`)
       }
     }
   }
