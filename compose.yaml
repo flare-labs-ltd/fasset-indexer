@@ -24,7 +24,7 @@ services:
       DB_TYPE: postgres
       DB_NAME: ${POSTGRES_DB}
       DB_HOST: db
-      DB_PORT: ${POSTGRES_PORT:-5433}
+      DB_PORT: ${POSTGRES_PORT:-5432}
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
     restart: unless-stopped
