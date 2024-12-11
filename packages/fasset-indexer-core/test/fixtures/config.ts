@@ -1,5 +1,5 @@
 import { resolve } from "path"
-import { expandUserConfig } from "../../src/config/utils"
+import { expandUserConfig } from "../../src/config/load"
 
 
 export const CONFIG = expandUserConfig({
