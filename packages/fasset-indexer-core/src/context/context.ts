@@ -72,7 +72,9 @@ export class Context extends ContractLookup {
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {
     const connection = new FetchRequest(rpcUrl)
     if (apiKey !== undefined) {
+      console.log(apiKey)
       connection.setHeader('x-api-key', apiKey)
+      connection.setHeader('x-apikey', apiKey)
     }
     return new JsonRpcProvider(connection)
   }
