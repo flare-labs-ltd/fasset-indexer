@@ -28,6 +28,15 @@ export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
   }
 }
 
+
+export async function ensureChainIntegrity(context: Context): Promise<void> {
+  const amc = context.getContractAddress('AssetManagerController')
+  const contract = await context.provider.getCode(amc)
+  if (contract === '0x') {
+    throw new Error(`AssetManagerController contract ${amc} does not exist on rpc ${context.config.rpc}`)
+  }
+}
+
 async function markNewDatabase(context: Context): Promise<void> {
   const envchain = context.config.chain
   const amc = context.getContractAddress('AssetManagerController')

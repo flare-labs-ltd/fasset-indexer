@@ -95,6 +95,7 @@ export function expandUserConfig(config: IUserConfig): IConfig {
     },
     db: getOrmConfig(config),
     ignoreEvents: IGNORE_EVENTS,
-    minBlockNum: config.minBlockNum
+    minBlockNum: config.minBlockNum,
+    addressesJson: config.addressesJson
   }
 }

@@ -1,6 +1,6 @@
 import { Context } from "../context/context"
 import { config } from "../config/config"
-import { ensureDatabaseIntegrity } from "./db-integrity"
+import { ensureChainIntegrity, ensureDatabaseIntegrity } from "./integrity"
 import { EventIndexer } from "../indexer/indexer"
 import { logger } from "../logger"
 
@@ -15,8 +15,9 @@ async function runIndexer(start?: number) {
     process.exit(0)
   })
 
-  logger.info("ensuring database integrity...")
+  logger.info("ensuring configuration integrity...")
   await ensureDatabaseIntegrity(context)
+  await ensureChainIntegrity(context)
   logger.info("starting indexer...")
   await indexer.run()
 }
