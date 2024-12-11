@@ -31,7 +31,7 @@ deploy_production:
   environment: Production
   variables:
     DEPLOY_IMAGE_TAG: $CI_COMMIT_BRANCH
-    DEPLOY_DIR: "fasset-indexer"
+    DEPLOY_DIR: "fasset-indexer-v1"
   before_script:
     - !reference [.env_helper, load]
     - !reference [.ssh_helper, load]
