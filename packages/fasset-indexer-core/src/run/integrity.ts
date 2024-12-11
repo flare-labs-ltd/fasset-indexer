@@ -28,7 +28,6 @@ export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
   }
 }
 
-
 export async function ensureChainIntegrity(context: Context): Promise<void> {
   const amc = context.getContractAddress('AssetManagerController')
   const contract = await context.provider.getCode(amc)
