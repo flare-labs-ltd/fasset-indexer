@@ -1,26 +1,14 @@
-import { id as ethersId, JsonRpcProvider, FetchRequest, Interface as ContractInterface } from "ethers"
+import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "../database/utils"
 import { ContractLookup } from "./lookup"
-import {
-  IAssetManager__factory, ERC20__factory,
-  IAgentOwnerRegistry__factory, ICollateralPool__factory,
-  IPriceReader__factory
-} from "../../chain/typechain"
+import { IAssetManager__factory, ERC20__factory, IAgentOwnerRegistry__factory, IPriceReader__factory } from "../../chain/typechain"
 import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../../chain/typechain"
-import type { IAssetManagerInterface } from "../../chain/typechain/IAssetManager"
-import type { ICollateralPoolInterface } from "../../chain/typechain/ICollateralPool"
-import type { ERC20Interface } from "../../chain/typechain/ERC20"
 import type { ORM } from "../database/interface"
 import type { IConfig } from "../config/interface"
 
 
 export class Context extends ContractLookup {
   public provider: JsonRpcProvider
-  public interfaces: {
-    assetManagerInterface: IAssetManagerInterface,
-    erc20Interface: ERC20Interface,
-    collateralPoolInterface: ICollateralPoolInterface
-  }
   public contracts: {
     agentOwnerRegistryContract: IAgentOwnerRegistry
   }
@@ -28,11 +16,6 @@ export class Context extends ContractLookup {
   constructor(public config: IConfig, public orm: ORM) {
     super(config.chain, config.addressesJson)
     this.provider = this.getEthersApiProvider(config.rpc.url, config.rpc.apiKey)
-    this.interfaces = {
-      assetManagerInterface: IAssetManager__factory.createInterface(),
-      erc20Interface: ERC20__factory.createInterface(),
-      collateralPoolInterface: ICollateralPool__factory.createInterface()
-    }
     this.contracts = {
       agentOwnerRegistryContract: this.getAgentOwnerRegistryContract()
     }
@@ -55,24 +38,9 @@ export class Context extends ContractLookup {
     return ERC20__factory.connect(address, this.provider)
   }
 
-  getEventTopic(eventName: string): string | null {
-    for (const iface of Object.values(this.interfaces) as ContractInterface[]) {
-      const event = iface.getEvent(eventName)
-      if (event !== null) {
-        return ethersId(event.format())
-      }
-    }
-    return null
-  }
-
-  eventsToTopics(eventNames: string[]): string[] {
-    return eventNames.map(event => this.getEventTopic(event)!)
-  }
-
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {
     const connection = new FetchRequest(rpcUrl)
     if (apiKey !== undefined) {
-      console.log(apiKey)
       connection.setHeader('x-api-key', apiKey)
       connection.setHeader('x-apikey', apiKey)
     }

@@ -1,5 +1,5 @@
 import { EvmStateWatchdog } from "../indexer/watchdog"
-import { ensureChainIntegrity, ensureDatabaseIntegrity } from "./integrity"
+import { ensureConfigIntegrity } from "./integrity"
 import { Context } from "../context/context"
 import { config } from "../config/config"
 import { logger } from "../logger"
@@ -16,8 +16,7 @@ async function runWatchdog() {
   })
 
   logger.info('ensuring configuration integrity...')
-  await ensureDatabaseIntegrity(context)
-  await ensureChainIntegrity(context)
+  await ensureConfigIntegrity(context)
   logger.info('starting watchdog...')
   await watchdog.run()
 }

@@ -22,13 +22,13 @@ import {
   FullLiquidationStarted, LiquidationEnded,
   LiquidationPerformed, LiquidationStarted
 } from "../src/database/entities/events/liquidation"
+import { AgentPing, AgentPingResponse } from "../src/database/entities/events/ping"
+import { CurrentUnderlyingBlockUpdated } from "../src/database/entities/events/system"
+import { TokenBalance } from "../src/database/entities/state/balance"
 import { EventStorer } from "../src/indexer/eventlib/event-storer"
 import { Context } from "../src/context/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
-import { AgentPing, AgentPingResponse } from "../src/database/entities/events/ping"
-import { CurrentUnderlyingBlockUpdated } from "../src/database/entities/events/system"
-import { TokenBalance } from "../src/database/entities/state/balance"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -54,14 +54,14 @@ describe("FAsset evm events", () => {
 
   it("should store erc20 transfers", async () => {
     const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
-    const erc20Transfer = await fixture.generateEvent(EVENTS.ERC20_TRANSFER, assetManager)
+    const erc20Transfer = await fixture.generateEvent(EVENTS.ERC20.TRANSFER, assetManager)
     const em = context.orm.em.fork()
     await storer.processEventUnsafe(em, erc20Transfer)
     const erc20TransferEntity = await em.findOneOrFail(EvmLog, { index: erc20Transfer.logIndex },
       { populate: ['block', 'address' ]}
     )
     expect(erc20TransferEntity).to.exist
-    expect(erc20TransferEntity.name).to.equal(EVENTS.ERC20_TRANSFER)
+    expect(erc20TransferEntity.name).to.equal(EVENTS.ERC20.TRANSFER)
     expect(erc20TransferEntity.address.hex).to.equal(assetManager)
     expect(erc20TransferEntity.block.index).to.equal(erc20Transfer.blockNumber)
     // check that erc20 transfer was stored
@@ -101,7 +101,7 @@ describe("FAsset evm events", () => {
     await fixture.storeInitialAgents()
     const em = context.orm.em.fork()
     // add initial collateral token type
-    const collateralTypeAddedEvent = await fixture.generateEvent(EVENTS.COLLATERAL_TYPE_ADDED, assetManager)
+    const collateralTypeAddedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED, assetManager)
     await storer.processEventUnsafe(em, collateralTypeAddedEvent)
     const collateralTypeAdded = await em.findOneOrFail(CollateralTypeAdded,
       { evmLog: { index: collateralTypeAddedEvent.logIndex, block: { index: collateralTypeAddedEvent.blockNumber }}},
@@ -112,7 +112,7 @@ describe("FAsset evm events", () => {
     expect(collateralTypeAdded.address.hex).to.equal(collateralTypeAddedEvent.args[1])
     expect(collateralTypeAdded.fasset).to.equal(FAssetType.FXRP)
     // create agent
-    const agentVaultCreatedEvent = await fixture.generateEvent(EVENTS.AGENT_VAULT_CREATED, assetManager)
+    const agentVaultCreatedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.AGENT_VAULT_CREATED, assetManager)
     await storer.processEventUnsafe(em, agentVaultCreatedEvent)
     // check that event was logged and agent vault created
     const agentVaultCreated = await em.findOneOrFail(AgentVaultCreated,
@@ -139,7 +139,7 @@ describe("FAsset evm events", () => {
     await fixture.storeInitialAgents()
     const em = context.orm.em.fork()
     // collateral reserved event
-    const collateralReservedEvent = await fixture.generateEvent(EVENTS.COLLATERAL_RESERVED, assetManager)
+    const collateralReservedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_RESERVED, assetManager)
     await storer.processEventUnsafe(em, collateralReservedEvent)
     const collateralReserved = await em.findOneOrFail(CollateralReserved,
       { evmLog: { index: collateralReservedEvent.logIndex, block: { index: collateralReservedEvent.blockNumber }}},
@@ -160,7 +160,7 @@ describe("FAsset evm events", () => {
     expect(collateralReserved.executor.hex).to.equal(collateralReservedEvent.args[10])
     expect(collateralReserved.executorFeeNatWei).to.equal(collateralReservedEvent.args[11])
     // minting executed event
-    const mintingExecutedEvent = await fixture.generateEvent(EVENTS.MINTING_EXECUTED, assetManager)
+    const mintingExecutedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.MINTING_EXECUTED, assetManager)
     await storer.processEventUnsafe(em, mintingExecutedEvent)
     const mintingExecuted = await em.findOneOrFail(MintingExecuted,
       { evmLog: { index: mintingExecutedEvent.logIndex, block: { index: mintingExecutedEvent.blockNumber }}},
@@ -171,7 +171,7 @@ describe("FAsset evm events", () => {
     expect(mintingExecuted.collateralReserved.collateralReservationId).to.equal(Number(mintingExecutedEvent.args[1]))
     expect(mintingExecuted.poolFeeUBA).to.equal(mintingExecutedEvent.args[4])
     // minting payment default event
-    const mintingPaymentDefaultEvent = await fixture.generateEvent(EVENTS.MINTING_PAYMENT_DEFAULT, assetManager)
+    const mintingPaymentDefaultEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.MINTING_PAYMENT_DEFAULT, assetManager)
     await storer.processEventUnsafe(em, mintingPaymentDefaultEvent)
     const mintingPaymentDefault = await em.findOneOrFail(MintingPaymentDefault,
       { evmLog: { index: mintingPaymentDefaultEvent.logIndex, block: { index: mintingPaymentDefaultEvent.blockNumber }}},
@@ -181,7 +181,7 @@ describe("FAsset evm events", () => {
     expect(mintingPaymentDefault.evmLog.block.index).to.equal(mintingPaymentDefaultEvent.blockNumber)
     expect(mintingPaymentDefault.collateralReserved.collateralReservationId).to.equal(Number(mintingPaymentDefaultEvent.args[2]))
     // collateral reservation deleted
-    const collateralReservationDeletedEvent = await fixture.generateEvent(EVENTS.COLLATERAL_RESERVATION_DELETED, assetManager)
+    const collateralReservationDeletedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_RESERVATION_DELETED, assetManager)
     await storer.processEventUnsafe(em, collateralReservationDeletedEvent)
     const collateralReservationDeleted = await em.findOneOrFail(CollateralReservationDeleted,
       { evmLog: { index: collateralReservationDeletedEvent.logIndex, block: { index: collateralReservationDeletedEvent.blockNumber }}},
@@ -197,7 +197,7 @@ describe("FAsset evm events", () => {
     await fixture.storeInitialAgents()
     const em = context.orm.em.fork()
     // redemption requested event
-    const redemptionRequestedEvent = await fixture.generateEvent(EVENTS.REDEMPTION_REQUESTED, assetManager)
+    const redemptionRequestedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_REQUESTED, assetManager)
     await storer.processEventUnsafe(em, redemptionRequestedEvent)
     const redemptionRequested = await em.findOneOrFail(RedemptionRequested,
       { evmLog: { index: redemptionRequestedEvent.logIndex, block: { index: redemptionRequestedEvent.blockNumber }}},
@@ -217,7 +217,7 @@ describe("FAsset evm events", () => {
     expect(redemptionRequested.executor.hex).to.equal(redemptionRequestedEvent.args[10])
     expect(redemptionRequested.executorFeeNatWei).to.equal(redemptionRequestedEvent.args[11])
     // redemption performed event
-    const redemptionPerformedEvent = await fixture.generateEvent(EVENTS.REDEMPTION_PERFORMED, assetManager)
+    const redemptionPerformedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_PERFORMED, assetManager)
     await storer.processEventUnsafe(em, redemptionPerformedEvent)
     const redemptionPerformed = await em.findOneOrFail(RedemptionPerformed,
       { evmLog: { index: redemptionPerformedEvent.logIndex, block: { index: redemptionPerformedEvent.blockNumber }}},
@@ -230,7 +230,7 @@ describe("FAsset evm events", () => {
     expect(redemptionPerformed.transactionHash).to.equal(redemptionPerformedEvent.args[3])
     expect(redemptionPerformed.spentUnderlyingUBA).to.equal(redemptionPerformedEvent.args[5])
     // redemption default event
-    const redemptionDefaultEvent = await fixture.generateEvent(EVENTS.REDEMPTION_DEFAULT, assetManager)
+    const redemptionDefaultEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_DEFAULT, assetManager)
     await storer.processEventUnsafe(em, redemptionDefaultEvent)
     const redemptionDefault = await em.findOneOrFail(RedemptionDefault,
       { evmLog: { index: redemptionDefaultEvent.logIndex, block: { index: redemptionDefaultEvent.blockNumber }}},
@@ -243,7 +243,7 @@ describe("FAsset evm events", () => {
     expect(redemptionDefault.redeemedVaultCollateralWei).to.equal(redemptionDefaultEvent.args[4])
     expect(redemptionDefault.redeemedPoolCollateralWei).to.equal(redemptionDefaultEvent.args[5])
     // redemption rejected event
-    const redemptionRejectedEvent = await fixture.generateEvent(EVENTS.REDEMPTION_REJECTED, assetManager)
+    const redemptionRejectedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_REJECTED, assetManager)
     await storer.processEventUnsafe(em, redemptionRejectedEvent)
     const redemptionRejected = await em.findOneOrFail(RedemptionRejected,
       { evmLog: { index: redemptionRejectedEvent.logIndex, block: { index: redemptionRejectedEvent.blockNumber }}},
@@ -253,7 +253,7 @@ describe("FAsset evm events", () => {
     expect(redemptionRejected.evmLog.block.index).to.equal(redemptionRejectedEvent.blockNumber)
     expect(redemptionRejected.redemptionRequested.requestId).to.equal(Number(redemptionRejectedEvent.args[2]))
     // redemption payment blocked
-    const redemptionPaymentBlockedEvent = await fixture.generateEvent(EVENTS.REDEMPTION_PAYMENT_BLOCKED, assetManager)
+    const redemptionPaymentBlockedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_PAYMENT_BLOCKED, assetManager)
     await storer.processEventUnsafe(em, redemptionPaymentBlockedEvent)
     const redemptionPaymentBlocked = await em.findOneOrFail(RedemptionPaymentBlocked,
       { evmLog: { index: redemptionPaymentBlockedEvent.logIndex, block: { index: redemptionPaymentBlockedEvent.blockNumber }}},
@@ -265,7 +265,7 @@ describe("FAsset evm events", () => {
     expect(redemptionPaymentBlocked.transactionHash).to.equal(redemptionPaymentBlockedEvent.args[3])
     expect(redemptionPaymentBlocked.spentUnderlyingUBA).to.equal(redemptionPaymentBlockedEvent.args[5])
     // redemption payment failed
-    const redemptionPaymentFailedEvent = await fixture.generateEvent(EVENTS.REDEMPTION_PAYMENT_FAILED, assetManager)
+    const redemptionPaymentFailedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_PAYMENT_FAILED, assetManager)
     await storer.processEventUnsafe(em, redemptionPaymentFailedEvent)
     const redemptionPaymentFailed = await em.findOneOrFail(RedemptionPaymentFailed,
       { evmLog: { index: redemptionPaymentFailedEvent.logIndex, block: { index: redemptionPaymentFailedEvent.blockNumber }}},
@@ -284,7 +284,7 @@ describe("FAsset evm events", () => {
     await fixture.storeInitialAgents()
     const em = context.orm.em.fork()
     // redemption requested event
-    const redeemedInCollateralEvent = await fixture.generateEvent(EVENTS.REDEEMED_IN_COLLATERAL, assetManager)
+    const redeemedInCollateralEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEEMED_IN_COLLATERAL, assetManager)
     await storer.processEventUnsafe(em, redeemedInCollateralEvent)
     const redeemedInCollateral = await em.findOneOrFail(RedeemedInCollateral,
       { evmLog: { index: redeemedInCollateralEvent.logIndex, block: { index: redeemedInCollateralEvent.blockNumber }}},
@@ -303,7 +303,7 @@ describe("FAsset evm events", () => {
     await fixture.storeInitialAgents(FAssetType.FXRP)
     const em = context.orm.em.fork()
     // agent ping
-    const agentPingEvent = await fixture.generateEvent(EVENTS.AGENT_PING, assetManagerXrp)
+    const agentPingEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.AGENT_PING, assetManagerXrp)
     await storer.processEventUnsafe(em, agentPingEvent)
     const agentPing = await em.findOneOrFail(AgentPing,
       { evmLog: { index: agentPingEvent.logIndex, block: { index: agentPingEvent.blockNumber }}},
@@ -322,7 +322,7 @@ describe("FAsset evm events", () => {
     await fixture.storeInitialAgents(FAssetType.FXRP)
     const em = context.orm.em.fork()
     // agent pong
-    const agentPingResponseEvent = await fixture.generateEvent(EVENTS.AGENT_PING_RESPONSE, assetManagerXrp)
+    const agentPingResponseEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.AGENT_PING_RESPONSE, assetManagerXrp)
     await storer.processEventUnsafe(em, agentPingResponseEvent)
     const agentPingResponse = await em.findOneOrFail(AgentPingResponse,
       { evmLog: { index: agentPingResponseEvent.logIndex, block: { index: agentPingResponseEvent.blockNumber }}},
@@ -338,7 +338,7 @@ describe("FAsset evm events", () => {
 
   it("should store current underlying block updated event", async () => {
     const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
-    const currentUnderlyingBlockUpdatedEvent = await fixture.generateEvent(EVENTS.CURRENT_UNDERLYING_BLOCK_UPDATED, assetManagerXrp)
+    const currentUnderlyingBlockUpdatedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.CURRENT_UNDERLYING_BLOCK_UPDATED, assetManagerXrp)
     const em = context.orm.em.fork()
     await storer.processEventUnsafe(em, currentUnderlyingBlockUpdatedEvent)
     const currentUnderlyingBlockUpdated = await em.findOneOrFail(CurrentUnderlyingBlockUpdated,
@@ -356,7 +356,7 @@ describe("FAsset evm events", () => {
     const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
     await fixture.storeInitialAgents(FAssetType.FXRP)
     const em = context.orm.em.fork()
-    const selfMintEvent = await fixture.generateEvent(EVENTS.SELF_MINT, assetManagerXrp)
+    const selfMintEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.SELF_MINT, assetManagerXrp)
     await storer.processEventUnsafe(em, selfMintEvent)
     const selfMint = await em.findOneOrFail(SelfMint,
       { evmLog: { index: selfMintEvent.logIndex, block: { index: selfMintEvent.blockNumber }}},
@@ -377,7 +377,7 @@ describe("FAsset evm events", () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
       await fixture.storeInitialAgents(FAssetType.FXRP)
       const em = context.orm.em.fork()
-      const liquidationStartedEvent = await fixture.generateEvent(EVENTS.LIQUIDATION_STARTED, assetManagerXrp)
+      const liquidationStartedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.LIQUIDATION_STARTED, assetManagerXrp)
       await storer.processEventUnsafe(em, liquidationStartedEvent)
       const liquidationStarted = await em.findOneOrFail(LiquidationStarted,
         { evmLog: { index: liquidationStartedEvent.logIndex, block: { index: liquidationStartedEvent.blockNumber }}},
@@ -392,22 +392,22 @@ describe("FAsset evm events", () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
       await fixture.storeInitialAgents()
       const em = context.orm.em.fork()
-      const liquidationStartedEvent = await fixture.generateEvent(EVENTS.FULL_LIQUIDATION_STARTED, assetManagerXrp)
-      await storer.processEventUnsafe(em, liquidationStartedEvent)
+      const fullLiquidationStartedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.FULL_LIQUIDATION_STARTED, assetManagerXrp)
+      await storer.processEventUnsafe(em, fullLiquidationStartedEvent)
       const liquidationStarted = await em.findOneOrFail(FullLiquidationStarted,
-        { evmLog: { index: liquidationStartedEvent.logIndex, block: { index: liquidationStartedEvent.blockNumber }}},
+        { evmLog: { index: fullLiquidationStartedEvent.logIndex, block: { index: fullLiquidationStartedEvent.blockNumber }}},
         { populate: ['evmLog.block', 'agentVault.address'] })
       expect(liquidationStarted).to.exist
-      expect(liquidationStarted.evmLog.index).to.equal(liquidationStartedEvent.logIndex)
-      expect(liquidationStarted.evmLog.block.index).to.equal(liquidationStartedEvent.blockNumber)
-      expect(liquidationStarted.agentVault.address.hex).to.equal(liquidationStartedEvent.args[0])
+      expect(liquidationStarted.evmLog.index).to.equal(fullLiquidationStartedEvent.logIndex)
+      expect(liquidationStarted.evmLog.block.index).to.equal(fullLiquidationStartedEvent.blockNumber)
+      expect(liquidationStarted.agentVault.address.hex).to.equal(fullLiquidationStartedEvent.args[0])
     })
 
     it("should store all liquidation ended events", async () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
       await fixture.storeInitialAgents()
       const em = context.orm.em.fork()
-      const liquidationStartedEvent = await fixture.generateEvent(EVENTS.LIQUIDATION_ENDED, assetManagerXrp)
+      const liquidationStartedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.LIQUIDATION_ENDED, assetManagerXrp)
       await storer.processEventUnsafe(em, liquidationStartedEvent)
       const liquidationStarted = await em.findOneOrFail(LiquidationEnded,
         { evmLog: { index: liquidationStartedEvent.logIndex, block: { index: liquidationStartedEvent.blockNumber }}},
@@ -422,7 +422,7 @@ describe("FAsset evm events", () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
       await fixture.storeInitialAgents()
       const em = context.orm.em.fork()
-      const liquidationPerformedEvent = await fixture.generateEvent(EVENTS.LIQUIDATION_PERFORMED, assetManagerXrp)
+      const liquidationPerformedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.LIQUIDATION_PERFORMED, assetManagerXrp)
       await storer.processEventUnsafe(em, liquidationPerformedEvent)
       const liquidationPerformed = await em.findOneOrFail(LiquidationPerformed,
         { evmLog: { index: liquidationPerformedEvent.logIndex, block: { index: liquidationPerformedEvent.blockNumber }}},
@@ -442,8 +442,8 @@ describe("FAsset evm events", () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
       const assetManagerBtc = context.getContractAddress(ASSET_MANAGER_FBTC)
       await fixture.storeInitialAgents()
-      const event1 = await fixture.generateEvent(EVENTS.COLLATERAL_RESERVED, assetManagerXrp)
-      const event2 = await fixture.generateEvent(EVENTS.COLLATERAL_RESERVED, assetManagerBtc)
+      const event1 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_RESERVED, assetManagerXrp)
+      const event2 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_RESERVED, assetManagerBtc)
       event2.args[2] = event1.args[2]
       const em = context.orm.em.fork()
       await storer.processEventUnsafe(em, event1)
@@ -456,15 +456,15 @@ describe("FAsset evm events", () => {
       expect(collateralReservedBtc.fasset).to.equal(FAssetType.FBTC)
     })
 
-    it("should not confuse collatearl reserved from different fassets", async () => {
+    it("should not confuse collateral reserved from different fassets", async () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
       const assetManagerBtc = context.getContractAddress(ASSET_MANAGER_FBTC)
       await fixture.storeInitialAgents()
       const em = context.orm.em.fork()
-      const event1 = await fixture.generateEvent(EVENTS.COLLATERAL_RESERVED, assetManagerXrp)
+      const event1 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_RESERVED, assetManagerXrp)
       await storer.processEventUnsafe(em, event1)
       await em.flush()
-      const event2 = await fixture.generateEvent(EVENTS.MINTING_EXECUTED, assetManagerBtc)
+      const event2 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.MINTING_EXECUTED, assetManagerBtc)
       event2.args[1] = event1.args[2]
       expect(storer.processEventUnsafe(em, event2)).to.eventually.be.rejected
     })
@@ -472,8 +472,8 @@ describe("FAsset evm events", () => {
     it("should not allow two events with same log index and block index", async () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
       const assetManagerBtc = context.getContractAddress(ASSET_MANAGER_FBTC)
-      const event1 = await fixture.generateEvent(EVENTS.COLLATERAL_TYPE_ADDED, assetManagerXrp)
-      const event2 = await fixture.generateEvent(EVENTS.COLLATERAL_TYPE_ADDED, assetManagerBtc)
+      const event1 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED, assetManagerXrp)
+      const event2 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED, assetManagerBtc)
       event2.logIndex = event1.logIndex
       event2.blockNumber = event1.blockNumber
       const em = context.orm.em.fork()
@@ -484,7 +484,7 @@ describe("FAsset evm events", () => {
     })
 
     it("should not store an event that is not processed", async () => {
-      const collateralTypeAddedEvent = await fixture.generateEvent(EVENTS.COLLATERAL_TYPE_ADDED)
+      const collateralTypeAddedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED)
       collateralTypeAddedEvent.name = 'ShmollateralShmypeAShmadded'
       const em = context.orm.em.fork()
       await storer.processEventUnsafe(em, collateralTypeAddedEvent)
@@ -494,8 +494,8 @@ describe("FAsset evm events", () => {
 
     it("should not store same event twice (really really improbable to happen with current impl)", async () => {
       const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
-      const event1 = await fixture.generateEvent(EVENTS.COLLATERAL_TYPE_ADDED, assetManagerXrp)
-      const event2 = await fixture.generateEvent(EVENTS.COLLATERAL_TYPE_ADDED, assetManagerXrp)
+      const event1 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED, assetManagerXrp)
+      const event2 = await fixture.generateEvent(EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED, assetManagerXrp)
       event2.blockNumber = event1.blockNumber
       event2.logIndex = event1.logIndex
       const em = context.orm.em.fork()

@@ -49,10 +49,10 @@ export class DashboardAnalytics extends SharedAnalytics {
     const qb = this.orm.em.qb(EvmLog)
     const result = await qb.count().where({ name: {
       $in: [
-        EVENTS.COLLATERAL_POOL_EXIT,
-        EVENTS.COLLATERAL_POOL_ENTER,
-        EVENTS.REDEMPTION_REQUESTED,
-        EVENTS.COLLATERAL_RESERVED
+        EVENTS.COLLATERAL_POOL.EXIT,
+        EVENTS.COLLATERAL_POOL.ENTER,
+        EVENTS.ASSET_MANAGER.REDEMPTION_REQUESTED,
+        EVENTS.ASSET_MANAGER.COLLATERAL_RESERVED
       ]
     }}).execute()
     return { amount: result[0].count }

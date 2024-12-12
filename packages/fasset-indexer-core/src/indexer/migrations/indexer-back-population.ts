@@ -1,9 +1,9 @@
 import { sleep, getVar, setVar } from "../../utils"
 import { EventIndexer } from "../indexer"
+import { logger } from "../../logger"
 import { EVM_LOG_FETCH_SLEEP_MS } from "../../config/constants"
 import type { Log } from "ethers"
 import type { Context } from "../../context/context"
-import { logger } from "../../logger"
 
 
 export class EventIndexerBackPopulation extends EventIndexer {
@@ -12,8 +12,8 @@ export class EventIndexerBackPopulation extends EventIndexer {
   private insertionTopics: Set<string>
 
   constructor(context: Context, public insertionEvents: string[], public updateName: string) {
-    super(context)
-    this.insertionTopics = new Set(context.eventsToTopics(insertionEvents))
+    super(context, insertionEvents)
+    this.insertionTopics = new Set(context.getTopicToIfaceMap(insertionEvents).keys())
     this.endEventBlockForCurrentUpdateKey = `endEventBlock_${updateName}`
     this.firstEventBlockForCurrentUpdateKey = `firstUnhandledEventBlock_${updateName}`
   }

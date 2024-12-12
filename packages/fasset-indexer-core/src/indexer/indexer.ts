@@ -3,15 +3,17 @@ import { getVar, setVar } from '../utils'
 import { StateUpdater } from './eventlib/state-updater'
 import { EventParser } from './eventlib/event-parser'
 import { EventScraper } from './eventlib/event-scraper'
+import { logger } from '../logger'
 import {
-  FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, EVM_LOG_FETCH_SIZE,
-  MID_CHAIN_FETCH_SLEEP_MS, EVM_LOG_FETCH_SLEEP_MS,
+  FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY,
+  EVM_LOG_FETCH_SIZE,
+  MID_CHAIN_FETCH_SLEEP_MS,
+  EVM_LOG_FETCH_SLEEP_MS,
   EVM_BLOCK_HEIGHT_OFFSET,
   MIN_EVM_BLOCK_NUMBER_DB_KEY
 } from '../config/constants'
 import type { Log } from 'ethers'
 import type { Context } from '../context/context'
-import { logger } from '../logger'
 
 
 export class EventIndexer {
@@ -19,9 +21,9 @@ export class EventIndexer {
   readonly eventParser: EventParser
   readonly stateUpdater: StateUpdater
 
-  constructor(public readonly context: Context) {
+  constructor(public readonly context: Context, eventnames?: string[]) {
     this.eventScraper = new EventScraper(context)
-    this.eventParser = new EventParser(context)
+    this.eventParser = new EventParser(context, eventnames)
     this.stateUpdater = new StateUpdater(context)
   }
 

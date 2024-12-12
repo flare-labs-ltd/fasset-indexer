@@ -1,8 +1,9 @@
 import { ContractInfo, getContractInfo } from "../config/contracts"
 import { FAssetType } from "../shared"
+import { EventInterface } from "./events"
 
 
-export class ContractLookup {
+export class ContractLookup extends EventInterface {
   static singleton: ContractLookup | null = null
   // caches
   private assetManagerToFAsset__cache: Map<string, FAssetType> = new Map()
@@ -19,6 +20,7 @@ export class ContractLookup {
     if (ContractLookup.singleton !== null) {
       return ContractLookup.singleton
     }
+    super()
     this.contractInfos = getContractInfo(chain, file)
     // populate caches for faster lookups
     this.populateFAssetTypeToAssetManagerCache()
@@ -82,9 +84,9 @@ export class ContractLookup {
       let fasset = null
       if (info.name === `AssetManager_${this.FXRP}`) {
         fasset = FAssetType.FXRP
-      } else if (info.name === `AssetManager_${this.FDOGE}`) {
-        fasset = FAssetType.FBTC
       } else if (info.name === `AssetManager_${this.FBTC}`) {
+        fasset = FAssetType.FBTC
+      } else if (info.name === `AssetManager_${this.FDOGE}`) {
         fasset = FAssetType.FDOGE
       } else if (info.name === `AssetManager_${this.FSIMCOINX}`) {
         fasset = FAssetType.FSIMCOINX

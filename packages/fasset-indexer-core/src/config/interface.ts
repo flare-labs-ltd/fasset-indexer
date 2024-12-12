@@ -25,7 +25,6 @@ export interface IConfig {
     apiKey?: string
   }
   db: OrmOptions
-  ignoreEvents?: string[]
   addressesJson?: string
   minBlockNum?: number
 }

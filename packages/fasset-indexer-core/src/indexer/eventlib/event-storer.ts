@@ -73,106 +73,106 @@ export class EventStorer {
 
   protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
     switch (log.name) {
-      case EVENTS.COLLATERAL_TYPE_ADDED: {
+      case EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED: {
         await this.onCollateralTypeAdded(em, evmLog, log.args as CollateralTypeAddedEvent.OutputTuple)
         break
-      } case EVENTS.AGENT_VAULT_CREATED: {
+      } case EVENTS.ASSET_MANAGER.AGENT_VAULT_CREATED: {
         await this.onAgentVaultCreated(em, evmLog, log.args as AgentVaultCreatedEvent.OutputTuple)
         break
-      } case EVENTS.AGENT_SETTING_CHANGED: {
+      } case EVENTS.ASSET_MANAGER.AGENT_SETTING_CHANGED: {
         await this.onAgentSettingChanged(em, evmLog, log.args as AgentSettingChangeAnnouncedEvent.OutputTuple)
         break
-      } case EVENTS.AGENT_DESTROYED: {
+      } case EVENTS.ASSET_MANAGER.AGENT_DESTROYED: {
         await this.onAgentDestroyed(em, log.args as AgentDestroyedEvent.OutputTuple)
         break
-      } case EVENTS.SELF_CLOSE: {
+      } case EVENTS.ASSET_MANAGER.SELF_CLOSE: {
         await this.onSelfClose(em, evmLog, log.args as SelfCloseEvent.OutputTuple)
         break
-      } case EVENTS.COLLATERAL_RESERVED: {
+      } case EVENTS.ASSET_MANAGER.COLLATERAL_RESERVED: {
         await this.onCollateralReserved(em, evmLog, log.args as CollateralReservedEvent.OutputTuple)
         break
-      } case EVENTS.MINTING_EXECUTED: {
+      } case EVENTS.ASSET_MANAGER.MINTING_EXECUTED: {
         await this.onMintingExecuted(em, evmLog, log.args as MintingExecutedEvent.OutputTuple)
         break
-      } case EVENTS.SELF_MINT: {
+      } case EVENTS.ASSET_MANAGER.SELF_MINT: {
         await this.onSelfMint(em, evmLog, log.args as SelfMintEvent.OutputTuple)
         break
-      } case EVENTS.MINTING_PAYMENT_DEFAULT: {
+      } case EVENTS.ASSET_MANAGER.MINTING_PAYMENT_DEFAULT: {
         await this.onMintingPaymentDefault(em, evmLog, log.args as MintingPaymentDefaultEvent.OutputTuple)
         break
-      } case EVENTS.COLLATERAL_RESERVATION_DELETED: {
+      } case EVENTS.ASSET_MANAGER.COLLATERAL_RESERVATION_DELETED: {
         await this.onCollateralReservationDeleted(em, evmLog, log.args as CollateralReservationDeletedEvent.OutputTuple)
         break
-      } case EVENTS.REDEMPTION_REQUESTED: {
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_REQUESTED: {
         await this.onRedemptionRequested(em, evmLog, log.args as RedemptionRequestedEvent.OutputTuple)
         break
-      } case EVENTS.REDEMPTION_PERFORMED: {
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_PERFORMED: {
         await this.onRedemptionPerformed(em, evmLog, log.args as RedemptionPerformedEvent.OutputTuple)
         break
-      } case EVENTS.REDEMPTION_DEFAULT: {
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_DEFAULT: {
         await this.onRedemptionDefault(em, evmLog, log.args as RedemptionDefaultEvent.OutputTuple)
         break
-      } case EVENTS.REDEMPTION_PAYMENT_BLOCKED: {
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_PAYMENT_BLOCKED: {
         await this.onRedemptionPaymentBlocked(em, evmLog, log.args as RedemptionPaymentBlockedEvent.OutputTuple)
         break
-      } case EVENTS.REDEMPTION_PAYMENT_FAILED: {
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_PAYMENT_FAILED: {
         await this.onRedemptionPaymentFailed(em, evmLog, log.args as RedemptionPaymentFailedEvent.OutputTuple)
         break
-      } case EVENTS.REDEMPTION_REJECTED: {
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_REJECTED: {
         await this.onRedemptionRejected(em, evmLog, log.args as RedemptionRejectedEvent.OutputTuple)
         break
-      } case EVENTS.REDEEMED_IN_COLLATERAL: {
+      } case EVENTS.ASSET_MANAGER.REDEEMED_IN_COLLATERAL: {
         await this.onRedeemedInCollateral(em, evmLog, log.args as RedeemedInCollateralEvent.OutputTuple)
         break
-      } case EVENTS.REDEMPTION_REQUEST_INCOMPLETE: {
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_REQUEST_INCOMPLETE: {
         await this.onRedemptionPaymentIncomplete(em, evmLog, log.args as RedemptionRequestIncompleteEvent.OutputTuple)
         break
-      } case EVENTS.AGENT_IN_CCB: {
+      } case EVENTS.ASSET_MANAGER.AGENT_IN_CCB: {
         await this.onAgentInCCB(em, evmLog, log.args as AgentInCCBEvent.OutputTuple)
         break
-      } case EVENTS.LIQUIDATION_STARTED: {
+      } case EVENTS.ASSET_MANAGER.LIQUIDATION_STARTED: {
         await this.onLiquidationStarted(em, evmLog, log.args as LiquidationStartedEvent.OutputTuple)
         break
-      } case EVENTS.LIQUIDATION_PERFORMED: {
+      } case EVENTS.ASSET_MANAGER.LIQUIDATION_PERFORMED: {
         await this.onLiquidationPerformed(em, evmLog, log.args as LiquidationPerformedEvent.OutputTuple)
         break
-      } case EVENTS.FULL_LIQUIDATION_STARTED: {
+      } case EVENTS.ASSET_MANAGER.FULL_LIQUIDATION_STARTED: {
         await this.onFullLiquidationStarted(em, evmLog, log.args as FullLiquidationStartedEvent.OutputTuple)
         break
-      } case EVENTS.LIQUIDATION_ENDED: {
+      } case EVENTS.ASSET_MANAGER.LIQUIDATION_ENDED: {
         await this.onLiquidationEnded(em, evmLog, log.args as LiquidationEndedEvent.OutputTuple)
         break
-      } case EVENTS.ILLEGAL_PAYMENT_CONFIRMED: {
+      } case EVENTS.ASSET_MANAGER.ILLEGAL_PAYMENT_CONFIRMED: {
         await this.onIllegalPaymentConfirmed(em, evmLog, log.args as IllegalPaymentConfirmedEvent.OutputTuple)
         break
-      } case EVENTS.DUPLICATE_PAYMENT_CONFIRMED: {
+      } case EVENTS.ASSET_MANAGER.DUPLICATE_PAYMENT_CONFIRMED: {
         await this.onDuplicatePaymentConfirmed(em, evmLog, log.args as DuplicatePaymentConfirmedEvent.OutputTuple)
         break
-      } case EVENTS.UNDERLYING_BALANCE_TOO_LOW: {
+      } case EVENTS.ASSET_MANAGER.UNDERLYING_BALANCE_TOO_LOW: {
         await this.onUnderlyingBalanceTooLow(em, evmLog, log.args as UnderlyingBalanceTooLowEvent.OutputTuple)
         break
-      } case EVENTS.AVAILABLE_AGENT_EXITED: {
+      } case EVENTS.ASSET_MANAGER.AVAILABLE_AGENT_EXITED: {
         await this.onAvailableAgentExited(em, log.args as AvailableAgentExitAnnouncedEvent.OutputTuple)
         break
-      } case EVENTS.AGENT_ENTERED_AVAILABLE: {
+      } case EVENTS.ASSET_MANAGER.AGENT_ENTERED_AVAILABLE: {
         await this.onAgentEnteredAvailable(em, log.args as AgentAvailableEvent.OutputTuple)
         break
-      } case EVENTS.COLLATERAL_POOL_ENTER: {
+      } case EVENTS.COLLATERAL_POOL.ENTER: {
         await this.onCollateralPoolEntered(em, evmLog, log.args as EnteredEvent.OutputTuple)
         break
-      } case EVENTS.COLLATERAL_POOL_EXIT: {
+      } case EVENTS.COLLATERAL_POOL.EXIT: {
         await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
         break
-      } case EVENTS.ERC20_TRANSFER: {
+      } case EVENTS.ERC20.TRANSFER: {
         await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
         break
-      } case EVENTS.AGENT_PING: {
+      } case EVENTS.ASSET_MANAGER.AGENT_PING: {
         await this.onAgentPing(em, evmLog, log.args as AgentPingEvent.OutputTuple)
         break
-      } case EVENTS.AGENT_PING_RESPONSE: {
+      } case EVENTS.ASSET_MANAGER.AGENT_PING_RESPONSE: {
         await this.onAgentPingResponse(em, evmLog, log.args as AgentPingResponseEvent.OutputTuple)
         break
-      } case EVENTS.CURRENT_UNDERLYING_BLOCK_UPDATED: {
+      } case EVENTS.ASSET_MANAGER.CURRENT_UNDERLYING_BLOCK_UPDATED: {
         await this.onCurrentUnderlyingBlockUpdated(em, evmLog, log.args as CurrentUnderlyingBlockUpdatedEvent.OutputTuple)
         break
       } default: {
