@@ -45,19 +45,19 @@ export class EventParser {
   }
 
   async parseLog(log: Log): Promise<LogDescription | null> {
-    const cname = this.topicToIface.get(log.topics[0])
-    if (cname === 'ASSET_MANAGER') {
+    const iface = this.topicToIface.get(log.topics[0])
+    if (iface === 'ASSET_MANAGER') {
       if (this.context.isAssetManager(log.address)) {
         return this.context.interfaces.assetManagerInterface.parseLog(log)
       }
-    } else if (cname === 'ERC20') {
+    } else if (iface === 'ERC20') {
       const em = this.context.orm.em.fork()
       if (this.context.isFAssetToken(log.address)) {
         return this.context.interfaces.erc20Interface.parseLog(log)
       } else if (await this.isCollateralPoolToken(em, log.address)) {
         return this.context.interfaces.erc20Interface.parseLog(log)
       }
-    } else if (cname === 'COLLATERAL_POOL') {
+    } else if (iface === 'COLLATERAL_POOL') {
       const em = this.context.orm.em.fork()
       if (await this.isCollateralPool(em, log.address)) {
         return this.context.interfaces.collateralPoolInterface.parseLog(log)
