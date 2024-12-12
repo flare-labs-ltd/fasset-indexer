@@ -2,18 +2,15 @@ import { sleep, getVar, setVar } from "../../utils"
 import { EventIndexer } from "../indexer"
 import { logger } from "../../logger"
 import { EVM_LOG_FETCH_SLEEP_MS } from "../../config/constants"
-import type { Log } from "ethers"
 import type { Context } from "../../context/context"
 
 
 export class EventIndexerBackPopulation extends EventIndexer {
   private endEventBlockForCurrentUpdateKey: string
   private firstEventBlockForCurrentUpdateKey: string
-  private insertionTopics: Set<string>
 
   constructor(context: Context, public insertionEvents: string[], public updateName: string) {
     super(context, insertionEvents)
-    this.insertionTopics = new Set(context.getTopicToIfaceMap(insertionEvents).keys())
     this.endEventBlockForCurrentUpdateKey = `endEventBlock_${updateName}`
     this.firstEventBlockForCurrentUpdateKey = `firstUnhandledEventBlock_${updateName}`
   }
@@ -49,11 +46,6 @@ export class EventIndexerBackPopulation extends EventIndexer {
 
   override async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
     await setVar(this.context.orm.em.fork(), this.firstEventBlockForCurrentUpdateKey, blockNumber.toString())
-  }
-
-  override async storeLogs(logs: Log[]): Promise<void> {
-    logs = logs.filter(log => this.insertionTopics.has(log.topics[0]))
-    await super.storeLogs(logs)
   }
 }
 

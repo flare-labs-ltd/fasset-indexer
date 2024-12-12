@@ -73,7 +73,7 @@ export class EventIndexer {
     await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, blockNumber.toString())
   }
 
-  async storeLogs(logs: Log[]): Promise<void> {
+  protected async storeLogs(logs: Log[]): Promise<void> {
     let lastHandledBlock: number | null = null
     for (const log of logs) {
       const fullLog = await this.eventParser.logToEvent(log)
