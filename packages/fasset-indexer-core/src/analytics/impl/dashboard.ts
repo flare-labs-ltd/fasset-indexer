@@ -27,6 +27,7 @@ import type {
   FAssetValueResult, FAssetAmountResult
 } from "../interface"
 
+
 /**
  * DashboardAnalytics provides a set of analytics functions for the FAsset UI's dashboard.
  * It is seperated in case of UI's opensource release, and subsequent simplified indexer deployment.
