@@ -54,6 +54,7 @@ async function markNewDatabase(context: Context): Promise<void> {
   await context.orm.em.transactional(async em => {
     await setVar(em, 'chain', envchain)
     await setVar(em, 'asset_manager_controller', amc)
+    // @ts-ignore - not sure why compiler thinks minblock can be null
     await setVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY, minblock.toString())
   })
 }

@@ -1,7 +1,3 @@
-import { FAssetType, type FAsset } from "../shared"
-
-export const FASSETS = Object.keys(FAssetType).filter(([key]) => isNaN(Number(key))) as FAsset[]
-
 // chain call config
 export const CHAIN_FETCH_RETRY_LIMIT = 20
 export const MID_CHAIN_FETCH_SLEEP_MS = 100

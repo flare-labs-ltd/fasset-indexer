@@ -4,6 +4,7 @@ import { EVENTS } from "../config/constants"
 import type { IAssetManagerInterface } from "../../chain/typechain/IAssetManager"
 import type { ICollateralPoolInterface } from "../../chain/typechain/ICollateralPool"
 import type { ERC20Interface } from "../../chain/typechain/ERC20"
+import type { FAssetIface } from "../shared"
 
 
 export class EventInterface {
@@ -21,15 +22,15 @@ export class EventInterface {
     }
   }
 
-  getTopicToIfaceMap(eventNames?: string[]): Map<string, string> {
-    const mp = new Map<string, string>()
+  getTopicToIfaceMap(eventNames?: string[]): Map<string, FAssetIface> {
+    const mp = new Map<string, FAssetIface>()
     for (const contractname of Object.keys(EVENTS)) {
+      const cname = contractname as keyof typeof EVENTS
       const iface = this.contractToIface(contractname)
-      const events = EVENTS[contractname as keyof typeof EVENTS]
-      for (const event of Object.values(events)) {
+      for (const event of Object.values(EVENTS[cname])) {
         if (eventNames?.includes(event) !== false) {
           const topic = this.getEventTopic(event, iface)
-          mp.set(topic, contractname)
+          mp.set(topic, cname)
         }
       }
     }

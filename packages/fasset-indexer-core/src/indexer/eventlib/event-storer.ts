@@ -157,15 +157,6 @@ export class EventStorer {
       } case EVENTS.ASSET_MANAGER.AGENT_ENTERED_AVAILABLE: {
         await this.onAgentEnteredAvailable(em, log.args as AgentAvailableEvent.OutputTuple)
         break
-      } case EVENTS.COLLATERAL_POOL.ENTER: {
-        await this.onCollateralPoolEntered(em, evmLog, log.args as EnteredEvent.OutputTuple)
-        break
-      } case EVENTS.COLLATERAL_POOL.EXIT: {
-        await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
-        break
-      } case EVENTS.ERC20.TRANSFER: {
-        await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
-        break
       } case EVENTS.ASSET_MANAGER.AGENT_PING: {
         await this.onAgentPing(em, evmLog, log.args as AgentPingEvent.OutputTuple)
         break
@@ -174,6 +165,15 @@ export class EventStorer {
         break
       } case EVENTS.ASSET_MANAGER.CURRENT_UNDERLYING_BLOCK_UPDATED: {
         await this.onCurrentUnderlyingBlockUpdated(em, evmLog, log.args as CurrentUnderlyingBlockUpdatedEvent.OutputTuple)
+        break
+      } case EVENTS.COLLATERAL_POOL.ENTER: {
+        await this.onCollateralPoolEntered(em, evmLog, log.args as EnteredEvent.OutputTuple)
+        break
+      } case EVENTS.COLLATERAL_POOL.EXIT: {
+        await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
+        break
+      } case EVENTS.ERC20.TRANSFER: {
+        await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
         break
       } default: {
         return false
