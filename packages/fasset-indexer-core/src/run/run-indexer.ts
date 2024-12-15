@@ -1,9 +1,9 @@
+import { AgentVault } from "../database/entities/agent"
+import { EventIndexer } from "../indexer/indexer"
 import { ensureConfigIntegrity } from "./integrity"
 import { Context } from "../context/context"
-import { logger } from "../logger"
 import { config } from "../config/config"
-import { EventIndexer } from "../indexer/indexer"
-import { AgentVault } from "../database/entities/agent"
+import { logger } from "../logger"
 
 async function fillCollateralPoolTokens(context: Context) {
   const em = context.orm.em.fork()
