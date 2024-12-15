@@ -3,6 +3,7 @@ import { Context } from "../../context/context"
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Log, LogDescription } from "ethers"
 import type { Event } from "./event-scraper"
+import type { FAssetIface } from "../../shared"
 
 
 interface Block {
@@ -17,7 +18,7 @@ interface Transaction {
 }
 
 export class EventParser {
-  private topicToIface = new Map<string, string>()
+  private topicToIface = new Map<string, FAssetIface>()
   private blockCache: Block | null = null
   private transactionCache: Transaction | null = null
 

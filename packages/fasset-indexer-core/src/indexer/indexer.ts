@@ -41,7 +41,7 @@ export class EventIndexer {
   }
 
   async runHistoric(startBlock?: number, endBlock?: number): Promise<void> {
-    const firstUnhandledBlock = await this.getFirstUnhandledBlock()
+    const firstUnhandledBlock = await this.firstUnhandledBlock()
     if (startBlock === undefined || firstUnhandledBlock > startBlock) {
       startBlock = firstUnhandledBlock
     }
@@ -64,7 +64,7 @@ export class EventIndexer {
     return blockHeight - EVM_BLOCK_HEIGHT_OFFSET
   }
 
-  async getFirstUnhandledBlock(): Promise<number> {
+  async firstUnhandledBlock(): Promise<number> {
     const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY)
     return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.minBlockNumber()
   }
@@ -79,10 +79,11 @@ export class EventIndexer {
       const fullLog = await this.eventParser.logToEvent(log)
       if (fullLog !== null) {
         await this.stateUpdater.processEvent(fullLog)
-      }
-      if (lastHandledBlock === null || lastHandledBlock < log.blockNumber) {
-        lastHandledBlock = log.blockNumber
-        await this.setFirstUnhandledBlock(lastHandledBlock)
+        // optimization: store only for processed logs
+        if (lastHandledBlock === null || lastHandledBlock < log.blockNumber) {
+          lastHandledBlock = log.blockNumber
+          await this.setFirstUnhandledBlock(lastHandledBlock)
+        }
       }
     }
   }

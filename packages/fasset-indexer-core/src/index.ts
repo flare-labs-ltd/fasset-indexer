@@ -1,5 +1,5 @@
 export { OrmOptions, ORM } from "./database/interface"
-export { FAssetType } from "./shared"
+export { FAssetType, FASSETS } from "./shared"
 export { RedemptionDefault } from "./database/entities/events/redemption"
 export { FullLiquidationStarted, LiquidationPerformed } from "./database/entities/events/liquidation"
 export { createOrm } from "./database/utils"

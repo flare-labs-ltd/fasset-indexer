@@ -32,14 +32,14 @@ export class EventIndexerBackPopulation extends EventIndexer {
   override async lastBlockToHandle(): Promise<number> {
     const endBlock = await getVar(this.context.orm.em.fork(), this.endEventBlockForCurrentUpdateKey)
     if (endBlock === null) {
-      const endBlock = await super.getFirstUnhandledBlock()
+      const endBlock = await super.firstUnhandledBlock()
       await setVar(this.context.orm.em.fork(), this.endEventBlockForCurrentUpdateKey, endBlock.toString())
       return endBlock
     }
     return parseInt(endBlock.value!)
   }
 
-  override async getFirstUnhandledBlock(): Promise<number> {
+  override async firstUnhandledBlock(): Promise<number> {
     const firstUnhandled = await getVar(this.context.orm.em.fork(), this.firstEventBlockForCurrentUpdateKey)
     return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.minBlockNumber()
   }
