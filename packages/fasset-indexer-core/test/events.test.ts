@@ -58,7 +58,7 @@ describe("FAsset evm events", () => {
     const em = context.orm.em.fork()
     await storer.processEventUnsafe(em, erc20Transfer)
     const erc20TransferEntity = await em.findOneOrFail(EvmLog, { index: erc20Transfer.logIndex },
-      { populate: ['block', 'address' ]}
+      { populate: ['block', 'address']}
     )
     expect(erc20TransferEntity).to.exist
     expect(erc20TransferEntity.name).to.equal(EVENTS.ERC20.TRANSFER)
@@ -67,7 +67,7 @@ describe("FAsset evm events", () => {
     // check that erc20 transfer was stored
     const erc20TransferStored = await em.findOneOrFail(ERC20Transfer,
       { evmLog: { index: erc20Transfer.logIndex, block: { index: erc20Transfer.blockNumber }}},
-      { populate: ['evmLog.block', 'evmLog.address', 'from', 'to' ]}
+      { populate: ['evmLog.block', 'evmLog.address', 'from', 'to']}
     )
     expect(erc20TransferStored).to.exist
     expect(erc20TransferStored.evmLog.index).to.equal(erc20Transfer.logIndex)
