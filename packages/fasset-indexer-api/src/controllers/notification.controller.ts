@@ -9,6 +9,11 @@ import { NotificationService } from 'src/services/notification.service'
 export class NotificationController {
   constructor(private readonly service: NotificationService) {}
 
+  @Get('/last-collateral-pool-withdrawal?')
+  getLastCollateralPoolClaim(@Query('pool') pool: string): Promise<ApiResponse<number>> {
+    return apiResponse(this.service.lastCollateralPoolClaim(pool), 200)
+  }
+
   @Get('/events-per-interval?')
   getEventsPerSecond(@Query('seconds') seconds: number): Promise<ApiResponse<number>> {
     return apiResponse(this.service.eventsPerInterval(seconds), 200)
