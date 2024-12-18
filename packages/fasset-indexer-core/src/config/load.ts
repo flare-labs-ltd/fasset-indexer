@@ -3,7 +3,6 @@ import { resolve } from "path"
 import { defineConfig } from "@mikro-orm/core"
 import { SqliteDriver } from '@mikro-orm/sqlite'
 import { PostgreSqlDriver } from "@mikro-orm/postgresql"
-import { IGNORE_EVENTS } from "./constants"
 import type { OrmOptions } from '../database/interface'
 import type { IUserConfig, IUserDatabaseConfig, IConfig } from "./interface"
 
@@ -94,7 +93,6 @@ export function expandUserConfig(config: IUserConfig): IConfig {
       apiKey: config.apiKey,
     },
     db: getOrmConfig(config),
-    ignoreEvents: IGNORE_EVENTS,
     minBlockNum: config.minBlockNum,
     addressesJson: config.addressesJson
   }

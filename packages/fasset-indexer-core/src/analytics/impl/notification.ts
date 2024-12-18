@@ -4,6 +4,7 @@ import { AgentVaultInfo } from "../../database/entities/state/agent"
 import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../../database/entities/events/challenge"
 import type { ORM } from "../../database/interface"
 import type { IUserDatabaseConfig } from "../../config/interface"
+import { EVENTS } from "../../config/constants"
 
 
 export class NotificationAnalytics {
@@ -67,5 +68,13 @@ export class NotificationAnalytics {
       { populate: ['evmLog.block', 'agentVault.address', 'agentVault.underlyingAddress'] }
     )
     return balance
+  }
+
+  async lastCollateralPoolClaim(pool: string): Promise<number> {
+    const last = await this.orm.em.fork().find(EvmLog,
+      { name: EVENTS.COLLATERAL_POOL.EXIT, address: { hex: pool }},
+      { orderBy: { block: 'desc' }, populate: ['block'], limit: 1 }
+    )
+    return last[0]?.block.timestamp ?? 0
   }
 }

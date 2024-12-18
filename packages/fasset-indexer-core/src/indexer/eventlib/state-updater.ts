@@ -1,9 +1,9 @@
-import { EntityManager } from "@mikro-orm/knex"
 import { AddressType } from "../../database/entities/address"
 import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/agent"
 import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
 import { EventStorer } from "./event-storer"
+import type { EntityManager } from "@mikro-orm/knex"
 import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManager"
 import type { Context } from "../../context/context"
 import type { EvmLog } from "../../database/entities/evm/log"
@@ -19,7 +19,7 @@ export class StateUpdater extends EventStorer {
   protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
     const [ owner, ] = args
     const manager = await this.ensureAgentManager(em, owner)
-    await this.ensureAgentOwner(em, manager)
+    await this.ensureAgentWorker(em, manager)
     const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args)
     await this.updateAgentVaultInfo(em, agentVaultEntity)
     return agentVaultEntity
@@ -34,15 +34,15 @@ export class StateUpdater extends EventStorer {
     return agentManager
   }
 
-  private async ensureAgentOwner(em: EntityManager, manager: AgentManager): Promise<AgentOwner> {
-    let agentOwner = await em.findOne(AgentOwner, { manager })
-    if (agentOwner === null) {
+  private async ensureAgentWorker(em: EntityManager, manager: AgentManager): Promise<AgentOwner> {
+    let agentWorker = await em.findOne(AgentOwner, { manager })
+    if (agentWorker === null) {
       const address = await this.context.contracts.agentOwnerRegistryContract.getWorkAddress(manager.address.hex)
       const evmAddress = await findOrCreateEvmAddress(em, address, AddressType.AGENT)
-      agentOwner = new AgentOwner(evmAddress, manager)
-      em.persist(agentOwner)
+      agentWorker = new AgentOwner(evmAddress, manager)
+      em.persist(agentWorker)
     }
-    return agentOwner
+    return agentWorker
   }
 
   private async findOrCreateAgentManager(em: EntityManager, manager: string, full: boolean): Promise<AgentManager> {

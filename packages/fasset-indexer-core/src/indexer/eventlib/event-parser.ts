@@ -1,9 +1,10 @@
 import { AgentVault } from "../../database/entities/agent"
 import { Context } from "../../context/context"
-import { EVENTS, IGNORE_EVENTS } from "../../config/constants"
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Log, LogDescription } from "ethers"
 import type { Event } from "./event-scraper"
+import type { FAssetIface } from "../../shared"
+
 
 interface Block {
   index: number
@@ -17,32 +18,17 @@ interface Transaction {
 }
 
 export class EventParser {
-  private supportedEvents: Set<string>
-  private supportedTopics: Set<string> = new Set()
-  // cache
+  private topicToIface = new Map<string, FAssetIface>()
   private blockCache: Block | null = null
   private transactionCache: Transaction | null = null
 
-  constructor(public readonly context: Context) {
-    this.supportedEvents = new Set(Object.values(EVENTS))
-    for (const event of IGNORE_EVENTS) {
-      this.supportedEvents.delete(event)
-    }
-    for (const event of this.supportedEvents) {
-      const topic = this.context.getEventTopic(event)
-      if (topic === null) {
-        throw new Error(`Failed to find topic for event ${event}`)
-      }
-      this.supportedTopics.add(topic)
-    }
+  constructor(public readonly context: Context, public readonly eventnames?: string[]) {
+    this.topicToIface = this.context.getTopicToIfaceMap(eventnames)
   }
 
   async logToEvent(log: Log): Promise<Event | null> {
-    if (this.ignoreLog(log.topics[0]))
-      return null
     const logDescription = await this.parseLog(log)
-    if (logDescription === null)
-      return null
+    if (logDescription === null) return null
     const block = await this.getBlock(log.blockNumber)
     const transaction = await this.getTransaction(log.transactionHash)
     return {
@@ -60,25 +46,25 @@ export class EventParser {
   }
 
   async parseLog(log: Log): Promise<LogDescription | null> {
-    if (this.context.isAssetManager(log.address)) {
-      return this.context.interfaces.assetManagerInterface.parseLog(log)
-    } else if (this.context.isFAssetToken(log.address)) {
-      return this.context.interfaces.erc20Interface.parseLog(log)
-    }
-    const em = this.context.orm.em.fork()
-    // collateral pool token
-    if (await this.isCollateralPoolToken(em, log.address)) {
-      return this.context.interfaces.erc20Interface.parseLog(log)
-    }
-    // collateral pool
-    if (await this.isCollateralPool(em, log.address)) {
-      return this.context.interfaces.collateralPoolInterface.parseLog(log)
+    const iface = this.topicToIface.get(log.topics[0])
+    if (iface === 'ASSET_MANAGER') {
+      if (this.context.isAssetManager(log.address)) {
+        return this.context.interfaces.assetManagerInterface.parseLog(log)
+      }
+    } else if (iface === 'ERC20') {
+      const em = this.context.orm.em.fork()
+      if (this.context.isFAssetToken(log.address)) {
+        return this.context.interfaces.erc20Interface.parseLog(log)
+      } else if (await this.isCollateralPoolToken(em, log.address)) {
+        return this.context.interfaces.erc20Interface.parseLog(log)
+      }
+    } else if (iface === 'COLLATERAL_POOL') {
+      const em = this.context.orm.em.fork()
+      if (await this.isCollateralPool(em, log.address)) {
+        return this.context.interfaces.collateralPoolInterface.parseLog(log)
+      }
     }
     return null
-  }
-
-  protected ignoreLog(topic: string): boolean {
-    return !this.supportedTopics.has(topic)
   }
 
   protected async isCollateralPool(em: EntityManager, address: string): Promise<boolean> {
@@ -91,7 +77,7 @@ export class EventParser {
     return pool !== null
   }
 
-  private async getBlock(blockNumber: number): Promise<Block> {
+  protected async getBlock(blockNumber: number): Promise<Block> {
     if (this.blockCache === null || this.blockCache.index !== blockNumber) {
       const block = await this.context.provider.getBlock(blockNumber)
       if (block === null) {
@@ -105,7 +91,7 @@ export class EventParser {
     return this.blockCache
   }
 
-  private async getTransaction(transactionHash: string): Promise<Transaction> {
+  protected async getTransaction(transactionHash: string): Promise<Transaction> {
     if (this.transactionCache === null || this.transactionCache.hash !== transactionHash) {
       const transaction = await this.context.provider.getTransaction(transactionHash)
       if (transaction === null) {

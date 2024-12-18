@@ -5,6 +5,19 @@ import { BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constant
 import type { JsonRpcApiProvider } from "ethers"
 
 
+export async function ensureConfigIntegrity(context: Context): Promise<void> {
+  await ensureChainIntegrity(context)
+  await ensureDatabaseIntegrity(context)
+}
+
+export async function ensureChainIntegrity(context: Context): Promise<void> {
+  const amc = context.getContractAddress('AssetManagerController')
+  const contract = await context.provider.getCode(amc)
+  if (contract === '0x') {
+    throw new Error(`AssetManagerController contract ${amc} does not exist on rpc ${context.config.rpc.url}`)
+  }
+}
+
 export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
   const em = context.orm.em.fork()
   const dbchain = await getVar(em, 'chain')
@@ -28,14 +41,6 @@ export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
   }
 }
 
-export async function ensureChainIntegrity(context: Context): Promise<void> {
-  const amc = context.getContractAddress('AssetManagerController')
-  const contract = await context.provider.getCode(amc)
-  if (contract === '0x') {
-    throw new Error(`AssetManagerController contract ${amc} does not exist on rpc ${context.config.rpc}`)
-  }
-}
-
 async function markNewDatabase(context: Context): Promise<void> {
   const envchain = context.config.chain
   const amc = context.getContractAddress('AssetManagerController')
@@ -49,6 +54,7 @@ async function markNewDatabase(context: Context): Promise<void> {
   await context.orm.em.transactional(async em => {
     await setVar(em, 'chain', envchain)
     await setVar(em, 'asset_manager_controller', amc)
+    // @ts-ignore - not sure why compiler thinks minblock can be null
     await setVar(em, MIN_EVM_BLOCK_NUMBER_DB_KEY, minblock.toString())
   })
 }

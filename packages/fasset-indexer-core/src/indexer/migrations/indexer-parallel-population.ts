@@ -20,7 +20,7 @@ export class EventIndexerParallelPopulation {
     while (true) {
       // back index first
       try {
-        const firstUnhandledBlockBack = await this.backIndexer.getFirstUnhandledBlock()
+        const firstUnhandledBlockBack = await this.backIndexer.firstUnhandledBlock()
         const lastBlockToHandleBack = await this.backIndexer.lastBlockToHandle()
         if (firstUnhandledBlockBack <= lastBlockToHandleBack) {
           await this.backIndexer.runHistoric(firstUnhandledBlockBack, firstUnhandledBlockBack + BLOCK_INDEX_NUMBER)
@@ -30,7 +30,7 @@ export class EventIndexerParallelPopulation {
       }
       // then front index
       try {
-        const firstUnhandledBlock = await this.eventIndexer.getFirstUnhandledBlock()
+        const firstUnhandledBlock = await this.eventIndexer.firstUnhandledBlock()
         const lastUnhandledBlock = await this.eventIndexer.lastBlockToHandle()
         if (lastUnhandledBlock - firstUnhandledBlock > NEW_BLOCKS_BEFORE_INDEX) {
           await this.eventIndexer.runHistoric(firstUnhandledBlock, firstUnhandledBlock + BLOCK_INDEX_NUMBER)

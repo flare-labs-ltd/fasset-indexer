@@ -1,6 +1,6 @@
 import { raw } from "@mikro-orm/core"
 import { ZeroAddress } from "ethers"
-import { FAsset, FAssetType } from "../../shared"
+import { FAsset, FAssetType, FASSETS } from "../../shared"
 import { EvmAddress } from "../../database/entities/address"
 import { EvmBlock } from "../../database/entities/evm/block"
 import { EvmLog } from "../../database/entities/evm/log"
@@ -16,7 +16,7 @@ import { fassetToUsdPrice } from "../utils/prices"
 import { ContractLookup } from "../../context/lookup"
 import { SharedAnalytics } from "./shared"
 import { Statistics } from "./statistics"
-import { EVENTS, FASSETS, PRICE_FACTOR } from "../../config/constants"
+import { EVENTS, PRICE_FACTOR } from "../../config/constants"
 import { COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../../database/interface"
@@ -49,10 +49,10 @@ export class DashboardAnalytics extends SharedAnalytics {
     const qb = this.orm.em.qb(EvmLog)
     const result = await qb.count().where({ name: {
       $in: [
-        EVENTS.COLLATERAL_POOL_EXIT,
-        EVENTS.COLLATERAL_POOL_ENTER,
-        EVENTS.REDEMPTION_REQUESTED,
-        EVENTS.COLLATERAL_RESERVED
+        EVENTS.COLLATERAL_POOL.EXIT,
+        EVENTS.COLLATERAL_POOL.ENTER,
+        EVENTS.ASSET_MANAGER.REDEMPTION_REQUESTED,
+        EVENTS.ASSET_MANAGER.COLLATERAL_RESERVED
       ]
     }}).execute()
     return { amount: result[0].count }

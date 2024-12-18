@@ -1,7 +1,7 @@
+import { ensureConfigIntegrity } from "./integrity"
+import { EventIndexer } from "../indexer/indexer"
 import { Context } from "../context/context"
 import { config } from "../config/config"
-import { ensureChainIntegrity, ensureDatabaseIntegrity } from "./integrity"
-import { EventIndexer } from "../indexer/indexer"
 import { logger } from "../logger"
 
 
@@ -16,9 +16,8 @@ async function runIndexer(start?: number) {
   })
 
   logger.info("ensuring configuration integrity...")
-  await ensureDatabaseIntegrity(context)
-  await ensureChainIntegrity(context)
-  logger.info("starting indexer...")
+  await ensureConfigIntegrity(context)
+  logger.info(`starting FAsset ${context.chain} indexer...`)
   await indexer.run()
 }
 

@@ -1,3 +1,3 @@
-import { expandUserConfig, getUserConfig } from "./utils"
+import { expandUserConfig, getUserConfig } from "./load"
 
 export const config = expandUserConfig(getUserConfig())

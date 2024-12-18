@@ -1,9 +1,9 @@
 export { OrmOptions, ORM } from "./database/interface"
-export { FAssetType } from "./shared"
+export { FAssetType, FASSETS } from "./shared"
 export { RedemptionDefault } from "./database/entities/events/redemption"
 export { FullLiquidationStarted, LiquidationPerformed } from "./database/entities/events/liquidation"
 export { createOrm } from "./database/utils"
-export { getOrmConfig, getUserDatabaseConfig } from "./config/utils"
+export { getOrmConfig, getUserDatabaseConfig } from "./config/load"
 export { getVar } from "./utils"
 export { MIN_EVM_BLOCK_NUMBER_DB_KEY } from "./config/constants"
 export type {

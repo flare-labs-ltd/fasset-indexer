@@ -1,19 +1,16 @@
 import { sleep, getVar, setVar } from "../../utils"
 import { EventIndexer } from "../indexer"
-import { EVM_LOG_FETCH_SLEEP_MS } from "../../config/constants"
-import type { Log } from "ethers"
-import type { Context } from "../../context/context"
 import { logger } from "../../logger"
+import { EVM_LOG_FETCH_SLEEP_MS } from "../../config/constants"
+import type { Context } from "../../context/context"
 
 
 export class EventIndexerBackPopulation extends EventIndexer {
   private endEventBlockForCurrentUpdateKey: string
   private firstEventBlockForCurrentUpdateKey: string
-  private insertionTopics: Set<string>
 
   constructor(context: Context, public insertionEvents: string[], public updateName: string) {
-    super(context)
-    this.insertionTopics = new Set(context.eventsToTopics(insertionEvents))
+    super(context, insertionEvents)
     this.endEventBlockForCurrentUpdateKey = `endEventBlock_${updateName}`
     this.firstEventBlockForCurrentUpdateKey = `firstUnhandledEventBlock_${updateName}`
   }
@@ -35,25 +32,20 @@ export class EventIndexerBackPopulation extends EventIndexer {
   override async lastBlockToHandle(): Promise<number> {
     const endBlock = await getVar(this.context.orm.em.fork(), this.endEventBlockForCurrentUpdateKey)
     if (endBlock === null) {
-      const endBlock = await super.getFirstUnhandledBlock()
+      const endBlock = await super.firstUnhandledBlock()
       await setVar(this.context.orm.em.fork(), this.endEventBlockForCurrentUpdateKey, endBlock.toString())
       return endBlock
     }
     return parseInt(endBlock.value!)
   }
 
-  override async getFirstUnhandledBlock(): Promise<number> {
+  override async firstUnhandledBlock(): Promise<number> {
     const firstUnhandled = await getVar(this.context.orm.em.fork(), this.firstEventBlockForCurrentUpdateKey)
     return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.minBlockNumber()
   }
 
   override async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
     await setVar(this.context.orm.em.fork(), this.firstEventBlockForCurrentUpdateKey, blockNumber.toString())
-  }
-
-  override async storeLogs(logs: Log[]): Promise<void> {
-    logs = logs.filter(log => this.insertionTopics.has(log.topics[0]))
-    await super.storeLogs(logs)
   }
 }
 
