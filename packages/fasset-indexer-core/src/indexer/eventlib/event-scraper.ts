@@ -35,8 +35,6 @@ export class EventScraper {
   private static logOrder(log1: LogUri, log2: LogUri): number {
     if (log1.blockNumber !== log2.blockNumber) {
       return log1.blockNumber - log2.blockNumber;
-    } else if (log1.transactionIndex !== log2.transactionIndex) {
-      return log1.transactionIndex - log2.transactionIndex;
     } else {
       return log1.index - log2.index;
     }
