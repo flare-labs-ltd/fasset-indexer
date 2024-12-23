@@ -88,10 +88,12 @@ export interface ICollateralPoolInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "ClaimedReward"
       | "Donated"
       | "Entered"
       | "Exited"
       | "IncompleteSelfCloseExit"
+      | "PaidOut"
   ): EventFragment;
 
   encodeFunctionData(
@@ -272,6 +274,22 @@ export interface ICollateralPoolInterface extends Interface {
   ): Result;
 }
 
+export namespace ClaimedRewardEvent {
+  export type InputTuple = [
+    amountNatWei: BigNumberish,
+    rewardType: BigNumberish
+  ];
+  export type OutputTuple = [amountNatWei: bigint, rewardType: bigint];
+  export interface OutputObject {
+    amountNatWei: bigint;
+    rewardType: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace DonatedEvent {
   export type InputTuple = [donator: AddressLike, amountNatWei: BigNumberish];
   export type OutputTuple = [donator: string, amountNatWei: bigint];
@@ -359,6 +377,28 @@ export namespace IncompleteSelfCloseExitEvent {
   export interface OutputObject {
     burnedTokensWei: bigint;
     redeemedFAssetUBA: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace PaidOutEvent {
+  export type InputTuple = [
+    recipient: AddressLike,
+    paidNatWei: BigNumberish,
+    burnedTokensWei: BigNumberish
+  ];
+  export type OutputTuple = [
+    recipient: string,
+    paidNatWei: bigint,
+    burnedTokensWei: bigint
+  ];
+  export interface OutputObject {
+    recipient: string;
+    paidNatWei: bigint;
+    burnedTokensWei: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -669,6 +709,13 @@ export interface ICollateralPool extends BaseContract {
   >;
 
   getEvent(
+    key: "ClaimedReward"
+  ): TypedContractEvent<
+    ClaimedRewardEvent.InputTuple,
+    ClaimedRewardEvent.OutputTuple,
+    ClaimedRewardEvent.OutputObject
+  >;
+  getEvent(
     key: "Donated"
   ): TypedContractEvent<
     DonatedEvent.InputTuple,
@@ -696,8 +743,26 @@ export interface ICollateralPool extends BaseContract {
     IncompleteSelfCloseExitEvent.OutputTuple,
     IncompleteSelfCloseExitEvent.OutputObject
   >;
+  getEvent(
+    key: "PaidOut"
+  ): TypedContractEvent<
+    PaidOutEvent.InputTuple,
+    PaidOutEvent.OutputTuple,
+    PaidOutEvent.OutputObject
+  >;
 
   filters: {
+    "ClaimedReward(uint256,uint8)": TypedContractEvent<
+      ClaimedRewardEvent.InputTuple,
+      ClaimedRewardEvent.OutputTuple,
+      ClaimedRewardEvent.OutputObject
+    >;
+    ClaimedReward: TypedContractEvent<
+      ClaimedRewardEvent.InputTuple,
+      ClaimedRewardEvent.OutputTuple,
+      ClaimedRewardEvent.OutputObject
+    >;
+
     "Donated(address,uint256)": TypedContractEvent<
       DonatedEvent.InputTuple,
       DonatedEvent.OutputTuple,
@@ -740,6 +805,17 @@ export interface ICollateralPool extends BaseContract {
       IncompleteSelfCloseExitEvent.InputTuple,
       IncompleteSelfCloseExitEvent.OutputTuple,
       IncompleteSelfCloseExitEvent.OutputObject
+    >;
+
+    "PaidOut(address,uint256,uint256)": TypedContractEvent<
+      PaidOutEvent.InputTuple,
+      PaidOutEvent.OutputTuple,
+      PaidOutEvent.OutputObject
+    >;
+    PaidOut: TypedContractEvent<
+      PaidOutEvent.InputTuple,
+      PaidOutEvent.OutputTuple,
+      PaidOutEvent.OutputObject
     >;
   };
 }

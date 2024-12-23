@@ -1,7 +1,10 @@
 import { AddressType } from "../../database/entities/address"
 import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/agent"
 import { UntrackedAgentVault } from "../../database/entities/state/var"
+import { CollateralTypeAdded } from "../../database/entities/events/token"
+import { PricePublished, PricesPublished } from "../../database/entities/events/prices"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
+import { getPriceFromDal } from "../../context/dal"
 import { EventStorer } from "./event-storer"
 import type { EntityManager } from "@mikro-orm/knex"
 import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManager"
@@ -23,6 +26,12 @@ export class StateUpdater extends EventStorer {
     const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args)
     await this.updateAgentVaultInfo(em, agentVaultEntity)
     return agentVaultEntity
+  }
+
+  protected override async onPublishedPrices(em: EntityManager, evmLog: EvmLog, args: any): Promise<PricesPublished> {
+    const pp = await super.onPublishedPrices(em, evmLog, args)
+    await this.addPriceSnapshot(em, pp)
+    return pp
   }
 
   private async ensureAgentManager(em: EntityManager, address: string): Promise<AgentManager> {
@@ -57,6 +66,16 @@ export class StateUpdater extends EventStorer {
       agentManager.iconUrl = await this.context.contracts.agentOwnerRegistryContract.getAgentIconUrl(manager)
     }
     return agentManager
+  }
+
+  private async addPriceSnapshot(em: EntityManager, pricesPublished: PricesPublished): Promise<void> {
+    const collateralTypes = await em.findAll(CollateralTypeAdded)
+    const symbols = new Set(collateralTypes.map((ct) => [ct.tokenFtsoSymbol, ct.assetFtsoSymbol]).flat())
+    for (let symbol of symbols) {
+      const [price, decimals] = await getPriceFromDal(symbol, pricesPublished.votingRoundId)
+      const priceEntity = new PricePublished(pricesPublished, symbol, price, decimals)
+      em.persist(priceEntity)
+    }
   }
 
   private async updateAgentVaultInfo(em: EntityManager, agentVault: AgentVault): Promise<void> {

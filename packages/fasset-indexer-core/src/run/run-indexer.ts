@@ -1,13 +1,17 @@
 import { ensureConfigIntegrity } from "./integrity"
-import { EventIndexer } from "../indexer/indexer"
+import { EventIndexerParallelPopulation } from "../indexer/migrations/indexer-parallel-population"
 import { Context } from "../context/context"
 import { config } from "../config/config"
 import { logger } from "../logger"
+import { EVENTS } from "../config/constants"
 
 
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
-  const indexer = new EventIndexer(context)
+  const indexer = new EventIndexerParallelPopulation(context,
+    [EVENTS.PRICE_READER.PRICES_PUBLISHED, EVENTS.ERC20.TRANSFER],
+    'rewardSgbDistribution'
+  )
 
   process.on("SIGINT", async () => {
     logger.info("stopping indexer...")

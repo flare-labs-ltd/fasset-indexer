@@ -37,7 +37,7 @@ import type {
   SelfMintEvent
 } from "../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
-import type { TransferEvent } from "../../chain/typechain/ERC20"
+import type { TransferEvent } from "../../chain/typechain/IERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
 
 

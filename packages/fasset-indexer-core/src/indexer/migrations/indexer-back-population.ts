@@ -1,7 +1,5 @@
-import { sleep, getVar, setVar } from "../../utils"
+import { getVar, setVar } from "../../utils"
 import { EventIndexer } from "../indexer"
-import { logger } from "../../logger"
-import { EVM_LOG_FETCH_SLEEP_MS } from "../../config/constants"
 import type { Context } from "../../context/context"
 
 
@@ -13,20 +11,6 @@ export class EventIndexerBackPopulation extends EventIndexer {
     super(context, insertionEvents)
     this.endEventBlockForCurrentUpdateKey = `endEventBlock_${updateName}`
     this.firstEventBlockForCurrentUpdateKey = `firstUnhandledEventBlock_${updateName}`
-  }
-
-  override async run(startBlock?: number): Promise<void> {
-    logger.info(`starting ${this.context.chain} indexer with back-population`)
-    while (true) {
-      try {
-        await this.runHistoric(startBlock)
-        logger.info('finished with back-population')
-        return
-      } catch (e: any) {
-        logger.error(`error running indexer with back-population: ${e}`)
-      }
-      await sleep(EVM_LOG_FETCH_SLEEP_MS)
-    }
   }
 
   override async lastBlockToHandle(): Promise<number> {

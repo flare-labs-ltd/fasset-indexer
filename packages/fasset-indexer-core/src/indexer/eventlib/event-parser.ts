@@ -58,10 +58,32 @@ export class EventParser {
       } else if (await this.isCollateralPoolToken(em, log.address)) {
         return this.context.interfaces.erc20Interface.parseLog(log)
       }
+      ///////////// delete from /////////////
+      let parsed = null
+      try {
+        parsed = this.context.interfaces.erc20Interface.parseLog(log)
+      } catch (e) {
+        return null
+      }
+      const from = parsed?.args[0]
+      const to = parsed?.args[1]
+      if ((from != null && to != null) && (
+        await this.isCollateralPool(em, from)
+        || await this.isAgentVault(em, from)
+        || await this.isCollateralPool(em, to)
+        || await this.isAgentVault(em, to)
+      )) {
+        return parsed
+      }
+      ///////////// delete to /////////////
     } else if (iface === 'COLLATERAL_POOL') {
       const em = this.context.orm.em.fork()
       if (await this.isCollateralPool(em, log.address)) {
         return this.context.interfaces.collateralPoolInterface.parseLog(log)
+      }
+    } else if (iface === 'PRICE_READER') {
+      if (log.address === await this.context.contracts.priceReader.getAddress()) {
+        return this.context.interfaces.priceReader.parseLog(log)
       }
     }
     return null
@@ -75,6 +97,11 @@ export class EventParser {
   protected async isCollateralPoolToken(em: EntityManager, address: string): Promise<boolean> {
     const pool = await em.findOne(AgentVault, { collateralPoolToken: { hex: address } })
     return pool !== null
+  }
+
+  protected async isAgentVault(em: EntityManager, address: string): Promise<boolean> {
+    const vault = await em.findOne(AgentVault, { address: { hex: address }})
+    return vault !== null
   }
 
   protected async getBlock(blockNumber: number): Promise<Block> {

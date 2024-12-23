@@ -51,14 +51,10 @@ export class EvmStateWatchdog {
       collateralSymbols.set(collateralType.tokenFtsoSymbol, collateralType.fasset)
       collateralSymbols.set(collateralType.assetFtsoSymbol, collateralType.fasset)
     }
-    for (const [symbol, fasset] of collateralSymbols) {
+    for (const [symbol] of collateralSymbols) {
       try {
         logger.info(`updating ${symbol} price`)
-        const assetManagerAddress = this.context.fAssetTypeToAssetManagerAddress(fasset)
-        const assetManager = this.context.getAssetManagerContract(assetManagerAddress)
-        const priceReaderAddress = await assetManager.priceReader()
-        const priceReader = this.context.getPriceReaderContract(priceReaderAddress)
-        const { _price, _priceDecimals, _timestamp } = await priceReader.getPrice(symbol)
+        const { _price, _priceDecimals, _timestamp } = await this.context.contracts.priceReader.getPrice(symbol)
         em.upsert(FtsoPrice, {
           symbol: symbol,
           price: _price,

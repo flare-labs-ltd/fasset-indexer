@@ -26,8 +26,12 @@ import {
   UnderlyingBalanceTooLow
 } from "./entities/events/challenge"
 import { CollateralTypeAdded, ERC20Transfer } from "./entities/events/token"
-import { CollateralPoolEntered, CollateralPoolExited } from "./entities/events/collateral-pool"
+import {
+  CollateralPoolClaimedReward, CollateralPoolDonated, CollateralPoolEntered,
+  CollateralPoolExited, CollateralPoolPaidOut
+} from "./entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "./entities/events/ping"
+import { PricePublished, PricesPublished } from "./entities/events/prices"
 import { CurrentUnderlyingBlockUpdated } from "./entities/events/system"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
@@ -49,8 +53,8 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     RedeemedInCollateral, RedemptionRequestIncomplete,
     AgentInCCB, LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
     IllegalPaymentConfirmed, DuplicatePaymentConfirmed, UnderlyingBalanceTooLow,
-    CollateralPoolEntered, CollateralPoolExited, ERC20Transfer, CollateralTypeAdded,
-    AgentPing, AgentPingResponse, CurrentUnderlyingBlockUpdated,
+    CollateralPoolEntered, CollateralPoolExited, CollateralPoolDonated, CollateralPoolPaidOut, CollateralPoolClaimedReward,
+    ERC20Transfer, CollateralTypeAdded, AgentPing, AgentPingResponse, CurrentUnderlyingBlockUpdated, PricesPublished, PricePublished,
     FtsoPrice, UntrackedAgentVault, TokenBalance,
   ],
   pool: {

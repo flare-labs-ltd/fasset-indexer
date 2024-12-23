@@ -3,10 +3,7 @@
 /* eslint-disable */
 
 import { Contract, Interface, type ContractRunner } from "ethers";
-import type {
-  IAssetManager,
-  IAssetManagerInterface,
-} from "../IAssetManager";
+import type { IAssetManager, IAssetManagerInterface } from "../IAssetManager";
 
 const _abi = [
   {
@@ -738,6 +735,25 @@ const _abi = [
     anonymous: false,
     inputs: [],
     name: "EmergencyPauseCanceled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: "EmergencyPauseTransfersCanceled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "pausedUntil",
+        type: "uint256",
+      },
+    ],
+    name: "EmergencyPauseTransfersTriggered",
     type: "event",
   },
   {
@@ -4572,6 +4588,11 @@ const _abi = [
             type: "uint64",
           },
           {
+            internalType: "uint16",
+            name: "rejectOrCancelCollateralReservationReturnFactorBIPS",
+            type: "uint16",
+          },
+          {
             internalType: "uint64",
             name: "rejectRedemptionRequestWindowSeconds",
             type: "uint64",
@@ -5920,6 +5941,32 @@ const _abi = [
         internalType: "struct ITransferFees.TransferFeeSettings",
         name: "",
         type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "transfersEmergencyPaused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "transfersEmergencyPausedUntil",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",

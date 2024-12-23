@@ -1,24 +1,30 @@
 import { id as ethersId, Interface } from "ethers"
-import { IAssetManager__factory, ERC20__factory, ICollateralPool__factory } from "../../chain/typechain"
+import {
+  IAssetManager__factory, IERC20__factory, ICollateralPool__factory,
+  IPriceChangeEmitter__factory
+} from "../../chain/typechain"
 import { EVENTS } from "../config/constants"
 import type { IAssetManagerInterface } from "../../chain/typechain/IAssetManager"
 import type { ICollateralPoolInterface } from "../../chain/typechain/ICollateralPool"
-import type { ERC20Interface } from "../../chain/typechain/ERC20"
+import type { IPriceChangeEmitterInterface } from "../../chain/typechain/IPriceChangeEmitter"
+import type { IERC20Interface } from "../../chain/typechain/IERC20"
 import type { FAssetIface } from "../shared"
 
 
 export class EventInterface {
   public interfaces: {
     assetManagerInterface: IAssetManagerInterface,
-    erc20Interface: ERC20Interface,
-    collateralPoolInterface: ICollateralPoolInterface
+    erc20Interface: IERC20Interface,
+    collateralPoolInterface: ICollateralPoolInterface,
+    priceReader: IPriceChangeEmitterInterface
   }
 
   constructor() {
     this.interfaces = {
       assetManagerInterface: IAssetManager__factory.createInterface(),
-      erc20Interface: ERC20__factory.createInterface(),
-      collateralPoolInterface: ICollateralPool__factory.createInterface()
+      erc20Interface: IERC20__factory.createInterface(),
+      collateralPoolInterface: ICollateralPool__factory.createInterface(),
+      priceReader: IPriceChangeEmitter__factory.createInterface()
     }
   }
 
@@ -53,6 +59,8 @@ export class EventInterface {
         return this.interfaces.assetManagerInterface
       case "COLLATERAL_POOL":
         return this.interfaces.collateralPoolInterface
+      case "PRICE_READER":
+        return this.interfaces.priceReader
       default:
         throw new Error(`Unknown interface ${name}`)
     }

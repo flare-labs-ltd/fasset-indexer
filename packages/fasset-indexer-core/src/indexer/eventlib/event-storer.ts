@@ -49,9 +49,11 @@ import type {
   AgentInCCBEvent, SelfMintEvent
 } from "../../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
-import type { TransferEvent } from "../../../chain/typechain/ERC20"
+import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { ORM } from "../../database/interface"
+import { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
+import { PricesPublished } from "../../database/entities/events/prices"
 
 
 export class EventStorer {
@@ -174,6 +176,9 @@ export class EventStorer {
         break
       } case EVENTS.ERC20.TRANSFER: {
         await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
+        break
+      } case EVENTS.PRICE_READER.PRICES_PUBLISHED: {
+        await this.onPublishedPrices(em, evmLog, log.args as PricesPublishedEvent.OutputTuple)
         break
       } default: {
         return false
@@ -599,6 +604,15 @@ export class EventStorer {
     const currentUnderlyingBlockUpdated = new CurrentUnderlyingBlockUpdated(evmLog, fasset,
       Number(underlyingBlockNumber), Number(underlyingBlockTimestamp), Number(updatedAt))
     em.persist(currentUnderlyingBlockUpdated)
+  }
+
+  // price publisher
+
+  protected async onPublishedPrices(em: EntityManager, evmLog: EvmLog, logArgs: PricesPublishedEvent.OutputTuple): Promise<PricesPublished> {
+    const [ votingRoundId ] = logArgs
+    const pricesPublished = new PricesPublished(evmLog, Number(votingRoundId))
+    em.persist(pricesPublished)
+    return pricesPublished
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -73,6 +73,9 @@ export const EVENTS = {
   ERC20: {
     // erc20
     TRANSFER: "Transfer",
+  },
+  PRICE_READER: {
+    PRICES_PUBLISHED: "PricesPublished",
   }
 }
 
