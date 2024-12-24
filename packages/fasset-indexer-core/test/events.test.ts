@@ -29,6 +29,9 @@ import { EventStorer } from "../src/indexer/eventlib/event-storer"
 import { Context } from "../src/context/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
+import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/database/entities/events/redemption-ticket"
+import { RedemptionTicket } from "../src/database/entities/state/tickets"
+import { populate } from "dotenv"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -369,6 +372,89 @@ describe("FAsset evm events", () => {
     expect(selfMint.mintedUBA).to.equal(selfMintEvent.args[2])
     expect(selfMint.depositedUBA).to.equal(selfMintEvent.args[3])
     expect(selfMint.poolFeeUBA).to.equal(selfMintEvent.args[4])
+  })
+
+  describe("redemption tickets", () => {
+
+    it("should store the redemption ticket created event and state", async () => {
+      const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
+      await fixture.storeInitialAgents()
+      const em = context.orm.em.fork()
+      // redemption ticket created event
+      const redemptionTicketCreatedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED, assetManager)
+      await storer.processEventUnsafe(em, redemptionTicketCreatedEvent)
+      const redemptionTicketCreated = await em.findOneOrFail(RedemptionTicketCreated,
+        { evmLog: { index: redemptionTicketCreatedEvent.logIndex, block: { index: redemptionTicketCreatedEvent.blockNumber }}},
+        { populate: ['evmLog.block', 'agentVault.address'] })
+      expect(redemptionTicketCreated).to.exist
+      expect(redemptionTicketCreated.evmLog.index).to.equal(redemptionTicketCreatedEvent.logIndex)
+      expect(redemptionTicketCreated.evmLog.block.index).to.equal(redemptionTicketCreatedEvent.blockNumber)
+      expect(redemptionTicketCreated.agentVault.address.hex).to.equal(redemptionTicketCreatedEvent.args[0])
+      expect(redemptionTicketCreated.redemptionTicketId).to.equal(redemptionTicketCreatedEvent.args[1])
+      expect(redemptionTicketCreated.ticketValueUBA).to.equal(redemptionTicketCreatedEvent.args[2])
+      const redemptionTicket = await em.findOneOrFail(RedemptionTicket, { redemptionTicketCreated }, { populate: ['redemptionTicketCreated'] })
+      expect(redemptionTicket).to.exist
+      expect(redemptionTicket.redemptionTicketCreated.redemptionTicketId).to.equal(redemptionTicketCreatedEvent.args[1])
+      expect(redemptionTicket.ticketValueUBA).to.equal(redemptionTicketCreatedEvent.args[2])
+      expect(redemptionTicket.destroyed).to.be.false
+    })
+
+    it("should store the redemption ticket updated event and state", async () => {
+      const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
+      await fixture.storeInitialAgents()
+      const em = context.orm.em.fork()
+      // redemption ticket created event
+      const redemptionTicketCreatedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED, assetManager)
+      await storer.processEvent(redemptionTicketCreatedEvent)
+      // redemption ticket updated event
+      const redemptionTicketUpdatedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED, assetManager)
+      await storer.processEventUnsafe(em, redemptionTicketUpdatedEvent)
+      const redemptionTicketUpdated = await em.findOneOrFail(RedemptionTicketUpdated,
+        { evmLog: { index: redemptionTicketUpdatedEvent.logIndex, block: { index: redemptionTicketUpdatedEvent.blockNumber }}},
+        { populate: ['evmLog.block', 'redemptionTicketCreated.agentVault.address'] })
+      expect(redemptionTicketUpdated).to.exist
+      expect(redemptionTicketUpdated.evmLog.index).to.equal(redemptionTicketUpdatedEvent.logIndex)
+      expect(redemptionTicketUpdated.evmLog.block.index).to.equal(redemptionTicketUpdatedEvent.blockNumber)
+      expect(redemptionTicketUpdated.redemptionTicketCreated.agentVault.address.hex).to.equal(redemptionTicketUpdatedEvent.args[0])
+      expect(redemptionTicketUpdated.redemptionTicketCreated.redemptionTicketId).to.equal(redemptionTicketUpdatedEvent.args[1])
+      expect(redemptionTicketUpdated.ticketValueUBA).to.equal(redemptionTicketUpdatedEvent.args[2])
+      // redemption ticket
+      const redemptionTicket = await em.findOneOrFail(RedemptionTicket, {
+        redemptionTicketCreated: redemptionTicketUpdated.redemptionTicketCreated
+      }, { populate: ['redemptionTicketCreated'] })
+      expect(redemptionTicket).to.exist
+      expect(redemptionTicket.redemptionTicketCreated.redemptionTicketId).to.equal(redemptionTicketUpdatedEvent.args[1])
+      expect(redemptionTicket.ticketValueUBA).to.equal(redemptionTicketUpdatedEvent.args[2])
+      expect(redemptionTicket.destroyed).to.be.false
+    })
+
+    it("should store the redemption ticket deleted event and state", async () => {
+      const assetManager = context.getContractAddress(ASSET_MANAGER_FXRP)
+      await fixture.storeInitialAgents()
+      const em = context.orm.em.fork()
+      // redemption ticket created event
+      const redemptionTicketCreatedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED, assetManager)
+      await storer.processEvent(redemptionTicketCreatedEvent)
+      // redemption ticket deleted event
+      const redemptionTicketDeletedEvent = await fixture.generateEvent(EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED, assetManager)
+      await storer.processEventUnsafe(em, redemptionTicketDeletedEvent)
+      const redemptionTicketDeleted = await em.findOneOrFail(RedemptionTicketDeleted,
+        { evmLog: { index: redemptionTicketDeletedEvent.logIndex, block: { index: redemptionTicketDeletedEvent.blockNumber }}},
+        { populate: ['evmLog.block', 'redemptionTicketCreated.agentVault.address'] })
+      expect(redemptionTicketDeleted).to.exist
+      expect(redemptionTicketDeleted.evmLog.index).to.equal(redemptionTicketDeletedEvent.logIndex)
+      expect(redemptionTicketDeleted.evmLog.block.index).to.equal(redemptionTicketDeletedEvent.blockNumber)
+      expect(redemptionTicketDeleted.redemptionTicketCreated.agentVault.address.hex).to.equal(redemptionTicketDeletedEvent.args[0])
+      expect(redemptionTicketDeleted.redemptionTicketCreated.redemptionTicketId).to.equal(redemptionTicketDeletedEvent.args[1])
+      // redemption ticket
+      const redemptionTicket = await em.findOneOrFail(RedemptionTicket, {
+        redemptionTicketCreated: redemptionTicketDeleted.redemptionTicketCreated
+      }, { populate: ['redemptionTicketCreated'] })
+      expect(redemptionTicket).to.exist
+      expect(redemptionTicket.redemptionTicketCreated.redemptionTicketId).to.equal(redemptionTicketDeletedEvent.args[1])
+      expect(redemptionTicket.ticketValueUBA).to.equal(BigInt(0))
+      expect(redemptionTicket.destroyed).to.be.true
+    })
   })
 
   describe("liquidations", () => {

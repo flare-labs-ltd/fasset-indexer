@@ -30,6 +30,10 @@ import {
   CollateralPoolClaimedReward, CollateralPoolDonated, CollateralPoolEntered,
   CollateralPoolExited, CollateralPoolPaidOut
 } from "./entities/events/collateral-pool"
+import {
+  RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated
+} from "./entities/events/redemption-ticket"
+import { RedemptionTicket } from "./entities/state/tickets"
 import { AgentPing, AgentPingResponse } from "./entities/events/ping"
 import { PricePublished, PricesPublished } from "./entities/events/prices"
 import { CurrentUnderlyingBlockUpdated } from "./entities/events/system"
@@ -51,6 +55,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     RedemptionRequested, RedemptionPerformed, RedemptionDefault,
     RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
     RedeemedInCollateral, RedemptionRequestIncomplete,
+    RedemptionTicketCreated, RedemptionTicketUpdated, RedemptionTicketDeleted, RedemptionTicket,
     AgentInCCB, LiquidationStarted, FullLiquidationStarted, LiquidationPerformed, LiquidationEnded,
     IllegalPaymentConfirmed, DuplicatePaymentConfirmed, UnderlyingBalanceTooLow,
     CollateralPoolEntered, CollateralPoolExited, CollateralPoolDonated, CollateralPoolPaidOut, CollateralPoolClaimedReward,

@@ -45,6 +45,10 @@ export const EVENTS = {
     REDEMPTION_REJECTED: "RedemptionRejected",
     REDEMPTION_REQUEST_INCOMPLETE: "RedemptionRequestIncomplete",
     REDEEMED_IN_COLLATERAL: "RedeemedInCollateral",
+    // redemption tickets
+    REDEMPTION_TICKET_CREATED: 'RedemptionTicketCreated',
+    REDEMPTION_TICKET_UPDATED: 'RedemptionTicketUpdated',
+    REDEMPTION_TICKET_DELETED: 'RedemptionTicketDeleted',
     // liquidation
     AGENT_IN_CCB: "AgentInCCB",
     LIQUIDATION_STARTED: "LiquidationStarted",

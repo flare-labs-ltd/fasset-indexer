@@ -14,5 +14,11 @@ export class uint256 extends Type<bigint, string> {
   getColumnType() {
     return `NUMERIC(78)`
   }
+}
 
+export class uint64 extends uint256 {
+
+  override getColumnType() {
+    return `NUMERIC(21)`
+  }
 }

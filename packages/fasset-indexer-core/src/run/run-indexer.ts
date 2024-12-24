@@ -1,9 +1,9 @@
 import { ensureConfigIntegrity } from "./integrity"
 import { EventIndexerParallelPopulation } from "../indexer/migrations/indexer-parallel-population"
-import { Context } from "../context/context"
-import { config } from "../config/config"
-import { logger } from "../logger"
 import { EVENTS } from "../config/constants"
+import { Context } from "../context/context"
+import { logger } from "../logger"
+import { config } from "../config/config"
 
 
 async function runIndexer(start?: number) {

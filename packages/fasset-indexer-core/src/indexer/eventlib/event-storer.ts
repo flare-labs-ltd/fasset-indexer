@@ -6,54 +6,92 @@ import {
 import { EvmLog } from "../../database/entities/evm/log"
 import { CollateralTypeAdded, ERC20Transfer } from "../../database/entities/events/token"
 import { TokenBalance } from "../../database/entities/state/balance"
+import { RedemptionTicket } from "../../database/entities/state/tickets"
 import { AddressType, EvmAddress } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
 import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
 import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
 import {
   CollateralReservationDeleted,
-  CollateralReserved, MintingExecuted,
+  CollateralReserved,
+  MintingExecuted,
   MintingPaymentDefault,
   SelfMint
 } from "../../database/entities/events/minting"
 import {
-  RedemptionRequested, RedemptionPerformed, RedemptionDefault,
-  RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
+  RedemptionRequested,
+  RedemptionPerformed,
+  RedemptionDefault,
+  RedemptionPaymentFailed,
+  RedemptionPaymentBlocked,
+  RedemptionRejected,
   RedemptionRequestIncomplete,
   RedeemedInCollateral
 } from "../../database/entities/events/redemption"
 import {
+  RedemptionTicketCreated,
+  RedemptionTicketDeleted,
+  RedemptionTicketUpdated
+} from "../../database/entities/events/redemption-ticket"
+import {
   AgentInCCB,
-  FullLiquidationStarted, LiquidationEnded, LiquidationPerformed, LiquidationStarted
+  FullLiquidationStarted,
+  LiquidationEnded,
+  LiquidationPerformed,
+  LiquidationStarted
 } from "../../database/entities/events/liquidation"
 import {
-  DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow
+  DuplicatePaymentConfirmed,
+  IllegalPaymentConfirmed,
+  UnderlyingBalanceTooLow
 } from "../../database/entities/events/challenge"
 import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
+import { PricesPublished } from "../../database/entities/events/prices"
 import { ContractLookup } from "../../context/lookup"
 import { EVENTS } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Event } from "./event-scraper"
 import type {
-  AgentAvailableEvent, AgentDestroyedEvent, AgentSettingChangeAnnouncedEvent,
-  AgentVaultCreatedEvent, AvailableAgentExitAnnouncedEvent,
-  CollateralReservationDeletedEvent, CollateralReservedEvent, CollateralTypeAddedEvent,
-  MintingExecutedEvent, MintingPaymentDefaultEvent,
-  RedemptionDefaultEvent, RedemptionPaymentBlockedEvent, RedemptionPaymentFailedEvent, RedemptionPerformedEvent,
-  RedemptionRejectedEvent, RedemptionRequestIncompleteEvent, RedemptionRequestedEvent,
-  FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
-  SelfCloseEvent, AgentPingEvent, AgentPingResponseEvent,
-  IllegalPaymentConfirmedEvent, DuplicatePaymentConfirmedEvent, UnderlyingBalanceTooLowEvent,
-  AgentInCCBEvent, SelfMintEvent
+  AgentAvailableEvent,
+  AgentDestroyedEvent,
+  AgentSettingChangeAnnouncedEvent,
+  AgentVaultCreatedEvent,
+  AvailableAgentExitAnnouncedEvent,
+  CollateralReservationDeletedEvent,
+  CollateralReservedEvent,
+  CollateralTypeAddedEvent,
+  MintingExecutedEvent,
+  MintingPaymentDefaultEvent,
+  RedemptionDefaultEvent,
+  RedemptionPaymentBlockedEvent,
+  RedemptionPaymentFailedEvent,
+  RedemptionPerformedEvent,
+  RedemptionRejectedEvent,
+  RedemptionRequestIncompleteEvent,
+  RedemptionRequestedEvent,
+  FullLiquidationStartedEvent,
+  LiquidationEndedEvent,
+  LiquidationPerformedEvent,
+  LiquidationStartedEvent,
+  SelfCloseEvent,
+  AgentPingEvent,
+  AgentPingResponseEvent,
+  IllegalPaymentConfirmedEvent,
+  DuplicatePaymentConfirmedEvent,
+  UnderlyingBalanceTooLowEvent,
+  AgentInCCBEvent,
+  SelfMintEvent,
+  RedemptionTicketCreatedEvent,
+  RedemptionTicketUpdatedEvent,
+  RedemptionTicketDeletedEvent
 } from "../../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
+import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
 import type { ORM } from "../../database/interface"
-import { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
-import { PricesPublished } from "../../database/entities/events/prices"
 
 
 export class EventStorer {
@@ -122,6 +160,15 @@ export class EventStorer {
         break
       } case EVENTS.ASSET_MANAGER.REDEMPTION_REJECTED: {
         await this.onRedemptionRejected(em, evmLog, log.args as RedemptionRejectedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED: {
+        await this.onRedemptionTicketCreated(em, evmLog, log.args as RedemptionTicketCreatedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED: {
+        await this.onRedemptionTicketUpdated(em, evmLog, log.args as RedemptionTicketUpdatedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED: {
+        await this.onRedemptionTicketDeleted(em, evmLog, log.args as RedemptionTicketDeletedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.REDEEMED_IN_COLLATERAL: {
         await this.onRedeemedInCollateral(em, evmLog, log.args as RedeemedInCollateralEvent.OutputTuple)
@@ -447,6 +494,36 @@ export class EventStorer {
       redemptionAmountUBA, paidVaultCollateralWei
     )
     em.persist(redeemedInCollateral)
+  }
+
+  protected async onRedemptionTicketCreated(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionTicketCreatedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, redemptionTicketId, ticketValueUBA ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const redemptionTicketCreated = new RedemptionTicketCreated(evmLog, fasset, agentVaultEntity, redemptionTicketId, ticketValueUBA)
+    const redemptionTicket = new RedemptionTicket(redemptionTicketCreated, ticketValueUBA)
+    em.persist([redemptionTicketCreated, redemptionTicket])
+  }
+
+  protected async onRedemptionTicketUpdated(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionTicketCreatedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ , redemptionTicketId, ticketValueUBA ] = logArgs
+    const redemptionTicketCreated = await em.findOneOrFail(RedemptionTicketCreated, { redemptionTicketId, fasset })
+    const redemptionTicketUpdated = new RedemptionTicketUpdated(evmLog, fasset, redemptionTicketCreated, ticketValueUBA)
+    const redemptionTicket = await em.findOneOrFail(RedemptionTicket, { redemptionTicketCreated })
+    redemptionTicket.ticketValueUBA = ticketValueUBA
+    em.persist([redemptionTicketUpdated, redemptionTicket])
+  }
+
+  protected async onRedemptionTicketDeleted(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionTicketDeletedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ , redemptionTicketId ] = logArgs
+    const redemptionTicketCreated = await em.findOneOrFail(RedemptionTicketCreated, { redemptionTicketId, fasset })
+    const redemptionTicketDeleted = new RedemptionTicketDeleted(evmLog, fasset, redemptionTicketCreated)
+    const redemptionTicket = await em.findOneOrFail(RedemptionTicket, { redemptionTicketCreated })
+    redemptionTicket.ticketValueUBA = BigInt(0)
+    redemptionTicket.destroyed = true
+    em.persist([redemptionTicketDeleted, redemptionTicket])
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
