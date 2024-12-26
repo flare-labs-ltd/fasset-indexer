@@ -9,8 +9,12 @@ import { config } from "../config/config"
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
   const indexer = new EventIndexerParallelPopulation(context,
-    [EVENTS.PRICE_READER.PRICES_PUBLISHED, EVENTS.ERC20.TRANSFER],
-    'rewardSgbDistribution'
+    [
+      EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED,
+      EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED,
+      EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED
+    ],
+    'redemptionTickets'
   )
 
   process.on("SIGINT", async () => {
@@ -20,7 +24,7 @@ async function runIndexer(start?: number) {
   })
 
   logger.info("ensuring configuration integrity...")
-  await ensureConfigIntegrity(context)
+  await ensureConfigIntegrity(context, 'redemptionTickets')
   logger.info(`starting FAsset ${context.chain} indexer...`)
   await indexer.run()
 }

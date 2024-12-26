@@ -1,7 +1,7 @@
 import { EventIndexer } from "../indexer"
 import { EventIndexerBackPopulation } from "./indexer-back-population"
-import type { Context } from "../../context/context"
 import { logger } from "../../logger"
+import type { Context } from "../../context/context"
 
 
 const BLOCK_INDEX_NUMBER = 92

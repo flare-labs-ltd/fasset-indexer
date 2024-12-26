@@ -1,13 +1,16 @@
 
 import { getVar, setVar } from "../utils"
 import { Context } from "../context/context"
-import { BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
+import { backUpdateEndBlockName, backUpdateLastBlockName, BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
 import type { JsonRpcApiProvider } from "ethers"
 
 
-export async function ensureConfigIntegrity(context: Context): Promise<void> {
+export async function ensureConfigIntegrity(context: Context, updateName?: string): Promise<void> {
   await ensureChainIntegrity(context)
   await ensureDatabaseIntegrity(context)
+  if (updateName != null) {
+    await ensureBackIndexerIntegrity(context, updateName)
+  }
 }
 
 export async function ensureChainIntegrity(context: Context): Promise<void> {
@@ -39,6 +42,25 @@ export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
   if (minblock == null) {
     throw new Error(`Database missing minimum block number field '${MIN_EVM_BLOCK_NUMBER_DB_KEY}'`)
   }
+}
+
+export async function ensureBackIndexerIntegrity(context: Context, updateName?: string): Promise<void> {
+  const em = context.orm.em.fork()
+  const currentUpdate = await getVar(em, 'current_update')
+  if (currentUpdate !== null) {
+    const currentUpdateName = currentUpdate.value!
+    const lastBlock = await getVar(em, backUpdateLastBlockName(currentUpdateName))
+    const endBlock = await getVar(em, backUpdateEndBlockName(currentUpdateName))
+    if (endBlock == null || lastBlock == null) {
+      throw new Error(`Database missing end block or last block for current update "${currentUpdateName}"`)
+    }
+    const lastBlockNum = parseInt(lastBlock.value!)
+    const endBlockNum = parseInt(endBlock.value!)
+    if (lastBlockNum <= endBlockNum) {
+      throw new Error(`Update "${currentUpdateName}" has not finished processing all blocks, ${endBlockNum - lastBlockNum + 1} to go`)
+    }
+  }
+  await setVar(em, 'current_update', updateName)
 }
 
 async function markNewDatabase(context: Context): Promise<void> {

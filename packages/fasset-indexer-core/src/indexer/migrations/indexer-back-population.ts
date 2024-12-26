@@ -1,4 +1,5 @@
 import { getVar, setVar } from "../../utils"
+import { backUpdateEndBlockName, backUpdateLastBlockName } from "../../config/constants"
 import { EventIndexer } from "../indexer"
 import type { Context } from "../../context/context"
 
@@ -9,8 +10,8 @@ export class EventIndexerBackPopulation extends EventIndexer {
 
   constructor(context: Context, public insertionEvents: string[], public updateName: string) {
     super(context, insertionEvents)
-    this.endEventBlockForCurrentUpdateKey = `endEventBlock_${updateName}`
-    this.firstEventBlockForCurrentUpdateKey = `firstUnhandledEventBlock_${updateName}`
+    this.endEventBlockForCurrentUpdateKey = backUpdateEndBlockName(updateName)
+    this.firstEventBlockForCurrentUpdateKey = backUpdateLastBlockName(updateName)
   }
 
   override async lastBlockToHandle(): Promise<number> {
