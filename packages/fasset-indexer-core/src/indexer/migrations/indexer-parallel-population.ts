@@ -11,9 +11,9 @@ export class EventIndexerParallelPopulation {
   readonly eventIndexer: EventIndexer
   readonly backIndexer: EventIndexerBackPopulation
 
-  constructor(context: Context, insertionEvents: string[], updateName: string) {
-    this.eventIndexer = new EventIndexer(context)
-    this.backIndexer = new EventIndexerBackPopulation(context, insertionEvents, updateName)
+  constructor(context: Context, backInsertionEvents: string[], updateName: string, frontInsertionEvents?: string[]) {
+    this.eventIndexer = new EventIndexer(context, frontInsertionEvents)
+    this.backIndexer = new EventIndexerBackPopulation(context, backInsertionEvents, updateName)
   }
 
   async run() {

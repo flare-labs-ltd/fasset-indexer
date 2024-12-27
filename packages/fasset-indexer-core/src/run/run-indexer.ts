@@ -5,16 +5,17 @@ import { Context } from "../context/context"
 import { logger } from "../logger"
 import { config } from "../config/config"
 
+const redemptionTicketEvents = [
+  EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED,
+  EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED,
+  EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED
+]
 
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
   const indexer = new EventIndexerParallelPopulation(context,
-    [
-      EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED,
-      EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED,
-      EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED
-    ],
-    'redemptionTickets'
+    redemptionTicketEvents, 'redemptionTickets',
+    Object.values(EVENTS).map(x => Object.values(x)).flat().filter(x => !redemptionTicketEvents.includes(x))
   )
 
   process.on("SIGINT", async () => {

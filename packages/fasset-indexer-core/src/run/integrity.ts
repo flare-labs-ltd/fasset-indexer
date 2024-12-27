@@ -9,7 +9,7 @@ export async function ensureConfigIntegrity(context: Context, updateName?: strin
   await ensureChainIntegrity(context)
   await ensureDatabaseIntegrity(context)
   if (updateName != null) {
-    await ensureBackIndexerIntegrity(context, updateName)
+    await ensureBackIndexerDatabaseIntegrity(context, updateName)
   }
 }
 
@@ -44,7 +44,7 @@ export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
   }
 }
 
-export async function ensureBackIndexerIntegrity(context: Context, updateName?: string): Promise<void> {
+export async function ensureBackIndexerDatabaseIntegrity(context: Context, updateName?: string): Promise<void> {
   const em = context.orm.em.fork()
   const currentUpdate = await getVar(em, 'current_update')
   if (currentUpdate !== null) {
