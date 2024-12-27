@@ -5,17 +5,19 @@ import { Context } from "../context/context"
 import { logger } from "../logger"
 import { config } from "../config/config"
 
-const redemptionTicketEvents = [
+const events = [
   EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED,
   EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED,
   EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED
 ]
 
+const updateName = 'redemptionTicketsAndWithdrawAnnouncments'
+
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
-  const indexer = new EventIndexerParallelPopulation(context,
-    redemptionTicketEvents, 'redemptionTickets',
-    Object.values(EVENTS).map(x => Object.values(x)).flat().filter(x => !redemptionTicketEvents.includes(x))
+  const indexer = new EventIndexerParallelPopulation(
+    context, events, updateName,
+    Object.values(EVENTS).map(x => Object.values(x)).flat().filter(x => !events.includes(x))
   )
 
   process.on("SIGINT", async () => {
@@ -25,7 +27,7 @@ async function runIndexer(start?: number) {
   })
 
   logger.info("ensuring configuration integrity...")
-  await ensureConfigIntegrity(context, 'redemptionTickets')
+  await ensureConfigIntegrity(context, updateName)
   logger.info(`starting FAsset ${context.chain} indexer...`)
   await indexer.run()
 }

@@ -30,7 +30,7 @@ import { Context } from "../src/context/context"
 import { EVENTS } from "../src/config/constants"
 import { CONFIG } from "./fixtures/config"
 import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/database/entities/events/redemption-ticket"
-import { RedemptionTicket } from "../src/database/entities/state/tickets"
+import { RedemptionTicket } from "../src/database/entities/state/redemption-ticket"
 import { populate } from "dotenv"
 
 

@@ -36,6 +36,10 @@ export const EVENTS = {
     AGENT_ENTERED_AVAILABLE: "AgentAvailable",
     AGENT_DESTROYED: "AgentDestroyed",
     SELF_CLOSE: "SelfClose",
+    VAULT_COLLATERAL_WITHDRAWAL_ANNOUNCED: "VaultCollateralWithdrawalAnnounced",
+    POOL_TOKEN_REDEMPTION_ANNOUNCED: "PoolTokenRedemptionAnnounced",
+    UNDERLYING_WITHDRAWAL_ANNOUNCED: "UnderlyingWithdrawalAnnounced",
+    UNDERLYING_WITHDRAWAL_CONFIRMED: "UnderlyingWithdrawalConfirmed",
     // minting
     COLLATERAL_RESERVED: "CollateralReserved",
     MINTING_EXECUTED: "MintingExecuted",
