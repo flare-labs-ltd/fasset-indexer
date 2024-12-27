@@ -1,7 +1,7 @@
 
 import { getVar, setVar } from "../utils"
 import { Context } from "../context/context"
-import { backUpdateEndBlockName, backUpdateLastBlockName, BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
+import { backUpdateLastBlockName, backUpdateFirstUnhandledBlockName, BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
 import type { JsonRpcApiProvider } from "ethers"
 
 
@@ -47,10 +47,10 @@ export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
 export async function ensureBackIndexerDatabaseIntegrity(context: Context, updateName?: string): Promise<void> {
   const em = context.orm.em.fork()
   const currentUpdate = await getVar(em, 'current_update')
-  if (currentUpdate !== null) {
+  if (currentUpdate !== null && currentUpdate.value !== updateName) {
     const currentUpdateName = currentUpdate.value!
-    const lastBlock = await getVar(em, backUpdateLastBlockName(currentUpdateName))
-    const endBlock = await getVar(em, backUpdateEndBlockName(currentUpdateName))
+    const lastBlock = await getVar(em, backUpdateFirstUnhandledBlockName(currentUpdateName))
+    const endBlock = await getVar(em, backUpdateLastBlockName(currentUpdateName))
     if (endBlock == null || lastBlock == null) {
       throw new Error(`Database missing end block or last block for current update "${currentUpdateName}"`)
     }
@@ -59,8 +59,9 @@ export async function ensureBackIndexerDatabaseIntegrity(context: Context, updat
     if (lastBlockNum <= endBlockNum) {
       throw new Error(`Update "${currentUpdateName}" has not finished processing all blocks, ${endBlockNum - lastBlockNum + 1} to go`)
     }
+  } else if (currentUpdate === null) {
+    await setVar(em, 'current_update', updateName)
   }
-  await setVar(em, 'current_update', updateName)
 }
 
 async function markNewDatabase(context: Context): Promise<void> {

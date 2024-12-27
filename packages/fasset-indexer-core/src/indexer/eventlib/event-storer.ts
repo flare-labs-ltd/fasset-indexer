@@ -9,7 +9,15 @@ import { TokenBalance } from "../../database/entities/state/balance"
 import { RedemptionTicket } from "../../database/entities/state/redemption-ticket"
 import { AddressType, EvmAddress } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
-import { AgentVaultCreated, AgentSettingChanged, SelfClose, VaultCollateralWithdrawalAnnounced, PoolTokenRedemptionAnnounced, UnderlyingWithdrawalAnnounced, UnderlyingWithdrawalConfirmed } from "../../database/entities/events/agent"
+import {
+  AgentVaultCreated,
+  AgentSettingChanged,
+  SelfClose,
+  VaultCollateralWithdrawalAnnounced,
+  PoolTokenRedemptionAnnounced,
+  UnderlyingWithdrawalAnnounced,
+  UnderlyingWithdrawalConfirmed
+} from "../../database/entities/events/agent"
 import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
 import {
   CollateralReservationDeleted,
@@ -45,7 +53,13 @@ import {
   IllegalPaymentConfirmed,
   UnderlyingBalanceTooLow
 } from "../../database/entities/events/challenge"
-import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
+import {
+  CollateralPoolClaimedReward,
+  CollateralPoolDonated,
+  CollateralPoolEntered,
+  CollateralPoolExited,
+  CollateralPoolPaidOut
+} from "../../database/entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
 import { PricesPublished } from "../../database/entities/events/price"
@@ -91,7 +105,13 @@ import type {
   UnderlyingWithdrawalAnnouncedEvent,
   UnderlyingWithdrawalConfirmedEvent
 } from "../../../chain/typechain/IAssetManager"
-import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
+import type {
+  ClaimedRewardEvent,
+  DonatedEvent,
+  EnteredEvent,
+  ExitedEvent,
+  PaidOutEvent
+} from "../../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
@@ -236,6 +256,15 @@ export class EventStorer {
         break
       } case EVENTS.COLLATERAL_POOL.EXIT: {
         await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
+        break
+      } case EVENTS.COLLATERAL_POOL.PAID_OUT: {
+        await this.onCollateralPoolPaidOut(em, evmLog, log.args as PaidOutEvent.OutputTuple)
+        break
+      } case EVENTS.COLLATERAL_POOL.DONATED: {
+        await this.onCollateralPoolDonated(em, evmLog, log.args as DonatedEvent.OutputTuple)
+        break
+      } case EVENTS.COLLATERAL_POOL.CLAIMED_REWARD: {
+        await this.onCollateralPoolClaimedReward(em, evmLog, log.args as ClaimedRewardEvent.OutputTuple)
         break
       } case EVENTS.ERC20.TRANSFER: {
         await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
@@ -646,6 +675,29 @@ export class EventStorer {
       tokenHolderEvmAddress, burnedTokensWei, receivedNatWei, receviedFAssetFeesUBA, closedFAssetsUBA, newFAssetFeeDebt
     )
     em.persist(collateralPoolExited)
+  }
+
+  protected async onCollateralPoolPaidOut(em: EntityManager, evmLog: EvmLog, logArgs: PaidOutEvent.OutputTuple): Promise<void> {
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
+    const [ recipient, paidNatWei, burnedTokensWei ] = logArgs
+    const recipientEvmAddress = await findOrCreateEvmAddress(em, recipient, AddressType.USER)
+    const collateralPoolPaidOut = new CollateralPoolPaidOut(evmLog, agentVault.fasset, recipientEvmAddress, paidNatWei, burnedTokensWei)
+    em.persist(collateralPoolPaidOut)
+  }
+
+  protected async onCollateralPoolDonated(em: EntityManager, evmLog: EvmLog, logArgs: DonatedEvent.OutputTuple): Promise<void> {
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
+    const [ donator, amountNatWei ] = logArgs
+    const donatorEvmAddress = await findOrCreateEvmAddress(em, donator, AddressType.USER)
+    const collateralPoolDonated = new CollateralPoolDonated(evmLog, agentVault.fasset, donatorEvmAddress, amountNatWei)
+    em.persist(collateralPoolDonated)
+  }
+
+  protected async onCollateralPoolClaimedReward(em: EntityManager, evmLog: EvmLog, logArgs: ClaimedRewardEvent.OutputTuple): Promise<void> {
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
+    const [ amountNatWei, rewardType ] = logArgs
+    const collateralPoolClaimedReward = new CollateralPoolClaimedReward(evmLog, agentVault.fasset, amountNatWei, Number(rewardType))
+    em.persist(collateralPoolClaimedReward)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

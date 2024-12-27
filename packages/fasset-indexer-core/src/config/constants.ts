@@ -18,11 +18,11 @@ export const FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY = "firstUnhandledEventBlock"
 export const MIN_EVM_BLOCK_NUMBER_DB_KEY = "minEvmBlockNumber"
 
 // db back indexer names
-export function backUpdateLastBlockName(updateName: string): string {
-  return `lastBlockToHandle_${updateName}`
+export function backUpdateFirstUnhandledBlockName(updateName: string): string {
+  return `firstUnhandledEventBlock_${updateName}`
 }
-export function backUpdateEndBlockName(updateName: string): string {
-  return `endEventBlock_${updateName}`
+export function backUpdateLastBlockName(updateName: string): string {
+  return `lastEventBlock_${updateName}`
 }
 
 // event names
@@ -80,12 +80,13 @@ export const EVENTS = {
     CURRENT_UNDERLYING_BLOCK_UPDATED: 'CurrentUnderlyingBlockUpdated'
   },
   COLLATERAL_POOL: {
-    // collateral pool
     ENTER: "Entered",
-    EXIT: "Exited"
+    EXIT: "Exited",
+    DONATED: "Donated",
+    CLAIMED_REWARD: "ClaimedReward",
+    PAID_OUT: "PaidOut",
   },
   ERC20: {
-    // erc20
     TRANSFER: "Transfer",
   },
   PRICE_READER: {

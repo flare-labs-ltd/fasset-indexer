@@ -1,5 +1,5 @@
 import { getVar } from "../../utils"
-import { FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, backUpdateEndBlockName, backUpdateLastBlockName } from "../../config/constants"
+import { FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, backUpdateLastBlockName, backUpdateFirstUnhandledBlockName } from "../../config/constants"
 import type { ORM } from "../../database/interface"
 
 
@@ -17,9 +17,9 @@ export class MetadataAnalytics {
       return null
     }
     const currentUpdateName = currentUpdate.value!
-    const start = await getVar(this.orm.em.fork(), backUpdateLastBlockName(currentUpdateName))
+    const start = await getVar(this.orm.em.fork(), backUpdateFirstUnhandledBlockName(currentUpdateName))
     if (start === null || start.value === undefined) return null
-    const end = await getVar(this.orm.em.fork(), backUpdateEndBlockName(currentUpdateName))
+    const end = await getVar(this.orm.em.fork(), backUpdateLastBlockName(currentUpdateName))
     if (end === null || end.value === undefined) return null
     return parseInt(end.value) - parseInt(start.value) + 1
   }

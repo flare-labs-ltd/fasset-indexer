@@ -1,5 +1,5 @@
 import { ensureConfigIntegrity } from "./integrity"
-import { EventIndexerParallelPopulation } from "../indexer/migrations/indexer-parallel-population"
+import { EventIndexerParallelRacePopulation } from "../indexer/migrations/indexer-parallel-race-population"
 import { EVENTS } from "../config/constants"
 import { Context } from "../context/context"
 import { logger } from "../logger"
@@ -8,16 +8,21 @@ import { config } from "../config/config"
 const events = [
   EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED,
   EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED,
-  EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED
+  EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED,
+  EVENTS.ASSET_MANAGER.VAULT_COLLATERAL_WITHDRAWAL_ANNOUNCED,
+  EVENTS.ASSET_MANAGER.POOL_TOKEN_REDEMPTION_ANNOUNCED,
+  EVENTS.ASSET_MANAGER.UNDERLYING_WITHDRAWAL_ANNOUNCED,
+  EVENTS.ASSET_MANAGER.UNDERLYING_WITHDRAWAL_CONFIRMED
 ]
 
 const updateName = 'redemptionTicketsAndWithdrawAnnouncments'
 
 async function runIndexer(start?: number) {
+  const allEvents = Object.values(EVENTS).map(x => Object.values(x)).flat()
   const context = await Context.create(config)
-  const indexer = new EventIndexerParallelPopulation(
-    context, events, updateName,
-    Object.values(EVENTS).map(x => Object.values(x)).flat().filter(x => !events.includes(x))
+  const indexer = new EventIndexerParallelRacePopulation(
+    context, allEvents, updateName,
+    allEvents.filter(x => !events.includes(x))
   )
 
   process.on("SIGINT", async () => {

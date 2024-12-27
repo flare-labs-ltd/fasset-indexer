@@ -21,7 +21,9 @@ export class EventIndexer {
   readonly eventParser: EventParser
   readonly stateUpdater: StateUpdater
 
-  constructor(public readonly context: Context, eventnames?: string[]) {
+  constructor(public readonly context: Context, eventnames?: string[],
+    public firstUnhandledEventBlockName = FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY
+  ) {
     this.eventScraper = new EventScraper(context)
     this.eventParser = new EventParser(context, eventnames)
     this.stateUpdater = new StateUpdater(context)
@@ -65,12 +67,12 @@ export class EventIndexer {
   }
 
   async firstUnhandledBlock(): Promise<number> {
-    const firstUnhandled = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY)
+    const firstUnhandled = await getVar(this.context.orm.em.fork(), this.firstUnhandledEventBlockName)
     return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.minBlockNumber()
   }
 
   async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
-    await setVar(this.context.orm.em.fork(), FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, blockNumber.toString())
+    await setVar(this.context.orm.em.fork(), this.firstUnhandledEventBlockName, blockNumber.toString())
   }
 
   protected async storeLogs(logs: Log[]): Promise<void> {

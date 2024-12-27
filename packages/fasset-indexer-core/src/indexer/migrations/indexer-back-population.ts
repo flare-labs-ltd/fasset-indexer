@@ -1,36 +1,36 @@
 import { getVar, setVar } from "../../utils"
-import { backUpdateEndBlockName, backUpdateLastBlockName } from "../../config/constants"
+import { backUpdateLastBlockName, backUpdateFirstUnhandledBlockName } from "../../config/constants"
 import { EventIndexer } from "../indexer"
 import type { Context } from "../../context/context"
 
 
 export class EventIndexerBackPopulation extends EventIndexer {
-  private endEventBlockForCurrentUpdateKey: string
-  private firstEventBlockForCurrentUpdateKey: string
+  protected lastEventBlockForCurrentUpdateKey: string
+  protected firstUnhandledEventBlockForCurrentUpdateKey: string
 
   constructor(context: Context, public insertionEvents: string[], public updateName: string) {
     super(context, insertionEvents)
-    this.endEventBlockForCurrentUpdateKey = backUpdateEndBlockName(updateName)
-    this.firstEventBlockForCurrentUpdateKey = backUpdateLastBlockName(updateName)
+    this.lastEventBlockForCurrentUpdateKey = backUpdateLastBlockName(updateName)
+    this.firstUnhandledEventBlockForCurrentUpdateKey = backUpdateFirstUnhandledBlockName(updateName)
   }
 
   override async lastBlockToHandle(): Promise<number> {
-    const endBlock = await getVar(this.context.orm.em.fork(), this.endEventBlockForCurrentUpdateKey)
+    const endBlock = await getVar(this.context.orm.em.fork(), this.lastEventBlockForCurrentUpdateKey)
     if (endBlock === null) {
       const endBlock = await super.firstUnhandledBlock()
-      await setVar(this.context.orm.em.fork(), this.endEventBlockForCurrentUpdateKey, endBlock.toString())
+      await setVar(this.context.orm.em.fork(), this.lastEventBlockForCurrentUpdateKey, endBlock.toString())
       return endBlock
     }
     return parseInt(endBlock.value!)
   }
 
   override async firstUnhandledBlock(): Promise<number> {
-    const firstUnhandled = await getVar(this.context.orm.em.fork(), this.firstEventBlockForCurrentUpdateKey)
+    const firstUnhandled = await getVar(this.context.orm.em.fork(), this.firstUnhandledEventBlockForCurrentUpdateKey)
     return firstUnhandled !== null ? parseInt(firstUnhandled.value!) : await this.minBlockNumber()
   }
 
   override async setFirstUnhandledBlock(blockNumber: number): Promise<void> {
-    await setVar(this.context.orm.em.fork(), this.firstEventBlockForCurrentUpdateKey, blockNumber.toString())
+    await setVar(this.context.orm.em.fork(), this.firstUnhandledEventBlockForCurrentUpdateKey, blockNumber.toString())
   }
 }
 
