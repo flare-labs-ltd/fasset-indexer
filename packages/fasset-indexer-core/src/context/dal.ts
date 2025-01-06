@@ -11,6 +11,7 @@ export async function getPriceFromDal(symbol: string, roundId: number): Promise<
   if (roundId != cacheRoundId) {
     cacheFeed = await getFeedRecord(roundId)
     cachePrice = await getPriceRecord(roundId)
+    cacheRoundId = roundId
   }
   return cachePrice[symbol]
 }
@@ -45,8 +46,11 @@ async function getFeedRecord(roundId: number): Promise<Record<string, string>> {
   const json = await resp.json()
   const ret = {} as any
   for (const pair of json) {
-    const symbol = pair.feed_name.split('/')[0]
-    ret[symbol] = pair.feed_id
+    const symbols = pair.feed_name.split('/')
+    if (symbols[1] !== 'USD') {
+      throw new Error('Only USD pairs are supported')
+    }
+    ret[symbols[0]] = pair.feed_id
   }
   return ret
 }
