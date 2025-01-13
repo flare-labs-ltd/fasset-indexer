@@ -6,11 +6,12 @@ import { EventIndexer } from "../indexer/indexer"
 import { AgentVault } from "../database/entities/agent"
 
 async function fillCollateralPoolTokens(context: Context) {
-  const agentVaults = await context.orm.em.fork().findAll(AgentVault, { populate: ['collateralPoolToken'] })
+  const em = context.orm.em.fork()
+  const agentVaults = await em.findAll(AgentVault, { populate: ['collateralPoolToken'] })
   for (const agentVault of agentVaults) {
     const collateralPoolToken = context.getERC20(agentVault.collateralPoolToken.hex)
     agentVault.collateralPoolTokenSymbol = await collateralPoolToken.symbol()
-    await context.orm.em.persistAndFlush(agentVault)
+    await em.persistAndFlush(agentVault)
   }
 }
 
