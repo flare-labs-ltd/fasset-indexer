@@ -21,3 +21,11 @@ export type FAssetValueResult = FAssetResult<ValueResult>
 export type AmountResult = { amount: number }
 
 export type FAssetAmountResult = FAssetResult<AmountResult>
+
+export interface StatisticAverage {
+  average: bigint
+  total: number
+  limit: number
+  delta: number
+  now: number
+}

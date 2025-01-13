@@ -1,7 +1,7 @@
 import { raw } from "@mikro-orm/core"
 import { AgentVault } from "../../database/entities/agent"
 import { MintingExecuted } from "../../database/entities/events/minting"
-import { RedemptionDefault, RedemptionPerformed } from "../../database/entities/events/redemption"
+import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../../database/entities/events/redemption"
 import { LiquidationPerformed } from "../../database/entities/events/liquidation"
 import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { SharedAnalytics } from "./shared"
@@ -14,7 +14,7 @@ import type { ORM } from "../../database/interface"
 export class Statistics extends SharedAnalytics {
   constructor(public readonly orm: ORM) { super(orm) }
 
-  async redemptionDefaultWA(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
+  async redemptionDefaultWA(vault: string, now: number, delta: number, lim: number): Promise<[bigint, number]> {
     const result = await this.orm.em.fork().createQueryBuilder(RedemptionDefault, 'rd')
       .join('rd.redemptionRequested', 'rr')
       .join('rr.agentVault', 'av')
@@ -28,10 +28,10 @@ export class Statistics extends SharedAnalytics {
       .limit(lim)
       .execute() as { timestamp: number, value_uba: string }[]
     const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.value_uba) }))
-    return weightedAverage(timespan, now, delta, lim)
+    return [weightedAverage(timespan, now, delta, lim), timespan.length]
   }
 
-  async redemptionTimeWA(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
+  async redemptionTimeWA(vault: string, now: number, delta: number, lim: number): Promise<[bigint, number]> {
     const result = await this.orm.em.fork().createQueryBuilder(RedemptionPerformed, 'rp')
       .join('rp.redemptionRequested', 'rr')
       .join('rr.agentVault', 'av')
@@ -47,10 +47,10 @@ export class Statistics extends SharedAnalytics {
       .limit(lim)
       .execute() as { timestamp: number, period: string }[]
     const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.period) }))
-    return weightedAverage(timespan, now, delta, lim)
+    return [weightedAverage(timespan, now, delta, lim), timespan.length]
   }
 
-  async liquidatedAmountWA(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
+  async liquidatedAmountWA(vault: string, now: number, delta: number, lim: number): Promise<[bigint, number]> {
     const result = await this.orm.em.fork().createQueryBuilder(LiquidationPerformed, 'lp')
       .join('lp.agentVault', 'av')
       .join('av.address', 'ava')
@@ -63,26 +63,75 @@ export class Statistics extends SharedAnalytics {
       .limit(lim)
       .execute() as { timestamp: number, valueUBA: string }[]
     const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.valueUBA) }))
-    return weightedAverage(timespan, now, delta, lim)
+    return [weightedAverage(timespan, now, delta, lim), timespan.length]
   }
 
-  async liquidationDurationWA(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
+  async liquidationDurationWA(vault: string, now: number, delta: number, lim: number): Promise<[bigint, number]> {
     const result = await this.orm.em.getConnection('read')
       .execute(LIQUIDATION_DURATION_SQL, [vault, vault, now - delta, lim]) as { timestamp: number, diff: string }[]
     const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.diff) }))
-    return weightedAverage(timespan, now, delta)
+    return [weightedAverage(timespan, now, delta), timespan.length]
   }
 
-  async redemptionFrequency(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
-    return BigInt(0)
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // agent vault size
+
+  async redemptionFrequencyWA(vault: string, now: number, delta: number, lim: number): Promise<[bigint, number]> {
+    const result = await this.orm.em.fork().createQueryBuilder(RedemptionRequested, 'rp')
+      .join('rp.agentVault', 'av')
+      .join('av.address', 'ava')
+      .join('rr.evmLog', 'el')
+      .join('el.block', 'bl')
+      .select(raw('bl.timestamp as _impact'))
+      .where({ 'ava.hex': vault, 'bl.timestamp': { $gte: now - delta }})
+      .orderBy({ [raw('_impact')]: 'desc' })
+      .limit(lim)
+      .execute() as { timestamp: number }[]
+    const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(1) }))
+    return [weightedAverage(timespan, now, delta, lim), timespan.length]
   }
 
-  async redemptionSize(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
-    return BigInt(0)
+  async redemptionSizeWA(vault: string, now: number, delta: number, lim: number): Promise<[bigint, number]> {
+    const result = await this.orm.em.fork().createQueryBuilder(RedemptionRequested, 'rr')
+      .join('rr.agentVault', 'av')
+      .join('av.address', 'ava')
+      .join('rr.evmLog', 'el')
+      .join('el.block', 'bl')
+      .where({ 'ava.hex': vault, 'bl.timestamp': { $gte: now - delta }})
+      .select(['bl.timestamp', 'rr.value_uba'])
+      .addSelect(raw('rr.value_uba * bl.timestamp as _impact'))
+      .orderBy({ [raw('_impact')]: 'desc' })
+      .limit(lim)
+      .execute() as { timestamp: number, value_uba: string }[]
+    const timespan = result.map(r => ({ timestamp: r.timestamp, value: BigInt(r.value_uba) }))
+    return [weightedAverage(timespan, now, delta, lim), timespan.length]
   }
 
-  async backedFAssetsWA(vault: string, now: number, delta: number, lim: number): Promise<bigint> {
-    return BigInt(0)
+  async backedFAssetsWA(vault: string): Promise<bigint> {
+    const em = this.orm.em.fork()
+    const minted = await em.createQueryBuilder(MintingExecuted, 'me')
+      .join('me.collateralReserved', 'cr')
+      .join('me.agentVault', 'av')
+      .join('av.address', 'ava')
+      .where({ 'ava.hex': vault })
+      .select(raw('cr.value_uba as minted_uba'))
+      .execute() as { minted_uba: string }[]
+    if (minted.length === 0) return BigInt(0)
+    const redeemed = await em.createQueryBuilder(RedemptionRequested, 'rr')
+      .join('rr.agentVault', 'av')
+      .join('av.address', 'ava')
+      .where({ 'ava.hex': vault })
+      .select(raw('rr.value_uba as redeemed_uba'))
+      .execute() as { redeemed_uba: string }[]
+    const liquidated = await em.createQueryBuilder(LiquidationPerformed, 'lp')
+      .join('lp.agentVault', 'av')
+      .join('av.address', 'ava')
+      .where({ 'ava.hex': vault })
+      .select(raw('lp.value_uba as liquidated_uba'))
+      .execute() as { liquidated_uba: string }[]
+    return BigInt(minted[0]?.minted_uba ?? 0)
+      - BigInt(redeemed[0]?.redeemed_uba ?? 0)
+      - BigInt(liquidated[0]?.liquidated_uba ?? 0)
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////
