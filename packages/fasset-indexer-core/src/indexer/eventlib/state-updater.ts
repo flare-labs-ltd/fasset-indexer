@@ -24,6 +24,8 @@ export class StateUpdater extends EventStorer {
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentWorker(em, manager)
     const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args)
+    const collateralPoolToken = this.context.getERC20(agentVaultEntity.collateralPoolToken.hex)
+    agentVaultEntity.collateralPoolTokenSymbol = await collateralPoolToken.symbol()
     await this.updateAgentVaultInfo(em, agentVaultEntity)
     return agentVaultEntity
   }

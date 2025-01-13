@@ -318,10 +318,12 @@ export class EventStorer {
     // create agent vault
     const agentVaultEntity = new AgentVault(
       fasset,
-      agentEvmAddress, agentUnderlyingAddress,
+      agentEvmAddress,
+      agentUnderlyingAddress,
       collateralPoolEvmAddress,
       collateralPoolTokenEvmAddress,
-      agentOwnerEntity, false
+      agentOwnerEntity,
+      false
     )
     const vaultCollateralTokenEntity = await em.findOneOrFail(CollateralTypeAdded, { address: { hex: vaultCollateralToken }, fasset })
     const agentVaultSettings = new AgentVaultSettings(

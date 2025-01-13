@@ -3,7 +3,15 @@ import { Context } from "../context/context"
 import { logger } from "../logger"
 import { config } from "../config/config"
 import { EventIndexer } from "../indexer/indexer"
+import { AgentVault } from "../database/entities/agent"
 
+async function fillCollateralPoolTokens(context: Context) {
+  const agentVaults = await context.orm.em.fork().findAll(AgentVault, { populate: ['collateralPoolToken'] })
+  for (const agentVault of agentVaults) {
+    const collateralPoolToken = context.getERC20(agentVault.collateralPoolToken.hex)
+    agentVault.collateralPoolTokenSymbol = await collateralPoolToken.symbol()
+  }
+}
 
 async function runIndexer(start?: number) {
   const context = await Context.create(config)
@@ -14,6 +22,8 @@ async function runIndexer(start?: number) {
     await context.orm.close()
     process.exit(0)
   })
+
+  await fillCollateralPoolTokens(context)
 
   logger.info("ensuring configuration integrity...")
   await ensureConfigIntegrity(context)
