@@ -10,6 +10,7 @@ async function fillCollateralPoolTokens(context: Context) {
   for (const agentVault of agentVaults) {
     const collateralPoolToken = context.getERC20(agentVault.collateralPoolToken.hex)
     agentVault.collateralPoolTokenSymbol = await collateralPoolToken.symbol()
+    await context.orm.em.persistAndFlush(agentVault)
   }
 }
 
