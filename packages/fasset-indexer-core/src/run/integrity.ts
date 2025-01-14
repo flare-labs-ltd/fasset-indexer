@@ -85,9 +85,18 @@ async function markNewDatabase(context: Context): Promise<void> {
 async function getContractCreationBlock(provider: JsonRpcApiProvider, address: string, chain: string): Promise<number | null> {
   const blockExplorer = BLOCK_EXPLORERS[chain as keyof typeof BLOCK_EXPLORERS]
   if (blockExplorer == null) return null
-  const resp = await fetch(`${blockExplorer}/api/v2/addresses/${address}`)
-  const json = await resp.json()
-  const hash = json.creation_tx_hash
+  let hash = null
+  try {
+    const resp = await fetch(`${blockExplorer}/api/v2/addresses/${address}`)
+    const json = await resp.json()
+    hash = json.creation_transaction_hash
+  } catch (e) {}
+  if (hash == null) {
+    throw new Error(`
+      Fetching contract creation block from block explorer ${blockExplorer} failed.
+      Please obtain creation block for ${address} on ${chain} and paste it into .env under "MIN_BLOCK_NUMBER".
+    `)
+  }
   const creation = await provider.getTransaction(hash)
   return creation?.blockNumber ?? null
 }
