@@ -15,7 +15,7 @@ import { AgentVaultInfo } from "../../database/entities/state/agent"
 import { fassetToUsdPrice } from "../utils/prices"
 import { ContractLookup } from "../../context/lookup"
 import { SharedAnalytics } from "./shared"
-import { Statistics } from "./statistics"
+import { AgentStatistics } from "./statistics"
 import { EVENTS, PRICE_FACTOR } from "../../config/constants"
 import { COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
@@ -33,13 +33,13 @@ import type {
  */
 export class DashboardAnalytics extends SharedAnalytics {
   protected lookup: ContractLookup
-  private statistics: Statistics
+  private statistics: AgentStatistics
   private zeroAddressId: number | null = null
 
   constructor(public readonly orm: ORM, chain: string, addressesJson?: string) {
     super(orm)
     this.lookup = new ContractLookup(chain, addressesJson)
-    this.statistics = new Statistics(orm)
+    this.statistics = new AgentStatistics(orm)
   }
 
   //////////////////////////////////////////////////////////////////////

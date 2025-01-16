@@ -1,7 +1,10 @@
 import { raw } from "@mikro-orm/core"
-import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
 import type { SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../../database/interface"
+import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
+import { MintingExecuted } from "../../database/entities/events/minting"
+import { RedemptionRequested } from "../../database/entities/events/redemption"
+import { LiquidationPerformed } from "../../database/entities/events/liquidation"
 
 export abstract class SharedAnalytics {
   constructor(public readonly orm: ORM) {}
@@ -29,6 +32,33 @@ export abstract class SharedAnalytics {
       'cpe', pool, user, timestamp
     ).execute() as { collateral: bigint }[]
     return BigInt(exitedCollateral[0]?.collateral || 0)
+  }
+
+  protected async backedFAssets(vault: string): Promise<bigint> {
+    const em = this.orm.em.fork()
+    const minted = await em.createQueryBuilder(MintingExecuted, 'me')
+      .join('me.collateralReserved', 'cr')
+      .join('cr.agentVault', 'av')
+      .join('av.address', 'ava')
+      .where({ 'ava.hex': vault })
+      .select(raw('SUM(cr.value_uba) as minted_uba'))
+      .execute() as { minted_uba: string }[]
+    if (minted.length === 0) return BigInt(0)
+    const redeemed = await em.createQueryBuilder(RedemptionRequested, 'rr')
+      .join('rr.agentVault', 'av')
+      .join('av.address', 'ava')
+      .where({ 'ava.hex': vault })
+      .select(raw('SUM(rr.value_uba) as redeemed_uba'))
+      .execute() as { redeemed_uba: string }[]
+    const liquidated = await em.createQueryBuilder(LiquidationPerformed, 'lp')
+      .join('lp.agentVault', 'av')
+      .join('av.address', 'ava')
+      .where({ 'ava.hex': vault })
+      .select(raw('SUM(lp.value_uba) as liquidated_uba'))
+      .execute() as { liquidated_uba: string }[]
+    return BigInt(minted[0]?.minted_uba ?? 0)
+      - BigInt(redeemed[0]?.redeemed_uba ?? 0)
+      - BigInt(liquidated[0]?.liquidated_uba ?? 0)
   }
 
   protected filterEnterOrExitQueryBy<T extends object>(

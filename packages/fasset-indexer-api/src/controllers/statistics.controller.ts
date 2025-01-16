@@ -63,7 +63,7 @@ export class StatisticsController {
     @Query('vault') vault: string
   ): Promise<ApiResponse<StatisticAverage>> {
     const now = unixnow()
-    return apiResponse(this.structureReturn(this.service.redemptionFrequencyWA(vault, now, DELTA, STAT_LIMIT), now), 200)
+    return apiResponse(this.structureReturn(this.service.redemptionCountWA(vault, now, DELTA, STAT_LIMIT), now), 200)
   }
 
   @Get('backed-fassets-wa?')
@@ -71,7 +71,7 @@ export class StatisticsController {
   getBackedFAssetsWA(
     @Query('vault') vault: string
   ): Promise<ApiResponse<bigint>> {
-    return apiResponse(this.service.backedFAssetsWA(vault), 200)
+    return apiResponse(this.service.backedFAssets(vault), 200)
   }
 
   protected async structureReturn(prms: Promise<[bigint, number]>, now: number): Promise<StatisticAverage> {

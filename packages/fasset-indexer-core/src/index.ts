@@ -17,4 +17,4 @@ export type {
 export { DashboardAnalytics } from "./analytics/impl/dashboard"
 export { NotificationAnalytics } from "./analytics/impl/notification"
 export { MetadataAnalytics } from "./analytics/impl/metadata"
-export { Statistics } from "./analytics/impl/statistics"
+export { AgentStatistics as Statistics } from "./analytics/impl/statistics"
