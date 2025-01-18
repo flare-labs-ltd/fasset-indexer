@@ -1,6 +1,6 @@
 {
   "name": "fasset-indexer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "FAsset Indexer",
   "private": true,
   "workspaces": {
