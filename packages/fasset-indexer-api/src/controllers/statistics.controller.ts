@@ -66,14 +66,6 @@ export class StatisticsController {
     return apiResponse(this.structureReturn(this.service.redemptionCountWA(vault, now, DELTA, STAT_LIMIT), now), 200)
   }
 
-  @Get('backed-fassets-wa?')
-  @ApiQuery({ name: 'vault', type: String, required: true })
-  getBackedFAssetsWA(
-    @Query('vault') vault: string
-  ): Promise<ApiResponse<bigint>> {
-    return apiResponse(this.service.backedFAssets(vault), 200)
-  }
-
   protected async structureReturn(prms: Promise<[bigint, number]>, now: number): Promise<StatisticAverage> {
     return prms.then(([avg, num]) => ({
       average: avg,
