@@ -1,8 +1,7 @@
 {
     "name": "fasset-indexer-core",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "FAsset Indexer Core",
-    "private": true,
     "license": "MIT",
     "exports": {
         ".": {
