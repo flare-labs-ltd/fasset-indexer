@@ -17,9 +17,9 @@ import type { Context } from '../context/context'
 
 
 export class EventIndexer {
-  readonly eventScraper: EventScraper
-  readonly eventParser: EventParser
-  readonly stateUpdater: StateUpdater
+  eventScraper: EventScraper
+  eventParser: EventParser
+  stateUpdater: StateUpdater
 
   constructor(public readonly context: Context, eventnames?: string[]) {
     this.eventScraper = new EventScraper(context)
