@@ -1,18 +1,17 @@
 import { Controller, Get, ParseBoolPipe, ParseIntPipe, Query, UseInterceptors } from '@nestjs/common'
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
 import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { FAssetType } from 'fasset-indexer-core'
+import { RedemptionDefault } from 'fasset-indexer-core/entities'
 import { unixnow } from 'src/shared/utils'
 import { DashboardService } from '../services/dashboard.service'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
 import { CP_SCORE_MIN_POOL_COLLATERAL_WEI, MAX_RETURNED_OBJECTS, MAX_TIMESERIES_PTS, MAX_TIMESPAN_PTS } from '../constants'
-import {
-  type AmountResult,
-  type TimeSeries, type Timespan, type TokenPortfolio,
-  type FAssetTimespan, type FAssetCollateralPoolScore,
-  type FAssetValueResult, type FAssetAmountResult,
-  type RedemptionDefault,
-  FAssetType
-} from 'fasset-indexer-core'
+import type {
+  AmountResult, TimeSeries, Timespan, TokenPortfolio,
+  FAssetCollateralPoolScore, FAssetValueResult,
+  FAssetAmountResult, FAssetTimespan
+} from 'fasset-indexer-core/analytics'
 
 
 @ApiTags('Dashboard')

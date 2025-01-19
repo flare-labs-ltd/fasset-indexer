@@ -8,7 +8,7 @@ import { NotificationController } from './controllers/notification.controller'
 import { DashboardController } from './controllers/dashboard.controller'
 import { StatisticsController } from './controllers/statistics.controller'
 import { MetadataController } from './controllers/metadata.controller'
-import { createOrm, getUserDatabaseConfig, getOrmConfig, getVar } from 'fasset-indexer-core'
+import { createOrm, getUserDatabaseConfig, getOrmConfig, getVar } from 'fasset-indexer-core/database'
 import { apiConfig, DatabaseConfig } from './config'
 import { CACHE_MAX_ENTRIES, CACHE_TTL_MS } from './constants'
 

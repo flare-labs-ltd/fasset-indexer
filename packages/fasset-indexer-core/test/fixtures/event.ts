@@ -1,5 +1,5 @@
-import { ORM } from "../../src"
 import { FAssetType } from "../../src"
+import { ORM } from "../../src/database"
 import { EvmAddress, UnderlyingAddress } from "../../src/database/entities/address"
 import { CollateralTypeAdded } from "../../src/database/entities/events/token"
 import { AgentManager, AgentOwner, AgentVault } from "../../src/database/entities/agent"

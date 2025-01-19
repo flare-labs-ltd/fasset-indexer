@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { NotificationAnalytics } from 'fasset-indexer-core'
+import { NotificationAnalytics } from 'fasset-indexer-core/analytics'
 import type { DatabaseConfig } from '../config'
 
 
