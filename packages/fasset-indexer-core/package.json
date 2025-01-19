@@ -8,6 +8,22 @@
             "types": "./dist/src/index.d.ts",
             "default": "./dist/src/index.js"
         },
+        "./entities": {
+            "types": "./dist/src/database/entities/index.d.ts",
+            "default": "./dist/src/database/entities/index.js"
+        },
+        "./database": {
+            "types": "./dist/src/database/index.d.ts",
+            "default": "./dist/src/database/index.js"
+        },
+        "./constants": {
+            "types": "./dist/src/constants/index.d.ts",
+            "default": "./dist/src/constants/index.js"
+        },
+        "./analytics": {
+            "types": "./dist/src/analytics/index.d.ts",
+            "default": "./dist/src/analytics/index.js"
+        },
         "./typechain/*": {
             "types": "./dist/src/chain/typechain/*.d.ts",
             "default": "./dist/src/chain/typechain/*.js"

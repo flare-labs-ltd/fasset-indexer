@@ -1,5 +1,5 @@
 import "dotenv/config"
-import type { ORM } from "fasset-indexer-core"
+import type { ORM } from "fasset-indexer-core/database"
 
 export type DatabaseConfig = {
   orm: ORM

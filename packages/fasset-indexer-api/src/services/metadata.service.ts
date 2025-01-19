@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common'
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager'
-import { MetadataAnalytics } from 'fasset-indexer-core'
+import { MetadataAnalytics } from 'fasset-indexer-core/analytics'
 import type { DatabaseConfig } from '../config'
 
 
