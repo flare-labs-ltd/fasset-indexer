@@ -8,9 +8,13 @@
             "types": "./dist/src/index.d.ts",
             "default": "./dist/src/index.js"
         },
+        "./typechain/*": {
+            "types": "./dist/src/chain/typechain/*.d.ts",
+            "default": "./dist/src/chain/typechain/*.js"
+        },
         "./*": {
             "types": "./dist/src/*.d.ts",
-            "default": "./dist/src/*"
+            "default": "./dist/src/*.js"
         }
     },
     "scripts": {
