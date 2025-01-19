@@ -1,5 +1,7 @@
 import { AddressType } from "../../database/entities/address"
 import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/agent"
+import { AgentVaultSettings } from "../../database/entities/state/agent"
+import { AgentVaultCreated } from "../../database/entities/events/agent"
 import { UntrackedAgentVault } from "../../database/entities/state/var"
 import { CollateralTypeAdded } from "../../database/entities/events/token"
 import { PricePublished, PricesPublished } from "../../database/entities/events/price"
@@ -19,15 +21,17 @@ export class StateUpdater extends EventStorer {
     super(context.orm, context)
   }
 
-  protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<AgentVault> {
+  protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<[
+    AgentVault, AgentVaultSettings, AgentVaultCreated
+  ]> {
     const [ owner, ] = args
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentWorker(em, manager)
-    const agentVaultEntity = await super.onAgentVaultCreated(em, evmLog, args)
+    const [agentVaultEntity, avs, avc] = await super.onAgentVaultCreated(em, evmLog, args)
     const collateralPoolToken = this.context.getERC20(agentVaultEntity.collateralPoolToken.hex)
     agentVaultEntity.collateralPoolTokenSymbol = await collateralPoolToken.symbol()
     await this.updateAgentVaultInfo(em, agentVaultEntity)
-    return agentVaultEntity
+    return [agentVaultEntity, avs, avc]
   }
 
   protected override async onPublishedPrices(em: EntityManager, evmLog: EvmLog, args: any): Promise<PricesPublished> {
