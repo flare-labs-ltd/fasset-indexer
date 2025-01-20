@@ -1,17 +1,17 @@
 import { Injectable, Inject } from '@nestjs/common'
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager'
 import { MetadataAnalytics } from 'fasset-indexer-core/analytics'
-import type { DatabaseConfig } from '../config'
+import type { ApiContext } from 'src/config/context'
 
 
 @Injectable()
 export class MetadataService extends MetadataAnalytics {
 
   constructor(
-    @Inject('config') config: DatabaseConfig,
+    @Inject('apiContext') context: ApiContext,
     @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {
-    super(config.orm)
+    super(context.orm)
   }
 
   keys(): Promise<string[]> {

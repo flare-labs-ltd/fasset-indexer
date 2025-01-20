@@ -1,11 +1,12 @@
 import { EvmStateWatchdog } from "../indexer/watchdog"
 import { ensureConfigIntegrity } from "./integrity"
+import { ConfigLoader } from "../config"
 import { Context } from "../context/context"
-import { config } from "../config/config"
 import { logger } from "../logger"
 
 
 async function runWatchdog() {
+  const config = new ConfigLoader()
   const context = await Context.create(config)
   const watchdog = new EvmStateWatchdog(context)
 

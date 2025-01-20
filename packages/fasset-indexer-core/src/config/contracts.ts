@@ -1,10 +1,5 @@
 import { resolve } from "path"
-
-export type ContractInfo = {
-  name: string
-  contractName: string
-  address: string
-}
+import type { ContractInfo } from "./interface"
 
 export function getContractInfo(chain: string, file?: string): ContractInfo[] {
   if (file !== undefined) {

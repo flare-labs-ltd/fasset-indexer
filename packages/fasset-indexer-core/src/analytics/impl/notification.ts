@@ -2,16 +2,16 @@ import { createOrm } from "../../database/utils"
 import { EvmLog } from "../../database/entities/evm/log"
 import { AgentVaultInfo } from "../../database/entities/state/agent"
 import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../../database/entities/events/challenge"
-import type { ORM } from "../../database/interface"
-import type { IUserDatabaseConfig } from "../../config/interface"
+import { ConfigLoader } from "../../config"
 import { EVENTS } from "../../config/constants"
+import type { ORM } from "../../database/interface"
 
 
 export class NotificationAnalytics {
   constructor(public readonly orm: ORM) {}
 
-  async create(config: IUserDatabaseConfig): Promise<NotificationAnalytics> {
-    const orm = await createOrm(config, 'safe')
+  async create(loader: ConfigLoader): Promise<NotificationAnalytics> {
+    const orm = await createOrm(loader.dbConfig, 'safe')
     return new NotificationAnalytics(orm)
   }
 

@@ -1,11 +1,12 @@
 import { ensureConfigIntegrity } from "./integrity"
 import { EventIndexer } from "../indexer/indexer"
+import { ConfigLoader } from "../config"
 import { Context } from "../context/context"
-import { config } from "../config/config"
 import { logger } from "../logger"
 
 
 async function runIndexer(start?: number) {
+  const config = new ConfigLoader()
   const context = await Context.create(config)
   const indexer = new EventIndexer(context)
 

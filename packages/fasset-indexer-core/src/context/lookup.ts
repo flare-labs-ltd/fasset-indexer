@@ -1,6 +1,7 @@
-import { ContractInfo, getContractInfo } from "../config/contracts"
-import { FAsset, FAssetType } from "../shared"
+import { getContractInfo } from "../config/contracts"
+import { FAssetType } from "../shared"
 import { EventInterface } from "./events"
+import type { ContractInfo } from "../config/interface"
 
 
 export class ContractLookup extends EventInterface {

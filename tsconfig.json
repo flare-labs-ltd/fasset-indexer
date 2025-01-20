@@ -30,5 +30,8 @@
     {
       "path": "packages/fasset-indexer-core"
     }
+  ],
+  "exclude": [
+    "*/**/playground*.ts"
   ]
 }

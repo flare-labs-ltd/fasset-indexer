@@ -1,10 +1,18 @@
 import { resolve } from "path"
-import { expandUserConfig } from "../../src/config/load"
+import { ConfigLoader } from "../../src/config"
 
 
-export const CONFIG = expandUserConfig({
-    chain: 'coston',
-    dbType: 'sqlite',
-    dbName: resolve("fasset-open-beta-monitor.test.db"),
-    rpcUrl: '',
-})
+export class TestConfigLoader extends ConfigLoader {
+
+  override get chain() {
+    return 'coston'
+  }
+
+  protected override get dbType(): string {
+    return 'sqlite'
+  }
+
+  protected override get dbName() {
+    return resolve("fasset-open-beta-monitor.test.db")
+  }
+}
