@@ -28,10 +28,9 @@ import { TokenBalance } from "../src/database/entities/state/balance"
 import { EventStorer } from "../src/indexer/eventlib/event-storer"
 import { Context } from "../src/context/context"
 import { EVENTS } from "../src/config/constants"
-import { CONFIG } from "./fixtures/config"
 import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/database/entities/events/redemption-ticket"
 import { RedemptionTicket } from "../src/database/entities/state/redemption-ticket"
-import { populate } from "dotenv"
+import { TestConfigLoader } from "./fixtures/config"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -45,14 +44,15 @@ describe("FAsset evm events", () => {
   let storer: EventStorer
 
   beforeEach(async () => {
-    context = await Context.create(CONFIG)
+    const loader = new TestConfigLoader()
+    context = await Context.create(loader)
     fixture = new EventFixture(context.orm)
     storer = new EventStorer(context.orm, context)
   })
 
   afterEach(async () => {
     await context.orm.close(true)
-    unlink(CONFIG.db.dbName!, () => {})
+    unlink(context.loader.dbConfig.dbName!, () => {})
   })
 
   it("should store erc20 transfers", async () => {

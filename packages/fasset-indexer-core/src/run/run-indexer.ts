@@ -1,8 +1,8 @@
 import { AgentVault } from "../database/entities/agent"
 import { EventIndexer } from "../indexer/indexer"
 import { ensureConfigIntegrity } from "./integrity"
+import { ConfigLoader } from "../config"
 import { Context } from "../context/context"
-import { config } from "../config/config"
 import { logger } from "../logger"
 
 async function fillCollateralPoolTokens(context: Context) {
@@ -16,6 +16,7 @@ async function fillCollateralPoolTokens(context: Context) {
 }
 
 async function runIndexer(start?: number) {
+  const config = new ConfigLoader()
   const context = await Context.create(config)
   const indexer = new EventIndexer(context)
 

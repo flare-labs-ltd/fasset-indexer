@@ -10,8 +10,5 @@
       "test/**/*.ts",
       "chain/**/*.ts",
       "chain/**/*.json"
-    ],
-    "exclude": [
-      "src/playground*.ts"
     ]
   }

@@ -2,15 +2,16 @@ import helmet from 'helmet'
 import { NestFactory } from '@nestjs/core'
 import { FAssetIndexerModule } from './app.module'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { apiConfig } from './config'
+import { ApiConfigLoader } from './config/loader'
 
-let apiDoc = 'api-doc'
+let apiDocPath = 'api-doc'
 
 async function bootstrap() {
+  const apiConfig = new ApiConfigLoader()
   const app = await NestFactory.create(FAssetIndexerModule)
   if (apiConfig.rootPath != null && apiConfig.rootPath != '') {
     app.setGlobalPrefix(apiConfig.rootPath)
-    apiDoc = apiConfig.rootPath + '/' + apiDoc
+    apiDocPath = apiConfig.rootPath + '/' + apiDocPath
   }
   const config = new DocumentBuilder()
     .setTitle('FAsset Indexer Api')
@@ -18,7 +19,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .build()
   const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup(apiDoc, app, document)
+  SwaggerModule.setup(apiDocPath, app, document)
   await app.use(helmet()).listen(apiConfig.port)
 }
 
