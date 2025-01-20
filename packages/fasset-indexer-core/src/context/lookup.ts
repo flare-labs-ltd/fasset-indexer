@@ -1,5 +1,5 @@
 import { ContractInfo, getContractInfo } from "../config/contracts"
-import { FAssetType } from "../shared"
+import { FAsset, FAssetType } from "../shared"
 import { EventInterface } from "./events"
 
 
@@ -29,6 +29,10 @@ export class ContractLookup extends EventInterface {
     this.populateIsFAssetTokenCache()
     this.fassetTokens = Array.from(this.isFAssetToken__cache)
     ContractLookup.singleton = this
+  }
+
+  supportsFAsset(fasset: FAssetType): boolean {
+    return this.fAssetToAssetManager__cache.has(fasset)
   }
 
   isAssetManager(address: string): boolean {
