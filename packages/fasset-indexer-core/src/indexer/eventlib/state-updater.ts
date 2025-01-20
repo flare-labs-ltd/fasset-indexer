@@ -40,7 +40,7 @@ export class StateUpdater extends EventStorer {
     return pp
   }
 
-  private async ensureAgentManager(em: EntityManager, address: string): Promise<AgentManager> {
+  protected async ensureAgentManager(em: EntityManager, address: string): Promise<AgentManager> {
     let agentManager = await em.findOne(AgentManager, { address: { hex: address }}, { populate: ['address'] })
     if (agentManager === null) {
       agentManager = await this.findOrCreateAgentManager(em, address, true)
@@ -49,7 +49,7 @@ export class StateUpdater extends EventStorer {
     return agentManager
   }
 
-  private async ensureAgentWorker(em: EntityManager, manager: AgentManager): Promise<AgentOwner> {
+  protected async ensureAgentWorker(em: EntityManager, manager: AgentManager): Promise<AgentOwner> {
     let agentWorker = await em.findOne(AgentOwner, { manager })
     if (agentWorker === null) {
       const address = await this.context.contracts.agentOwnerRegistryContract.getWorkAddress(manager.address.hex)
@@ -60,7 +60,7 @@ export class StateUpdater extends EventStorer {
     return agentWorker
   }
 
-  private async findOrCreateAgentManager(em: EntityManager, manager: string, full: boolean): Promise<AgentManager> {
+  protected async findOrCreateAgentManager(em: EntityManager, manager: string, full: boolean): Promise<AgentManager> {
     let agentManager = await em.findOne(AgentManager, { address: { hex: manager }})
     if (agentManager === null) {
       const managerEvmAddress = await findOrCreateEvmAddress(em, manager, AddressType.AGENT)
