@@ -24,9 +24,9 @@
             "types": "./dist/src/analytics/index.d.ts",
             "default": "./dist/src/analytics/index.js"
         },
-        "./typechain/*": {
-            "types": "./dist/src/chain/typechain/*.d.ts",
-            "default": "./dist/src/chain/typechain/*.js"
+        "./typechain": {
+            "types": "./dist/chain/typechain/index.d.ts",
+            "default": "./dist/chain/typechain/index.js"
         },
         "./*": {
             "types": "./dist/src/*.d.ts",
