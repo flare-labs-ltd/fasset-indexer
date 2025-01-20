@@ -28,6 +28,10 @@
             "types": "./dist/chain/typechain/index.d.ts",
             "default": "./dist/chain/typechain/index.js"
         },
+        "./typechain/*": {
+            "types": "./dist/chain/typechain/*.d.ts",
+            "default": "./dist/chain/typechain/*.js"
+        },
         "./*": {
             "types": "./dist/src/*.d.ts",
             "default": "./dist/src/*.js"
