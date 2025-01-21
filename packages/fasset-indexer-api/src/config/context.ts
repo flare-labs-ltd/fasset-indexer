@@ -1,5 +1,5 @@
 import { createOrm, getVar, type ORM } from "fasset-indexer-core/database"
-import type { ApiConfigLoader } from "./loader"
+import type { ApiConfigLoader } from "./config"
 
 
 export class ApiContext {

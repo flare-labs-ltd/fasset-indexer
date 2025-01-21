@@ -4,7 +4,7 @@ import { ContractLookup } from "./lookup"
 import { IAssetManager__factory, ERC20__factory, IAgentOwnerRegistry__factory, IPriceReader__factory } from "../../chain/typechain"
 import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../../chain/typechain"
 import type { ORM } from "../database/interface"
-import { ConfigLoader } from "../config/loader"
+import { ConfigLoader } from "../config/config"
 
 
 export class Context extends ContractLookup {
