@@ -8,7 +8,7 @@ import { NotificationController } from './controllers/notification.controller'
 import { DashboardController } from './controllers/dashboard.controller'
 import { StatisticsController } from './controllers/statistics.controller'
 import { MetadataController } from './controllers/metadata.controller'
-import { ApiConfigLoader } from './config/loader'
+import { ApiConfigLoader } from './config/config'
 import { ApiContext } from './config/context'
 import { CACHE_MAX_ENTRIES, CACHE_TTL_MS } from './config/constants'
 
