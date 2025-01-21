@@ -277,7 +277,7 @@ export class EventStorer {
         return false
       }
     }
-    if (ent != undefined) {
+    if (ent != null) {
       em.persist(ent)
     }
     return true
