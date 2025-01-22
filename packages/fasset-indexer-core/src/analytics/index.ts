@@ -1,7 +1,7 @@
 export { DashboardAnalytics } from "./impl/dashboard"
 export { NotificationAnalytics } from "./impl/notification"
 export { MetadataAnalytics } from "./impl/metadata"
-export { Statistics } from "./impl/statistics"
+export { AgentStatistics } from "./impl/statistics"
 
 export type {
   ValueResult, AmountResult,
