@@ -52,7 +52,7 @@ describe("FAsset evm events", () => {
 
   afterEach(async () => {
     await context.orm.close(true)
-    unlink(context.loader.dbConfig.dbName!, () => {})
+    unlink(context.config.dbConfig.dbName!, () => {})
   })
 
   it("should store erc20 transfers", async () => {

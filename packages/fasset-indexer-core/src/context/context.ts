@@ -14,9 +14,9 @@ export class Context extends ContractLookup {
     priceReader: IPriceReader
   }
 
-  constructor(public loader: ConfigLoader, public orm: ORM) {
-    super(loader.chain, loader.addressesJson)
-    this.provider = this.getEthersApiProvider(loader.rpcUrl, loader.rpcApiKey)
+  constructor(public config: ConfigLoader, public orm: ORM) {
+    super(config.chain, config.addressesJson)
+    this.provider = this.getEthersApiProvider(config.rpcUrl, config.rpcApiKey)
     this.contracts = {
       agentOwnerRegistryContract: this.getAgentOwnerRegistryContract(),
       priceReader: this.getPriceReaderContract()
