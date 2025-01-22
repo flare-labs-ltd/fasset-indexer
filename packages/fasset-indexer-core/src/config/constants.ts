@@ -2,7 +2,7 @@ import { FAssetType } from "../shared"
 
 // chain call config
 export const CHAIN_FETCH_RETRY_LIMIT = 20
-export const MID_CHAIN_FETCH_SLEEP_MS = 100
+export const SLEEP_AFTER_ERROR_MS = 100
 
 // evm event scrape config
 export const EVM_LOG_FETCH_SLEEP_MS = 30 * 1000 // collect logs every 30 seconds

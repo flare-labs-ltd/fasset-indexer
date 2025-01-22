@@ -1,6 +1,6 @@
-import { Entity, OneToOne, Property } from "@mikro-orm/core";
-import { RedemptionTicketCreated } from "../events/redemption-ticket";
-import { uint256 } from "../../custom/uint";
+import { Entity, OneToOne, Property } from "@mikro-orm/core"
+import { RedemptionTicketCreated } from "../events/redemption-ticket"
+import { uint256 } from "../../custom/uint"
 
 @Entity()
 export class RedemptionTicket {

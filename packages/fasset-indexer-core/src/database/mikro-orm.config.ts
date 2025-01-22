@@ -64,7 +64,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     CollateralPoolPaidOut, CollateralPoolClaimedReward,
     ERC20Transfer, CollateralTypeAdded, AgentPing, AgentPingResponse,
     CurrentUnderlyingBlockUpdated, PricesPublished, PricePublished,
-    FtsoPrice, UntrackedAgentVault, TokenBalance,
+    FtsoPrice, UntrackedAgentVault, TokenBalance
   ],
   pool: {
     min: MIN_DATABASE_POOL_CONNECTIONS,

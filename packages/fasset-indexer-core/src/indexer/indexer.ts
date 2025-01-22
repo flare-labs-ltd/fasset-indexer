@@ -7,9 +7,9 @@ import { logger } from '../logger'
 import {
   FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY,
   EVM_LOG_FETCH_SIZE,
-  MID_CHAIN_FETCH_SLEEP_MS,
   EVM_LOG_FETCH_SLEEP_MS,
   EVM_BLOCK_HEIGHT_OFFSET,
+  SLEEP_AFTER_ERROR_MS,
   MIN_EVM_BLOCK_NUMBER_DB_KEY
 } from '../config/constants'
 import type { Log } from 'ethers'
@@ -35,7 +35,7 @@ export class EventIndexer {
         await this.runHistoric(startBlock)
       } catch (e: any) {
         logger.error(`error running event indexer: ${e}`)
-        await sleep(MID_CHAIN_FETCH_SLEEP_MS)
+        await sleep(SLEEP_AFTER_ERROR_MS)
         continue
       }
       await sleep(EVM_LOG_FETCH_SLEEP_MS)
@@ -57,7 +57,6 @@ export class EventIndexer {
       await this.storeLogs(logs)
       await this.setFirstUnhandledBlock(endLoopBlock + 1)
       logger.info(`indexer processed ${this.context.chain} logs from block ${i} to ${endLoopBlock}`)
-      if (endLoopBlock < endBlock) await sleep(MID_CHAIN_FETCH_SLEEP_MS)
     }
   }
 

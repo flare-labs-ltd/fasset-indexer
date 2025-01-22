@@ -4,7 +4,7 @@ import { AgentVault } from "../database/entities/agent"
 import { FtsoPrice } from "../database/entities/state/price"
 import { isUntrackedAgentVault, updateAgentVaultInfo } from "./shared"
 import { Context } from "../context/context"
-import { MID_CHAIN_FETCH_SLEEP_MS, EVM_STATE_UPDATE_SLEEP_MS } from "../config/constants"
+import { EVM_STATE_UPDATE_SLEEP_MS } from "../config/constants"
 import { logger } from "../logger"
 import type { EntityManager } from "@mikro-orm/knex"
 import type { FAssetType } from "../shared"
@@ -40,7 +40,6 @@ export class EvmStateWatchdog {
       } catch (e: any) {
         logger.error(`error updating agent ${agent.address} info: ${e}`)
       }
-      await sleep(MID_CHAIN_FETCH_SLEEP_MS)
     }
   }
 
