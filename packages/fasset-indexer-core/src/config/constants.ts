@@ -1,3 +1,5 @@
+import { FAssetType } from "../shared"
+
 // chain call config
 export const CHAIN_FETCH_RETRY_LIMIT = 20
 export const MID_CHAIN_FETCH_SLEEP_MS = 100
@@ -15,9 +17,15 @@ export const MAX_DATABASE_ENTRIES_FETCH = 200
 
 // db variable names
 export const FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY = "firstUnhandledEventBlock"
-export const FIRST_UNHANDLED_EVENT_BLOCK_FOR_CURRENT_UPDATE_DB_KEY = "firstUnhandledEventBlockAddCCBs"
-export const END_EVENT_BLOCK_FOR_CURRENT_UPDATE_DB_KEY = "endEventBlockAddCCBs"
 export const MIN_EVM_BLOCK_NUMBER_DB_KEY = "minEvmBlockNumber"
+
+// db back indexer names
+export function backUpdateFirstUnhandledBlockName(updateName: string): string {
+  return `firstUnhandledEventBlock_${updateName}`
+}
+export function backUpdateLastBlockName(updateName: string): string {
+  return `lastEventBlock_${updateName}`
+}
 
 // event names
 // agent
@@ -30,6 +38,10 @@ export const EVENTS = {
     AGENT_ENTERED_AVAILABLE: "AgentAvailable",
     AGENT_DESTROYED: "AgentDestroyed",
     SELF_CLOSE: "SelfClose",
+    VAULT_COLLATERAL_WITHDRAWAL_ANNOUNCED: "VaultCollateralWithdrawalAnnounced",
+    POOL_TOKEN_REDEMPTION_ANNOUNCED: "PoolTokenRedemptionAnnounced",
+    UNDERLYING_WITHDRAWAL_ANNOUNCED: "UnderlyingWithdrawalAnnounced",
+    UNDERLYING_WITHDRAWAL_CONFIRMED: "UnderlyingWithdrawalConfirmed",
     // minting
     COLLATERAL_RESERVED: "CollateralReserved",
     MINTING_EXECUTED: "MintingExecuted",
@@ -45,6 +57,10 @@ export const EVENTS = {
     REDEMPTION_REJECTED: "RedemptionRejected",
     REDEMPTION_REQUEST_INCOMPLETE: "RedemptionRequestIncomplete",
     REDEEMED_IN_COLLATERAL: "RedeemedInCollateral",
+    // redemption tickets
+    REDEMPTION_TICKET_CREATED: 'RedemptionTicketCreated',
+    REDEMPTION_TICKET_UPDATED: 'RedemptionTicketUpdated',
+    REDEMPTION_TICKET_DELETED: 'RedemptionTicketDeleted',
     // liquidation
     AGENT_IN_CCB: "AgentInCCB",
     LIQUIDATION_STARTED: "LiquidationStarted",
@@ -66,13 +82,17 @@ export const EVENTS = {
     CURRENT_UNDERLYING_BLOCK_UPDATED: 'CurrentUnderlyingBlockUpdated'
   },
   COLLATERAL_POOL: {
-    // collateral pool
     ENTER: "Entered",
-    EXIT: "Exited"
+    EXIT: "Exited",
+    DONATED: "Donated",
+    CLAIMED_REWARD: "ClaimedReward",
+    PAID_OUT: "PaidOut",
   },
   ERC20: {
-    // erc20
     TRANSFER: "Transfer",
+  },
+  PRICE_READER: {
+    PRICES_PUBLISHED: "PricesPublished",
   }
 }
 
@@ -83,9 +103,17 @@ export const BYTES32_LENGTH = 66
 // analytics
 export const PRICE_DECIMALS = 8
 export const PRICE_FACTOR = BigInt(10 ** PRICE_DECIMALS)
+export const MAX_BIPS = BigInt(1e4)
 
 // block explorers
 export const BLOCK_EXPLORERS = {
   coston: 'https://coston-explorer.flare.network',
   songbird: 'https://songbird-explorer.flare.network',
+}
+
+// index this later
+export const FASSET_LOT_SIZE = {
+  [FAssetType[FAssetType.FXRP]]: BigInt(20e6),
+  [FAssetType[FAssetType.FDOGE]]: BigInt(1000e8),
+  [FAssetType[FAssetType.FBTC]]: BigInt(1e8),
 }

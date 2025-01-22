@@ -6,51 +6,115 @@ import {
 import { EvmLog } from "../../database/entities/evm/log"
 import { CollateralTypeAdded, ERC20Transfer } from "../../database/entities/events/token"
 import { TokenBalance } from "../../database/entities/state/balance"
+import { RedemptionTicket } from "../../database/entities/state/redemption-ticket"
 import { AddressType, EvmAddress } from "../../database/entities/address"
 import { AgentOwner, AgentVault } from "../../database/entities/agent"
-import { AgentVaultCreated, AgentSettingChanged, SelfClose } from "../../database/entities/events/agent"
+import {
+  AgentVaultCreated,
+  AgentSettingChanged,
+  SelfClose,
+  VaultCollateralWithdrawalAnnounced,
+  PoolTokenRedemptionAnnounced,
+  UnderlyingWithdrawalAnnounced,
+  UnderlyingWithdrawalConfirmed
+} from "../../database/entities/events/agent"
 import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
 import {
   CollateralReservationDeleted,
-  CollateralReserved, MintingExecuted,
+  CollateralReserved,
+  MintingExecuted,
   MintingPaymentDefault,
   SelfMint
 } from "../../database/entities/events/minting"
 import {
-  RedemptionRequested, RedemptionPerformed, RedemptionDefault,
-  RedemptionPaymentFailed, RedemptionPaymentBlocked, RedemptionRejected,
+  RedemptionRequested,
+  RedemptionPerformed,
+  RedemptionDefault,
+  RedemptionPaymentFailed,
+  RedemptionPaymentBlocked,
+  RedemptionRejected,
   RedemptionRequestIncomplete,
   RedeemedInCollateral
 } from "../../database/entities/events/redemption"
 import {
+  RedemptionTicketCreated,
+  RedemptionTicketDeleted,
+  RedemptionTicketUpdated
+} from "../../database/entities/events/redemption-ticket"
+import {
   AgentInCCB,
-  FullLiquidationStarted, LiquidationEnded, LiquidationPerformed, LiquidationStarted
+  FullLiquidationStarted,
+  LiquidationEnded,
+  LiquidationPerformed,
+  LiquidationStarted
 } from "../../database/entities/events/liquidation"
 import {
-  DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow
+  DuplicatePaymentConfirmed,
+  IllegalPaymentConfirmed,
+  UnderlyingBalanceTooLow
 } from "../../database/entities/events/challenge"
-import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
+import {
+  CollateralPoolClaimedReward,
+  CollateralPoolDonated,
+  CollateralPoolEntered,
+  CollateralPoolExited,
+  CollateralPoolPaidOut
+} from "../../database/entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
+import { PricesPublished } from "../../database/entities/events/price"
 import { ContractLookup } from "../../context/lookup"
 import { EVENTS } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Event } from "./event-scraper"
 import type {
-  AgentAvailableEvent, AgentDestroyedEvent, AgentSettingChangeAnnouncedEvent,
-  AgentVaultCreatedEvent, AvailableAgentExitAnnouncedEvent,
-  CollateralReservationDeletedEvent, CollateralReservedEvent, CollateralTypeAddedEvent,
-  MintingExecutedEvent, MintingPaymentDefaultEvent,
-  RedemptionDefaultEvent, RedemptionPaymentBlockedEvent, RedemptionPaymentFailedEvent, RedemptionPerformedEvent,
-  RedemptionRejectedEvent, RedemptionRequestIncompleteEvent, RedemptionRequestedEvent,
-  FullLiquidationStartedEvent, LiquidationEndedEvent, LiquidationPerformedEvent, LiquidationStartedEvent,
-  SelfCloseEvent, AgentPingEvent, AgentPingResponseEvent,
-  IllegalPaymentConfirmedEvent, DuplicatePaymentConfirmedEvent, UnderlyingBalanceTooLowEvent,
-  AgentInCCBEvent, SelfMintEvent
+  AgentAvailableEvent,
+  AgentDestroyedEvent,
+  AgentSettingChangeAnnouncedEvent,
+  AgentVaultCreatedEvent,
+  AvailableAgentExitAnnouncedEvent,
+  CollateralReservationDeletedEvent,
+  CollateralReservedEvent,
+  CollateralTypeAddedEvent,
+  MintingExecutedEvent,
+  MintingPaymentDefaultEvent,
+  RedemptionDefaultEvent,
+  RedemptionPaymentBlockedEvent,
+  RedemptionPaymentFailedEvent,
+  RedemptionPerformedEvent,
+  RedemptionRejectedEvent,
+  RedemptionRequestIncompleteEvent,
+  RedemptionRequestedEvent,
+  FullLiquidationStartedEvent,
+  LiquidationEndedEvent,
+  LiquidationPerformedEvent,
+  LiquidationStartedEvent,
+  SelfCloseEvent,
+  AgentPingEvent,
+  AgentPingResponseEvent,
+  IllegalPaymentConfirmedEvent,
+  DuplicatePaymentConfirmedEvent,
+  UnderlyingBalanceTooLowEvent,
+  AgentInCCBEvent,
+  SelfMintEvent,
+  RedemptionTicketCreatedEvent,
+  RedemptionTicketUpdatedEvent,
+  RedemptionTicketDeletedEvent,
+  VaultCollateralWithdrawalAnnouncedEvent,
+  PoolTokenRedemptionAnnouncedEvent,
+  UnderlyingWithdrawalAnnouncedEvent,
+  UnderlyingWithdrawalConfirmedEvent
 } from "../../../chain/typechain/IAssetManager"
-import type { EnteredEvent, ExitedEvent } from "../../../chain/typechain/ICollateralPool"
-import type { TransferEvent } from "../../../chain/typechain/ERC20"
+import type {
+  ClaimedRewardEvent,
+  DonatedEvent,
+  EnteredEvent,
+  ExitedEvent,
+  PaidOutEvent
+} from "../../../chain/typechain/ICollateralPool"
+import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
+import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
 import type { ORM } from "../../database/interface"
 
 
@@ -85,6 +149,18 @@ export class EventStorer {
         break
       } case EVENTS.ASSET_MANAGER.AGENT_DESTROYED: {
         ent = await this.onAgentDestroyed(em, log.args as AgentDestroyedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.VAULT_COLLATERAL_WITHDRAWAL_ANNOUNCED: {
+        await this.onVaultCollateralWithdrawalAnnounced(em, evmLog, log.args as VaultCollateralWithdrawalAnnouncedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.POOL_TOKEN_REDEMPTION_ANNOUNCED: {
+        await this.onPoolTokenRedemptionAnnounced(em, evmLog, log.args as PoolTokenRedemptionAnnouncedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.UNDERLYING_WITHDRAWAL_ANNOUNCED: {
+        await this.onUnderlyingWithdrawalAnnounced(em, evmLog, log.args as UnderlyingWithdrawalAnnouncedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.UNDERLYING_WITHDRAWAL_CONFIRMED: {
+        await this.onUnderlyingWithdrawalConfirmed(em, evmLog, log.args as UnderlyingWithdrawalConfirmedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.SELF_CLOSE: {
         ent = await this.onSelfClose(em, evmLog, log.args as SelfCloseEvent.OutputTuple)
@@ -121,6 +197,15 @@ export class EventStorer {
         break
       } case EVENTS.ASSET_MANAGER.REDEMPTION_REJECTED: {
         ent = await this.onRedemptionRejected(em, evmLog, log.args as RedemptionRejectedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED: {
+        await this.onRedemptionTicketCreated(em, evmLog, log.args as RedemptionTicketCreatedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED: {
+        await this.onRedemptionTicketUpdated(em, evmLog, log.args as RedemptionTicketUpdatedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED: {
+        await this.onRedemptionTicketDeleted(em, evmLog, log.args as RedemptionTicketDeletedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.REDEEMED_IN_COLLATERAL: {
         ent = await this.onRedeemedInCollateral(em, evmLog, log.args as RedeemedInCollateralEvent.OutputTuple)
@@ -173,8 +258,20 @@ export class EventStorer {
       } case EVENTS.COLLATERAL_POOL.EXIT: {
         ent = await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
         break
+      } case EVENTS.COLLATERAL_POOL.PAID_OUT: {
+        await this.onCollateralPoolPaidOut(em, evmLog, log.args as PaidOutEvent.OutputTuple)
+        break
+      } case EVENTS.COLLATERAL_POOL.DONATED: {
+        await this.onCollateralPoolDonated(em, evmLog, log.args as DonatedEvent.OutputTuple)
+        break
+      } case EVENTS.COLLATERAL_POOL.CLAIMED_REWARD: {
+        await this.onCollateralPoolClaimedReward(em, evmLog, log.args as ClaimedRewardEvent.OutputTuple)
+        break
       } case EVENTS.ERC20.TRANSFER: {
         ent = await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
+        break
+      } case EVENTS.PRICE_READER.PRICES_PUBLISHED: {
+        await this.onPublishedPrices(em, evmLog, log.args as PricesPublishedEvent.OutputTuple)
         break
       } default: {
         return false
@@ -228,10 +325,12 @@ export class EventStorer {
     // create agent vault
     const agentVaultEntity = new AgentVault(
       fasset,
-      agentEvmAddress, agentUnderlyingAddress,
+      agentEvmAddress,
+      agentUnderlyingAddress,
       collateralPoolEvmAddress,
       collateralPoolTokenEvmAddress,
-      agentOwnerEntity, false
+      agentOwnerEntity,
+      false
     )
     const vaultCollateralTokenEntity = await em.findOneOrFail(CollateralTypeAdded, { address: { hex: vaultCollateralToken }, fasset })
     const agentVaultSettings = new AgentVaultSettings(
@@ -439,6 +538,36 @@ export class EventStorer {
     )
   }
 
+  protected async onRedemptionTicketCreated(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionTicketCreatedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, redemptionTicketId, ticketValueUBA ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const redemptionTicketCreated = new RedemptionTicketCreated(evmLog, fasset, agentVaultEntity, redemptionTicketId, ticketValueUBA)
+    const redemptionTicket = new RedemptionTicket(redemptionTicketCreated, ticketValueUBA)
+    em.persist([redemptionTicketCreated, redemptionTicket])
+  }
+
+  protected async onRedemptionTicketUpdated(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionTicketCreatedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ , redemptionTicketId, ticketValueUBA ] = logArgs
+    const redemptionTicketCreated = await em.findOneOrFail(RedemptionTicketCreated, { redemptionTicketId, fasset })
+    const redemptionTicketUpdated = new RedemptionTicketUpdated(evmLog, fasset, redemptionTicketCreated, ticketValueUBA)
+    const redemptionTicket = await em.findOneOrFail(RedemptionTicket, { redemptionTicketCreated })
+    redemptionTicket.ticketValueUBA = ticketValueUBA
+    em.persist([redemptionTicketUpdated, redemptionTicket])
+  }
+
+  protected async onRedemptionTicketDeleted(em: EntityManager, evmLog: EvmLog, logArgs: RedemptionTicketDeletedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ , redemptionTicketId ] = logArgs
+    const redemptionTicketCreated = await em.findOneOrFail(RedemptionTicketCreated, { redemptionTicketId, fasset })
+    const redemptionTicketDeleted = new RedemptionTicketDeleted(evmLog, fasset, redemptionTicketCreated)
+    const redemptionTicket = await em.findOneOrFail(RedemptionTicket, { redemptionTicketCreated })
+    redemptionTicket.ticketValueUBA = BigInt(0)
+    redemptionTicket.destroyed = true
+    em.persist([redemptionTicketDeleted, redemptionTicket])
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // liquidations
 
@@ -534,6 +663,29 @@ export class EventStorer {
     )
   }
 
+  protected async onCollateralPoolPaidOut(em: EntityManager, evmLog: EvmLog, logArgs: PaidOutEvent.OutputTuple): Promise<void> {
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
+    const [ recipient, paidNatWei, burnedTokensWei ] = logArgs
+    const recipientEvmAddress = await findOrCreateEvmAddress(em, recipient, AddressType.USER)
+    const collateralPoolPaidOut = new CollateralPoolPaidOut(evmLog, agentVault.fasset, recipientEvmAddress, paidNatWei, burnedTokensWei)
+    em.persist(collateralPoolPaidOut)
+  }
+
+  protected async onCollateralPoolDonated(em: EntityManager, evmLog: EvmLog, logArgs: DonatedEvent.OutputTuple): Promise<void> {
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
+    const [ donator, amountNatWei ] = logArgs
+    const donatorEvmAddress = await findOrCreateEvmAddress(em, donator, AddressType.USER)
+    const collateralPoolDonated = new CollateralPoolDonated(evmLog, agentVault.fasset, donatorEvmAddress, amountNatWei)
+    em.persist(collateralPoolDonated)
+  }
+
+  protected async onCollateralPoolClaimedReward(em: EntityManager, evmLog: EvmLog, logArgs: ClaimedRewardEvent.OutputTuple): Promise<void> {
+    const agentVault = await em.findOneOrFail(AgentVault, { collateralPool: { hex: evmLog.address.hex }})
+    const [ amountNatWei, rewardType ] = logArgs
+    const collateralPoolClaimedReward = new CollateralPoolClaimedReward(evmLog, agentVault.fasset, amountNatWei, Number(rewardType))
+    em.persist(collateralPoolClaimedReward)
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////
   // erc20 (fasset, collateral, wnat tokens)
 
@@ -554,6 +706,41 @@ export class EventStorer {
       balance.amount += amount
     }
     em.persist(balance)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // agent announcements
+
+  protected async onVaultCollateralWithdrawalAnnounced(em: EntityManager, evmLog: EvmLog, logArgs: VaultCollateralWithdrawalAnnouncedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, amountWei, withdrawalAllowedAt ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const vaultCollateralWithdrawalAnnounced = new VaultCollateralWithdrawalAnnounced(evmLog, fasset, agentVaultEntity, amountWei, withdrawalAllowedAt)
+    em.persist(vaultCollateralWithdrawalAnnounced)
+  }
+
+  protected async onPoolTokenRedemptionAnnounced(em: EntityManager, evmLog: EvmLog, logArgs: PoolTokenRedemptionAnnouncedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, amountWei, withdrawalAllowedAt ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const poolTokenRedemptionAnnounced = new PoolTokenRedemptionAnnounced(evmLog, fasset, agentVaultEntity, amountWei, withdrawalAllowedAt)
+    em.persist(poolTokenRedemptionAnnounced)
+  }
+
+  protected async onUnderlyingWithdrawalAnnounced(em: EntityManager, evmLog: EvmLog, logArgs: UnderlyingWithdrawalAnnouncedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, announcmentId, paymentReference ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    const underlyingWithdrawalAnnounced = new UnderlyingWithdrawalAnnounced(evmLog, fasset, agentVaultEntity, announcmentId, paymentReference)
+    em.persist(underlyingWithdrawalAnnounced)
+  }
+
+  protected async onUnderlyingWithdrawalConfirmed(em: EntityManager, evmLog: EvmLog, logArgs: UnderlyingWithdrawalConfirmedEvent.OutputTuple): Promise<void> {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ , announcementId, spentUBA, transactionHash ] = logArgs
+    const underlyingWithdrawalAnnounced = await em.findOneOrFail(UnderlyingWithdrawalAnnounced, { announcementId , fasset })
+    const underlyingWithdrawalConfirmed = new UnderlyingWithdrawalConfirmed(evmLog, fasset, underlyingWithdrawalAnnounced, spentUBA, transactionHash)
+    em.persist(underlyingWithdrawalConfirmed)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -579,6 +766,15 @@ export class EventStorer {
     const [ underlyingBlockNumber, underlyingBlockTimestamp, updatedAt ] = logArgs
     return new CurrentUnderlyingBlockUpdated(evmLog, fasset,
       Number(underlyingBlockNumber), Number(underlyingBlockTimestamp), Number(updatedAt))
+  }
+
+  // price publisher
+
+  protected async onPublishedPrices(em: EntityManager, evmLog: EvmLog, logArgs: PricesPublishedEvent.OutputTuple): Promise<PricesPublished> {
+    const [ votingRoundId ] = logArgs
+    const pricesPublished = new PricesPublished(evmLog, Number(votingRoundId))
+    em.persist(pricesPublished)
+    return pricesPublished
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -398,17 +398,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jercle/yargonaut@npm:1.1.5":
-  version: 1.1.5
-  resolution: "@jercle/yargonaut@npm:1.1.5"
-  dependencies:
-    chalk: ^4.1.2
-    figlet: ^1.5.2
-    parent-require: ^1.0.0
-  checksum: 3941cda4aa12043a3beb51499fe0a7741500e884cf1039de779eed5964abc00dd379ef47e9a8f75959440d6d41fe55dff18c247a69d48e422bf091e801cc3afc
-  languageName: node
-  linkType: hard
-
 "@jridgewell/gen-mapping@npm:^0.3.5":
   version: 0.3.5
   resolution: "@jridgewell/gen-mapping@npm:0.3.5"
@@ -491,23 +480,6 @@ __metadata:
   version: 0.14.2
   resolution: "@microsoft/tsdoc@npm:0.14.2"
   checksum: b167c89e916ba73ee20b9c9d5dba6aa3a0de25ed3d50050e8a344dca7cd43cb2e1059bd515c820369b6e708901dd3fda476a42bc643ca74a35671ce77f724a3a
-  languageName: node
-  linkType: hard
-
-"@mikro-orm/cli@npm:6.3.6":
-  version: 6.3.6
-  resolution: "@mikro-orm/cli@npm:6.3.6"
-  dependencies:
-    "@jercle/yargonaut": 1.1.5
-    "@mikro-orm/core": 6.3.6
-    "@mikro-orm/knex": 6.3.6
-    fs-extra: 11.2.0
-    tsconfig-paths: 4.2.0
-    yargs: 17.7.2
-  bin:
-    mikro-orm: ./cli
-    mikro-orm-esm: ./esm
-  checksum: b2a86346488a30c6bb64d111e4018cb5cd79fb26f17190cf3b95362839864fac73ca8995f7409d5606e48d30280eedd3c0d716da221a04c78802eb9d2897196b
   languageName: node
   linkType: hard
 
@@ -3329,7 +3301,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "fasset-indexer-core@workspace:packages/fasset-indexer-core"
   dependencies:
-    "@mikro-orm/cli": 6.3.6
     "@mikro-orm/core": 6.3.6
     "@mikro-orm/knex": 6.3.6
     "@mikro-orm/mysql": 6.3.6
@@ -3425,15 +3396,6 @@ __metadata:
   version: 4.2.3
   resolution: "fecha@npm:4.2.3"
   checksum: f94e2fb3acf5a7754165d04549460d3ae6c34830394d20c552197e3e000035d69732d74af04b9bed3283bf29fe2a9ebdcc0085e640b0be3cc3658b9726265e31
-  languageName: node
-  linkType: hard
-
-"figlet@npm:^1.5.2":
-  version: 1.7.0
-  resolution: "figlet@npm:1.7.0"
-  bin:
-    figlet: bin/index.js
-  checksum: 3f61c2aeb13e48185a1b23598c005a6cd42cffcb01dd1ed0da80d692e14af5bfef774b99df6a840a6e4daa985b35d5ca0f085c471309bcdd6c06d6be58434ccf
   languageName: node
   linkType: hard
 
@@ -3793,11 +3755,11 @@ __metadata:
   linkType: hard
 
 "get-tsconfig@npm:^4.7.5":
-  version: 4.7.5
-  resolution: "get-tsconfig@npm:4.7.5"
+  version: 4.10.0
+  resolution: "get-tsconfig@npm:4.10.0"
   dependencies:
     resolve-pkg-maps: ^1.0.0
-  checksum: e5b271fae2b4cd1869bbfc58db56983026cc4a08fdba988725a6edd55d04101507de154722503a22ee35920898ff9bdcba71f99d93b17df35dddb8e8a2ad91be
+  checksum: cebf14d38ecaa9a1af25fc3f56317402a4457e7e20f30f52a0ab98b4c85962a259f75065e483824f73a1ce4a8e4926c149ead60f0619842b8cd13b94e15fbdec
   languageName: node
   linkType: hard
 
@@ -5563,13 +5525,6 @@ __metadata:
   dependencies:
     callsites: ^3.0.0
   checksum: 6ba8b255145cae9470cf5551eb74be2d22281587af787a2626683a6c20fbb464978784661478dd2a3f1dad74d1e802d403e1b03c1a31fab310259eec8ac560ff
-  languageName: node
-  linkType: hard
-
-"parent-require@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "parent-require@npm:1.0.0"
-  checksum: 91ecef2c8e0ecc06a7d68ebdfccec9cb8b34a7144cccda0141273c8871d4dd05856fe13b17ae1e1a32bfd769143671a6dbd2ad7ee72f55d1cb8e588dc60a8f4c
   languageName: node
   linkType: hard
 
@@ -7643,7 +7598,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs@npm:17.7.2, yargs@npm:^17.5.1":
+"yargs@npm:^17.5.1":
   version: 17.7.2
   resolution: "yargs@npm:17.7.2"
   dependencies:

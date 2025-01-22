@@ -47,6 +47,12 @@ export class DashboardController {
     return apiResponse(this.service.mintingExecutedCount(), 200)
   }
 
+  @Get('total-redeemed-lots')
+  @ApiOperation({ summary: 'Number of redeemed lots' })
+  getRedeemedLots(): Promise<ApiResponse<FAssetAmountResult>> {
+    return apiResponse(this.service.totalRedeemedLots(), 200)
+  }
+
   @Get('redemption-default?')
   @ApiOperation({ summary: 'Redemption deault data' })
   getRedemptionDefault(@Query('id') id: number, @Query('fasset') fasset: string): Promise<ApiResponse<RedemptionDefault>> {

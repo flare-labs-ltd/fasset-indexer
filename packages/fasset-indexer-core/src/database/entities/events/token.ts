@@ -1,5 +1,5 @@
 import { Entity, Property, ManyToOne, Unique } from "@mikro-orm/core"
-import { uint256 } from "../../custom/typeUint256"
+import { uint256 } from "../../custom/uint"
 import { EvmAddress } from "../address"
 import { EventBound, FAssetEventBound } from "./_bound"
 import type { FAssetType } from "../../../shared"

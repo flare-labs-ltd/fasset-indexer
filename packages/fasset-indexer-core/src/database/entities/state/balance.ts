@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Unique } from "@mikro-orm/core"
-import { uint256 } from "../../custom/typeUint256";
+import { uint256 } from "../../custom/uint";
 import { EvmAddress } from "../address";
 
 @Entity()

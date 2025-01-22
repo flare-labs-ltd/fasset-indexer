@@ -1,5 +1,5 @@
 import { Entity, Property, PrimaryKey } from '@mikro-orm/core'
-import { uint256 } from '../../custom/typeUint256'
+import { uint256 } from '../../custom/uint'
 
 
 @Entity()

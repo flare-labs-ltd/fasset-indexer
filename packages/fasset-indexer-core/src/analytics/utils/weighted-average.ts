@@ -4,20 +4,14 @@
  * of the given data point values.
  */
 
+import { MAX_BIPS } from "../../config/constants"
 import type { Timespan } from "../interface"
 
-const CALC_PRECISION = BigInt(1)
-
-export function weightedAverage(timespan: Timespan<bigint>, T: number, d: number, N?: number): bigint {
+export function weightedAverage(timespan: Timespan<bigint>, T: number, d: number): bigint {
   const fun = (t: bigint) => weightFun(Number(t), T, d)
   const weights = timespan.map(({ timestamp }) => BigInt(timestamp))
   const values = timespan.map(({ value }) => value)
-  let wa = _weightedAverage(values, weights, fun)
-  if (N !== undefined) {
-    if (N === 0) return BigInt(0)
-    wa *= BigInt(timespan.length) / BigInt(N)
-  }
-  return wa
+  return _weightedAverage(values, weights, fun)
 }
 
 function _weightedAverage(values: bigint[], weights: bigint[], _weightFun: (w: bigint) => [bigint, bigint]): bigint {
@@ -27,7 +21,7 @@ function _weightedAverage(values: bigint[], weights: bigint[], _weightFun: (w: b
     mul += weightMul * values[i]
     div += weightDiv
   }
-  return div > BigInt(0) ? CALC_PRECISION * mul / div : BigInt(0)
+  return div > BigInt(0) ? MAX_BIPS * mul / div : BigInt(0)
 }
 
 /**
@@ -40,5 +34,5 @@ function _weightedAverage(values: bigint[], weights: bigint[], _weightFun: (w: b
  */
 function weightFun(t: number, T: number, d: number): [mul: bigint, div: bigint] {
   const w = BigInt(t - (T - d))
-  return [w * w, w * BigInt(d)]
+  return [BigInt(d) * w, w * w]
 }

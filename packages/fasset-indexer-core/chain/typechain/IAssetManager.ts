@@ -705,6 +705,7 @@ export declare namespace AssetManagerSettings {
     maxEmergencyPauseDurationSeconds: BigNumberish;
     emergencyPauseDurationResetAfterSeconds: BigNumberish;
     cancelCollateralReservationAfterSeconds: BigNumberish;
+    rejectOrCancelCollateralReservationReturnFactorBIPS: BigNumberish;
     rejectRedemptionRequestWindowSeconds: BigNumberish;
     takeOverRedemptionRequestWindowSeconds: BigNumberish;
     rejectedRedemptionDefaultFactorVaultCollateralBIPS: BigNumberish;
@@ -767,6 +768,7 @@ export declare namespace AssetManagerSettings {
     maxEmergencyPauseDurationSeconds: bigint,
     emergencyPauseDurationResetAfterSeconds: bigint,
     cancelCollateralReservationAfterSeconds: bigint,
+    rejectOrCancelCollateralReservationReturnFactorBIPS: bigint,
     rejectRedemptionRequestWindowSeconds: bigint,
     takeOverRedemptionRequestWindowSeconds: bigint,
     rejectedRedemptionDefaultFactorVaultCollateralBIPS: bigint,
@@ -827,6 +829,7 @@ export declare namespace AssetManagerSettings {
     maxEmergencyPauseDurationSeconds: bigint;
     emergencyPauseDurationResetAfterSeconds: bigint;
     cancelCollateralReservationAfterSeconds: bigint;
+    rejectOrCancelCollateralReservationReturnFactorBIPS: bigint;
     rejectRedemptionRequestWindowSeconds: bigint;
     takeOverRedemptionRequestWindowSeconds: bigint;
     rejectedRedemptionDefaultFactorVaultCollateralBIPS: bigint;
@@ -1089,6 +1092,8 @@ export interface IAssetManagerInterface extends Interface {
       | "transferFeeEpochData"
       | "transferFeeMillionths"
       | "transferFeeSettings"
+      | "transfersEmergencyPaused"
+      | "transfersEmergencyPausedUntil"
       | "unstickMinting"
       | "updateCurrentBlock"
       | "upgradeAgentVaultAndPool"
@@ -1121,6 +1126,8 @@ export interface IAssetManagerInterface extends Interface {
       | "DuplicatePaymentConfirmed"
       | "DustChanged"
       | "EmergencyPauseCanceled"
+      | "EmergencyPauseTransfersCanceled"
+      | "EmergencyPauseTransfersTriggered"
       | "EmergencyPauseTriggered"
       | "FullLiquidationStarted"
       | "HandshakeRequired"
@@ -1531,6 +1538,14 @@ export interface IAssetManagerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "transfersEmergencyPaused",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transfersEmergencyPausedUntil",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "unstickMinting",
     values: [IConfirmedBlockHeightExists.ProofStruct, BigNumberish]
   ): string;
@@ -1894,6 +1909,14 @@ export interface IAssetManagerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferFeeSettings",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transfersEmergencyPaused",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transfersEmergencyPausedUntil",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -2423,6 +2446,28 @@ export namespace EmergencyPauseCanceledEvent {
   export type InputTuple = [];
   export type OutputTuple = [];
   export interface OutputObject {}
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace EmergencyPauseTransfersCanceledEvent {
+  export type InputTuple = [];
+  export type OutputTuple = [];
+  export interface OutputObject {}
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace EmergencyPauseTransfersTriggeredEvent {
+  export type InputTuple = [pausedUntil: BigNumberish];
+  export type OutputTuple = [pausedUntil: bigint];
+  export interface OutputObject {
+    pausedUntil: bigint;
+  }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
   export type Log = TypedEventLog<Event>;
@@ -3870,6 +3915,10 @@ export interface IAssetManager extends BaseContract {
     "view"
   >;
 
+  transfersEmergencyPaused: TypedContractMethod<[], [boolean], "view">;
+
+  transfersEmergencyPausedUntil: TypedContractMethod<[], [bigint], "view">;
+
   unstickMinting: TypedContractMethod<
     [
       _proof: IConfirmedBlockHeightExists.ProofStruct,
@@ -4476,6 +4525,12 @@ export interface IAssetManager extends BaseContract {
     "view"
   >;
   getFunction(
+    nameOrSignature: "transfersEmergencyPaused"
+  ): TypedContractMethod<[], [boolean], "view">;
+  getFunction(
+    nameOrSignature: "transfersEmergencyPausedUntil"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "unstickMinting"
   ): TypedContractMethod<
     [
@@ -4666,6 +4721,20 @@ export interface IAssetManager extends BaseContract {
     EmergencyPauseCanceledEvent.InputTuple,
     EmergencyPauseCanceledEvent.OutputTuple,
     EmergencyPauseCanceledEvent.OutputObject
+  >;
+  getEvent(
+    key: "EmergencyPauseTransfersCanceled"
+  ): TypedContractEvent<
+    EmergencyPauseTransfersCanceledEvent.InputTuple,
+    EmergencyPauseTransfersCanceledEvent.OutputTuple,
+    EmergencyPauseTransfersCanceledEvent.OutputObject
+  >;
+  getEvent(
+    key: "EmergencyPauseTransfersTriggered"
+  ): TypedContractEvent<
+    EmergencyPauseTransfersTriggeredEvent.InputTuple,
+    EmergencyPauseTransfersTriggeredEvent.OutputTuple,
+    EmergencyPauseTransfersTriggeredEvent.OutputObject
   >;
   getEvent(
     key: "EmergencyPauseTriggered"
@@ -5183,6 +5252,28 @@ export interface IAssetManager extends BaseContract {
       EmergencyPauseCanceledEvent.InputTuple,
       EmergencyPauseCanceledEvent.OutputTuple,
       EmergencyPauseCanceledEvent.OutputObject
+    >;
+
+    "EmergencyPauseTransfersCanceled()": TypedContractEvent<
+      EmergencyPauseTransfersCanceledEvent.InputTuple,
+      EmergencyPauseTransfersCanceledEvent.OutputTuple,
+      EmergencyPauseTransfersCanceledEvent.OutputObject
+    >;
+    EmergencyPauseTransfersCanceled: TypedContractEvent<
+      EmergencyPauseTransfersCanceledEvent.InputTuple,
+      EmergencyPauseTransfersCanceledEvent.OutputTuple,
+      EmergencyPauseTransfersCanceledEvent.OutputObject
+    >;
+
+    "EmergencyPauseTransfersTriggered(uint256)": TypedContractEvent<
+      EmergencyPauseTransfersTriggeredEvent.InputTuple,
+      EmergencyPauseTransfersTriggeredEvent.OutputTuple,
+      EmergencyPauseTransfersTriggeredEvent.OutputObject
+    >;
+    EmergencyPauseTransfersTriggered: TypedContractEvent<
+      EmergencyPauseTransfersTriggeredEvent.InputTuple,
+      EmergencyPauseTransfersTriggeredEvent.OutputTuple,
+      EmergencyPauseTransfersTriggeredEvent.OutputObject
     >;
 
     "EmergencyPauseTriggered(uint256)": TypedContractEvent<

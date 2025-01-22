@@ -15,8 +15,8 @@ import { AgentVaultInfo } from "../../database/entities/state/agent"
 import { fassetToUsdPrice } from "../utils/prices"
 import { ContractLookup } from "../../context/lookup"
 import { SharedAnalytics } from "./shared"
-import { Statistics } from "./statistics"
-import { EVENTS, PRICE_FACTOR } from "../../config/constants"
+import { AgentStatistics } from "./statistics"
+import { EVENTS, FASSET_LOT_SIZE, PRICE_FACTOR } from "../../config/constants"
 import { COLLATERAL_POOL_PORTFOLIO_SQL } from "../utils/raw-sql"
 import type { EntityManager, SelectQueryBuilder } from "@mikro-orm/knex"
 import type { ORM } from "../../database/interface"
@@ -34,13 +34,13 @@ import type {
  */
 export class DashboardAnalytics extends SharedAnalytics {
   protected lookup: ContractLookup
-  private statistics: Statistics
+  private statistics: AgentStatistics
   private zeroAddressId: number | null = null
 
   constructor(public readonly orm: ORM, chain: string, addressesJson?: string) {
     super(orm)
     this.lookup = new ContractLookup(chain, addressesJson)
-    this.statistics = new Statistics(orm)
+    this.statistics = new AgentStatistics(orm)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -60,21 +60,17 @@ export class DashboardAnalytics extends SharedAnalytics {
   }
 
   async fAssetholderCount(): Promise<FAssetAmountResult> {
-    const ret = {} as FAssetAmountResult
     const res = await this.orm.em.fork().createQueryBuilder(TokenBalance, 'tb')
       .select(['tk.hex as token_address', raw('count(distinct tb.holder_id) as n_token_holders')])
       .join('tb.token', 'tk')
       .where({ 'tb.amount': { $gt: 0 }, 'tk.hex': { $in: this.lookup.fassetTokens }})
       .groupBy('tk.hex')
-      .execute() as { token_address: string, n_token_holders: number }[]
-    for (const r of res) {
-      const address = r.token_address
-      if (!address) continue
-      const amount = Number(r.n_token_holders || 0)
-      const fasset = this.lookup.fAssetAddressToFAssetType(address)
-      ret[FAssetType[fasset] as FAsset] = { amount }
-    }
-    return ret
+      .execute() as { token_address: string, n_token_holders: string | number | undefined }[]
+    const normalized = res.map(({ token_address, n_token_holders }) => ({
+      fasset: this.lookup.fAssetAddressToFAssetType(token_address),
+      n_token_holders: Number(n_token_holders || 0)
+    }))
+    return this.convertOrmResultToFAssetAmountResult(normalized, 'n_token_holders')
   }
 
   async liquidationCount(): Promise<AmountResult> {
@@ -85,6 +81,21 @@ export class DashboardAnalytics extends SharedAnalytics {
   async mintingExecutedCount(): Promise<AmountResult> {
     const amount = await this.orm.em.fork().count(MintingExecuted)
     return { amount }
+  }
+
+  async totalRedeemed(): Promise<FAssetValueResult> {
+    const res = await this.orm.em.fork().createQueryBuilder(RedemptionRequested, 'rr')
+      .select(['rr.fasset', raw('sum(rr.value_uba) as value')])
+      .groupBy('fasset')
+      .execute() as { fasset: number, value: string }[]
+    return this.convertOrmResultToFAssetValueResult(res, 'value')
+  }
+
+  async totalRedeemedLots(): Promise<FAssetAmountResult> {
+    const tr = await this.totalRedeemed()
+    return Object.fromEntries(Object.entries(tr).map(([fasset, { value }]) => [fasset, {
+      amount: Number(value / FASSET_LOT_SIZE[fasset])
+    }])) as FAssetAmountResult
   }
 
   async redemptionDefault(id: number, fasset: FAssetType): Promise<RedemptionDefault | null> {
@@ -196,12 +207,8 @@ export class DashboardAnalytics extends SharedAnalytics {
     if (this.zeroAddressId === null) return ret
     const em = this.orm.em.fork()
     for (const fasset of FASSETS) {
-      let fAssetAddress: string | null = null
-      try {
-        fAssetAddress = this.lookup.fAssetTypeToFAssetAddress(FAssetType[fasset])
-      } catch (err: any) {
-        continue // fasset not supported yet
-      }
+      if (!this.lookup.supportsFAsset(FAssetType[fasset])) continue
+      const fAssetAddress = this.lookup.fAssetTypeToFAssetAddress(FAssetType[fasset])
       const fAssetEvmAddress = await em.findOne(EvmAddress, { hex: fAssetAddress })
       if (fAssetEvmAddress === null) continue
       ret[fasset] = []
@@ -390,5 +397,25 @@ export class DashboardAnalytics extends SharedAnalytics {
       .execute() as { burned: bigint }[]
     const burnedValue = BigInt(burned[0]?.burned || 0)
     return mintedValue - burnedValue
+  }
+
+  private convertOrmResultToFAssetValueResult<K extends string>(
+    result: ({ fasset: number } & { [key in K]: string | bigint })[], key: K
+  ): FAssetValueResult {
+    const ret = {} as FAssetValueResult
+    for (const x of result) {
+      ret[FAssetType[x.fasset] as FAsset] = { value: BigInt(x[key]) }
+    }
+    return ret
+  }
+
+  private convertOrmResultToFAssetAmountResult<K extends string>(
+    result: ({ fasset: number } & { [key in K]: string | number })[], key: K
+  ): FAssetAmountResult {
+    const ret = {} as FAssetAmountResult
+    for (const x of result) {
+      ret[FAssetType[x.fasset] as FAsset] = { amount: Number(x[key]) }
+    }
+    return ret
   }
 }

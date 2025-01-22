@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core'
-import { uint256 } from '../../custom/typeUint256'
+import { uint256 } from '../../custom/uint'
 import { FAssetEventBound } from './_bound'
 import { AgentVault } from '../agent'
 import { BYTES32_LENGTH } from '../../../config/constants'

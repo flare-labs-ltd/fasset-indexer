@@ -58,3 +58,4 @@ secrets.json
 *.dump
 
 user-data
+.env-docker

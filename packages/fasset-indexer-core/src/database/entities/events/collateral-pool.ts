@@ -1,5 +1,5 @@
 import { Entity, Property, ManyToOne } from "@mikro-orm/core"
-import { uint256 } from "../../custom/typeUint256"
+import { uint256 } from "../../custom/uint"
 import { FAssetEventBound } from "./_bound"
 import { EvmAddress } from "../address"
 import type { EvmLog } from "../evm/log"
@@ -47,7 +47,6 @@ export class CollateralPoolEntered extends FAssetEventBound {
 }
 
 @Entity()
-
 export class CollateralPoolExited extends FAssetEventBound {
   @ManyToOne({ entity: () => EvmAddress })
   tokenHolder: EvmAddress
@@ -83,5 +82,70 @@ export class CollateralPoolExited extends FAssetEventBound {
     this.receivedFAssetFeesUBA = receivedFAssetFeesUBA
     this.closedFAssetsUBA = closedFAssetsUBA
     this.newFAssetFeeDebt = newFAssetFeeDebt
+  }
+}
+
+@Entity()
+export class CollateralPoolDonated extends FAssetEventBound {
+
+  @ManyToOne({ entity: () => EvmAddress })
+  donator: EvmAddress
+
+  @Property({ type: new uint256() })
+  amountNatWei: bigint
+
+  constructor(evmLog: EvmLog,
+    fasset: FAssetType,
+    donator: EvmAddress,
+    amountNatWei: bigint
+  ) {
+    super(evmLog, fasset)
+    this.donator = donator
+    this.amountNatWei = amountNatWei
+  }
+}
+
+@Entity()
+export class CollateralPoolPaidOut extends FAssetEventBound {
+
+  @ManyToOne({ entity: () => EvmAddress })
+  recipient: EvmAddress
+
+  @Property({ type: new uint256() })
+  paidNatWei: bigint
+
+  @Property({ type: new uint256() })
+  burnedTokensWei: bigint
+
+  constructor(evmLog: EvmLog,
+    fasset: FAssetType,
+    recipient: EvmAddress,
+    paidNatWei: bigint,
+    burnedTokensWei: bigint
+  ) {
+    super(evmLog, fasset)
+    this.recipient = recipient
+    this.paidNatWei = paidNatWei
+    this.burnedTokensWei = burnedTokensWei
+  }
+}
+
+@Entity()
+export class CollateralPoolClaimedReward extends FAssetEventBound {
+
+  @Property({ type: new uint256() })
+  amountNatWei: bigint
+
+  @Property({ type: 'number' })
+  rewardType: number
+
+  constructor(evmLog: EvmLog,
+    fasset: FAssetType,
+    amountNatWei: bigint,
+    rewardType: number
+  ) {
+    super(evmLog, fasset)
+    this.amountNatWei = amountNatWei
+    this.rewardType = rewardType
   }
 }

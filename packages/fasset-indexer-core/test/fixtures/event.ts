@@ -5,6 +5,7 @@ import { CollateralTypeAdded } from "../../src/database/entities/events/token"
 import { AgentManager, AgentOwner, AgentVault } from "../../src/database/entities/agent"
 import { CollateralReserved } from "../../src/database/entities/events/minting"
 import { RedemptionRequested } from "../../src/database/entities/events/redemption"
+import { RedemptionTicketCreated } from "../../src/database/entities/events/redemption-ticket"
 import { randomBoolean, randomChoice, randomHash, randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress } from "./utils"
 import { ASSET_MANAGERS, AGENT_SETTINGS, WNAT_TOKEN } from "./constants"
 import type {
@@ -34,10 +35,13 @@ import type {
   CurrentUnderlyingBlockUpdatedEvent,
   AgentPingEvent,
   AgentPingResponseEvent,
-  SelfMintEvent
+  SelfMintEvent,
+  RedemptionTicketCreatedEvent,
+  RedemptionTicketUpdatedEvent,
+  RedemptionTicketDeletedEvent
 } from "../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
-import type { TransferEvent } from "../../chain/typechain/ERC20"
+import type { TransferEvent } from "../../chain/typechain/IERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
 
 
@@ -285,6 +289,31 @@ export class EventFixture {
     ]
   }
 
+  protected async generateRedemptionTicketCreated(): Promise<RedemptionTicketCreatedEvent.OutputTuple> {
+    return [
+      await this.getRandomAgentVault(),
+      BigInt(randomNumber(1, 1e6)),
+      BigInt(randomNumber(1, 1e6))
+    ]
+  }
+
+  protected async generateRedemptionTicketUpdated(): Promise<RedemptionTicketUpdatedEvent.OutputTuple> {
+    const redemptionTicketCreated = await this.getRandomRedemptionTicketCreated()
+    return [
+      redemptionTicketCreated.agentVault.address.hex,
+      BigInt(redemptionTicketCreated.redemptionTicketId),
+      BigInt(randomNumber(1, 1e6))
+    ]
+  }
+
+  protected async generateRedemptionTicketDeleted(): Promise<RedemptionTicketDeletedEvent.OutputTuple> {
+    const redemptionTicketCreated = await this.getRandomRedemptionTicketCreated()
+    return [
+      redemptionTicketCreated.agentVault.address.hex,
+      BigInt(redemptionTicketCreated.redemptionTicketId)
+    ]
+  }
+
   protected async generateRedeemedInCollateral(): Promise<RedeemedInCollateralEvent.OutputTuple> {
     const agentVault = await this.getRandomAgentVault()
     return [
@@ -414,15 +443,21 @@ export class EventFixture {
   }
 
   private async getRandomCollateralReserved(): Promise<CollateralReserved> {
-    const collateralReserved = await this.orm.em.fork().findAll(CollateralReserved, { populate: ['agentVault', 'minter'] })
+    const collateralReserved = await this.orm.em.fork().findAll(CollateralReserved, { populate: ['agentVault.address', 'minter'] })
     if (collateralReserved === null || collateralReserved.length === 0) throw new Error('CollateralReserved not found')
     return randomChoice(collateralReserved)
   }
 
   private async getRandomRedemptionRequest(): Promise<RedemptionRequested> {
-    const redemptionRequest = await this.orm.em.fork().findAll(RedemptionRequested, { populate: ['agentVault', 'redeemer'] })
+    const redemptionRequest = await this.orm.em.fork().findAll(RedemptionRequested, { populate: ['agentVault.address', 'redeemer'] })
     if (redemptionRequest === null || redemptionRequest.length === 0) throw new Error('RedemptionRequested not found')
     return randomChoice(redemptionRequest)
+  }
+
+  private async getRandomRedemptionTicketCreated(): Promise<RedemptionTicketCreated> {
+    const redemptionTicketCreated = await this.orm.em.fork().findAll(RedemptionTicketCreated, { populate: ['agentVault.address'] })
+    if (redemptionTicketCreated === null || redemptionTicketCreated.length === 0) throw new Error('RedemptionTicketCreated not found')
+    return randomChoice(redemptionTicketCreated)
   }
 
   private async argumentsFromEventName(name: string): Promise<EventArgs> {

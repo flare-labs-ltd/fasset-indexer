@@ -1,13 +1,16 @@
 
 import { getVar, setVar } from "../utils"
 import { Context } from "../context/context"
-import { BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
+import { backUpdateLastBlockName, backUpdateFirstUnhandledBlockName, BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
 import type { JsonRpcApiProvider } from "ethers"
 
 
-export async function ensureConfigIntegrity(context: Context): Promise<void> {
+export async function ensureConfigIntegrity(context: Context, updateName?: string): Promise<void> {
   await ensureChainIntegrity(context)
   await ensureDatabaseIntegrity(context)
+  if (updateName != null) {
+    await ensureBackIndexerDatabaseIntegrity(context, updateName)
+  }
 }
 
 export async function ensureChainIntegrity(context: Context): Promise<void> {
@@ -41,6 +44,26 @@ export async function ensureDatabaseIntegrity(context: Context): Promise<void> {
   }
 }
 
+export async function ensureBackIndexerDatabaseIntegrity(context: Context, updateName?: string): Promise<void> {
+  const em = context.orm.em.fork()
+  const currentUpdate = await getVar(em, 'current_update')
+  if (currentUpdate !== null && currentUpdate.value !== updateName) {
+    const currentUpdateName = currentUpdate.value!
+    const lastBlock = await getVar(em, backUpdateFirstUnhandledBlockName(currentUpdateName))
+    const endBlock = await getVar(em, backUpdateLastBlockName(currentUpdateName))
+    if (endBlock == null || lastBlock == null) {
+      throw new Error(`Database missing end block or last block for current update "${currentUpdateName}"`)
+    }
+    const lastBlockNum = parseInt(lastBlock.value!)
+    const endBlockNum = parseInt(endBlock.value!)
+    if (lastBlockNum <= endBlockNum) {
+      throw new Error(`Update "${currentUpdateName}" has not finished processing all blocks, ${endBlockNum - lastBlockNum + 1} to go`)
+    }
+  } else if (currentUpdate === null) {
+    await setVar(em, 'current_update', updateName)
+  }
+}
+
 async function markNewDatabase(context: Context): Promise<void> {
   const envchain = context.loader.chain
   const amc = context.getContractAddress('AssetManagerController')
@@ -62,9 +85,18 @@ async function markNewDatabase(context: Context): Promise<void> {
 async function getContractCreationBlock(provider: JsonRpcApiProvider, address: string, chain: string): Promise<number | null> {
   const blockExplorer = BLOCK_EXPLORERS[chain as keyof typeof BLOCK_EXPLORERS]
   if (blockExplorer == null) return null
-  const resp = await fetch(`${blockExplorer}/api/v2/addresses/${address}`)
-  const json = await resp.json()
-  const hash = json.creation_tx_hash
+  let hash = null
+  try {
+    const resp = await fetch(`${blockExplorer}/api/v2/addresses/${address}`)
+    const json = await resp.json()
+    hash = json.creation_transaction_hash
+  } catch (e) {}
+  if (hash == null) {
+    throw new Error(`
+      Fetching contract creation block from block explorer ${blockExplorer} failed.
+      Please obtain creation block for ${address} on ${chain} and paste it into .env under "MIN_BLOCK_NUMBER".
+    `)
+  }
   const creation = await provider.getTransaction(hash)
   return creation?.blockNumber ?? null
 }

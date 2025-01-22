@@ -1,8 +1,8 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "../database/utils"
 import { ContractLookup } from "./lookup"
-import { IAssetManager__factory, ERC20__factory, IAgentOwnerRegistry__factory, IPriceReader__factory } from "../../chain/typechain"
-import type { IAssetManager, ERC20, IAgentOwnerRegistry, IPriceReader } from "../../chain/typechain"
+import { IAssetManager__factory, IERC20__factory, IAgentOwnerRegistry__factory, IPriceReader__factory } from "../../chain/typechain"
+import type { IAssetManager, IERC20, IAgentOwnerRegistry, IPriceReader } from "../../chain/typechain"
 import type { ORM } from "../database/interface"
 import { ConfigLoader } from "../config/config"
 
@@ -11,13 +11,15 @@ export class Context extends ContractLookup {
   public provider: JsonRpcProvider
   public contracts: {
     agentOwnerRegistryContract: IAgentOwnerRegistry
+    priceReader: IPriceReader
   }
 
   constructor(public loader: ConfigLoader, public orm: ORM) {
     super(loader.chain, loader.addressesJson)
     this.provider = this.getEthersApiProvider(loader.rpcUrl, loader.rpcApiKey)
     this.contracts = {
-      agentOwnerRegistryContract: this.getAgentOwnerRegistryContract()
+      agentOwnerRegistryContract: this.getAgentOwnerRegistryContract(),
+      priceReader: this.getPriceReaderContract()
     }
   }
 
@@ -30,12 +32,8 @@ export class Context extends ContractLookup {
     return IAssetManager__factory.connect(address, this.provider)
   }
 
-  getPriceReaderContract(address: string): IPriceReader {
-    return IPriceReader__factory.connect(address, this.provider)
-  }
-
-  getERC20(address: string): ERC20 {
-    return ERC20__factory.connect(address, this.provider)
+  getERC20(address: string): IERC20 {
+    return IERC20__factory.connect(address, this.provider)
   }
 
   private getEthersApiProvider(rpcUrl: string, apiKey?: string): JsonRpcProvider {
@@ -50,6 +48,11 @@ export class Context extends ContractLookup {
   private getAgentOwnerRegistryContract(): IAgentOwnerRegistry {
     const address = this.getContractAddress("AgentOwnerRegistry")
     return IAgentOwnerRegistry__factory.connect(address, this.provider)
+  }
+
+  private getPriceReaderContract(): IPriceReader {
+    const address = this.getContractAddress("PriceReader")
+    return IPriceReader__factory.connect(address, this.provider)
   }
 
 }

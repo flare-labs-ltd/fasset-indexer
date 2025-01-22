@@ -3,7 +3,10 @@ import { AgentManager, AgentOwner, AgentVault } from "../../database/entities/ag
 import { AgentVaultSettings } from "../../database/entities/state/agent"
 import { AgentVaultCreated } from "../../database/entities/events/agent"
 import { UntrackedAgentVault } from "../../database/entities/state/var"
+import { CollateralTypeAdded } from "../../database/entities/events/token"
+import { PricePublished, PricesPublished } from "../../database/entities/events/price"
 import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../shared"
+import { getPriceFromDal } from "../../context/dal"
 import { EventStorer } from "./event-storer"
 import type { EntityManager } from "@mikro-orm/knex"
 import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManager"
@@ -25,8 +28,17 @@ export class StateUpdater extends EventStorer {
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentWorker(em, manager)
     const [agentVaultEntity, avs, avc] = await super.onAgentVaultCreated(em, evmLog, args)
+    const collateralPoolToken = this.context.getERC20(agentVaultEntity.collateralPoolToken.hex)
+    agentVaultEntity.collateralPoolTokenSymbol = await collateralPoolToken.symbol()
     await this.updateAgentVaultInfo(em, agentVaultEntity)
     return [agentVaultEntity, avs, avc]
+  }
+
+  protected override async onPublishedPrices(em: EntityManager, evmLog: EvmLog, args: any): Promise<PricesPublished> {
+    const pp = await super.onPublishedPrices(em, evmLog, args)
+    if (this.context.loader.indexPrices)
+      await this.addPriceSnapshot(em, pp)
+    return pp
   }
 
   protected async ensureAgentManager(em: EntityManager, address: string): Promise<AgentManager> {
@@ -61,6 +73,16 @@ export class StateUpdater extends EventStorer {
       agentManager.iconUrl = await this.context.contracts.agentOwnerRegistryContract.getAgentIconUrl(manager)
     }
     return agentManager
+  }
+
+  private async addPriceSnapshot(em: EntityManager, pricesPublished: PricesPublished): Promise<void> {
+    const collateralTypes = await em.findAll(CollateralTypeAdded)
+    const symbols = new Set(collateralTypes.map((ct) => [ct.tokenFtsoSymbol, ct.assetFtsoSymbol]).flat())
+    for (let symbol of symbols) {
+      const [price, decimals] = await getPriceFromDal(symbol, pricesPublished.votingRoundId)
+      const priceEntity = new PricePublished(pricesPublished, symbol, price, decimals)
+      em.persist(priceEntity)
+    }
   }
 
   private async updateAgentVaultInfo(em: EntityManager, agentVault: AgentVault): Promise<void> {
