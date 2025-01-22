@@ -23,15 +23,15 @@ export class ConfigLoader {
   }
 
   get chain(): string {
-    return this.required(process.env.CHAIN)
+    return this.required('CHAIN')
   }
 
   get rpcUrl(): string {
-    return this.required(process.env.RPC_URL)
+    return this.required('RPC_URL')
   }
 
   get rpcApiKey(): string {
-    return this.required(process.env.RPC_API_KEY)
+    return this.required('RPC_API_KEY')
   }
 
   get contractInfo(): ContractInfo[] {
@@ -66,33 +66,34 @@ export class ConfigLoader {
   }
 
   protected get dbType(): string {
-    return this.required(process.env.DB_TYPE)
+    return this.required('DB_TYPE')
   }
 
   protected get dbName(): string {
-    return this.required(process.env.DB_NAME)
+    return this.required('DB_NAME')
   }
 
   protected get dbHost(): string {
-    return this.required(process.env.DB_HOST)
+    return this.required('DB_HOST')
   }
 
   protected get dbPort(): number {
-    const port = this.required(process.env.DB_PORT)
+    const port = this.required('DB_PORT')
     return parseInt(port)
   }
 
   protected get dbUser(): string {
-    return this.required(process.env.DB_USER)
+    return this.required('DB_USER')
   }
 
   protected get dbPass(): string {
-    return this.required(process.env.DB_PASS)
+    return this.required('DB_PASSWORD')
   }
 
-  protected required<T>(value: T | undefined): T {
+  protected required(key: string): string {
+    const value = process.env[key]
     if (value == null) {
-      throw new Error(`required environment value ${value} is undefined`)
+      throw new Error(`required environment key ${key} has value ${value}`)
     }
     return value
   }

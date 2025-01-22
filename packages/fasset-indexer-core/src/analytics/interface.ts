@@ -1,6 +1,6 @@
 import type { FAsset } from "../shared"
 
-type FAssetResult<T> = Record<Partial<FAsset>, T>
+export type FAssetResult<T> = Record<Partial<FAsset>, T>
 
 export type TimeSeries<T> = { index: number, start: number, end: number, value: T }[]
 

@@ -1,3 +1,5 @@
+import { FAssetType } from "../shared"
+
 // chain call config
 export const CHAIN_FETCH_RETRY_LIMIT = 20
 export const MID_CHAIN_FETCH_SLEEP_MS = 100
@@ -107,4 +109,11 @@ export const MAX_BIPS = BigInt(1e4)
 export const BLOCK_EXPLORERS = {
   coston: 'https://coston-explorer.flare.network',
   songbird: 'https://songbird-explorer.flare.network',
+}
+
+// index this later
+export const FASSET_LOT_SIZE = {
+  [FAssetType[FAssetType.FXRP]]: BigInt(20e6),
+  [FAssetType[FAssetType.FDOGE]]: BigInt(1000e8),
+  [FAssetType[FAssetType.FBTC]]: BigInt(1e8),
 }
