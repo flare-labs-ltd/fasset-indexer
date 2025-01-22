@@ -11,7 +11,11 @@
 		{
 			"name": "🚀 api",
 			"path": "packages/fasset-indexer-api"
-		}
+		},
+        {
+            "name": "🐶 doge",
+            "path": "packages/fasset-indexer-doge"
+        }
 	],
 	"settings": {
 		"search.useParentIgnoreFiles": true

@@ -3325,6 +3325,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"fasset-indexer-doge@workspace:packages/fasset-indexer-doge":
+  version: 0.0.0-use.local
+  resolution: "fasset-indexer-doge@workspace:packages/fasset-indexer-doge"
+  dependencies:
+    "@mikro-orm/core": 6.3.6
+    "@mikro-orm/knex": 6.3.6
+    "@mikro-orm/mysql": 6.3.6
+    "@mikro-orm/postgresql": 6.3.6
+    "@mikro-orm/sqlite": 6.3.6
+    fasset-indexer-core: "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "fasset-indexer@workspace:.":
   version: 0.0.0-use.local
   resolution: "fasset-indexer@workspace:."
