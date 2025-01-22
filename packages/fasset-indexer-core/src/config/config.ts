@@ -65,6 +65,10 @@ export class ConfigLoader {
     return minBlock == null ? undefined : parseInt(minBlock)
   }
 
+  get indexPrices(): boolean {
+    return process.env.INDEX_PRICES === 'true'
+  }
+
   protected get dbType(): string {
     return this.required('DB_TYPE')
   }

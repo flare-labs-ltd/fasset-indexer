@@ -36,7 +36,8 @@ export class StateUpdater extends EventStorer {
 
   protected override async onPublishedPrices(em: EntityManager, evmLog: EvmLog, args: any): Promise<PricesPublished> {
     const pp = await super.onPublishedPrices(em, evmLog, args)
-    await this.addPriceSnapshot(em, pp)
+    if (this.context.loader.indexPrices)
+      await this.addPriceSnapshot(em, pp)
     return pp
   }
 
