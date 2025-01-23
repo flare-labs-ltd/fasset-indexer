@@ -4,16 +4,12 @@ import { ConfigLoader } from "../config/config"
 import { Context } from "../context/context"
 import { logger } from "../logger"
 import { IndexerRunner } from "../indexer/runner"
-import { EVENTS } from "../config"
 
-
-const eventnames = Object.keys(EVENTS).map(iface => Object.values(EVENTS[iface as keyof typeof EVENTS])).flat()
-  .filter(x => !x.startsWith('RedemptionTicket'))
 
 async function runIndexer(start?: number) {
   const config = new ConfigLoader()
   const context = await Context.create(config)
-  const indexer = new EventIndexer(context, eventnames)
+  const indexer = new EventIndexer(context, config.json?.indexEvents)
   const runner = new IndexerRunner(indexer, 'event indexer')
 
   process.on("SIGINT", async () => {

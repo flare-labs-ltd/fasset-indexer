@@ -1,24 +1,14 @@
-services:
-  api:
+x-templates:
+  base-svc: &base-svc
     image: ${CI_REGISTRY_IMAGE}:${DEPLOY_IMAGE_TAG}
-    container_name: ${COMPOSE_PROJECT_NAME}-api
-    command: ["node", "/app/packages/fasset-indexer-api/dist/src/main"]
-    environment:
-      DB_TYPE: postgres
-      DB_HOST: db-postgres
-      DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      API_ROOT_PATH: ${API_ROOT_PATH:-}
-    restart: unless-stopped
-    ports:
-      - "${API_PORT}:3000"
     depends_on:
       db-postgres:
         condition: service_healthy
-  core: &core-svc
-    image: ${CI_REGISTRY_IMAGE}:${DEPLOY_IMAGE_TAG}
+    restart: unless-stopped
+
+services:
+  core:
+    <<: *base-svc
     container_name: ${COMPOSE_PROJECT_NAME}-core
     command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-indexer.js"]
     environment:
@@ -30,15 +20,38 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       CHAIN: ${CHAIN}
       RPC_URL: ${RPC_URL}
-      RPC_API_KEY: ${RPC_API_KEY}
-    restart: unless-stopped
-    depends_on:
-      db-postgres:
-        condition: service_healthy
+      RPC_API_KEY: ${RPC_API_KEY:-}
+      CONFIG_PATH: /usr/src/app/config.json
+    volumes:
+      - ${CONFIG_PATH}:/usr/src/app/config.json
   watchdog:
-    <<: *core-svc
+    <<: *base-svc
     container_name: ${COMPOSE_PROJECT_NAME}-watchdog
     command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-watchdog.js"]
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db-postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      CHAIN: ${CHAIN}
+      RPC_URL: ${RPC_URL}
+      RPC_API_KEY: ${RPC_API_KEY:-}
+  api:
+    <<: *base-svc
+    container_name: ${COMPOSE_PROJECT_NAME}-api
+    command: ["node", "/app/packages/fasset-indexer-api/dist/src/main"]
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db-postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      API_ROOT_PATH: ${API_ROOT_PATH:-}
+    ports:
+      - "${API_PORT}:3000"
   db-postgres:
     image: postgres:16
     container_name: ${COMPOSE_PROJECT_NAME}-db

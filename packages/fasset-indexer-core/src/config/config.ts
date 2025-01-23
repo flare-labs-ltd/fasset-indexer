@@ -1,3 +1,4 @@
+import { readFileSync } from "fs"
 import { defineConfig, Options } from "@mikro-orm/knex"
 import { SqliteDriver } from "@mikro-orm/sqlite"
 import { PostgreSqlDriver } from "@mikro-orm/postgresql"
@@ -5,7 +6,12 @@ import { getContractInfo } from "./contracts"
 import type { ContractInfo } from "./interface"
 
 
+interface ConfigJson {
+  indexEvents: string[]
+}
+
 export class ConfigLoader {
+  private _configJson: ConfigJson | undefined
 
   constructor() {
     require('dotenv').config()
@@ -67,6 +73,17 @@ export class ConfigLoader {
 
   get indexPrices(): boolean {
     return process.env.INDEX_PRICES === 'true'
+  }
+
+  get json(): ConfigJson | undefined {
+    if (this._configJson == null) {
+      const configPath = process.env.CONFIG_PATH
+      if (configPath != null) {
+        const file = readFileSync(configPath)
+        this._configJson = JSON.parse(file.toString())
+      }
+    }
+    return this._configJson
   }
 
   protected get dbType(): string {

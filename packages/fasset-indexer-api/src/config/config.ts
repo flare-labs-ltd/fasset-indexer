@@ -8,7 +8,10 @@ export class ApiConfigLoader extends ConfigLoader {
   }
 
   get rootPath(): string | undefined {
-    return process.env.API_ROOT_PATH
+    const path = process.env.API_ROOT_PATH
+    if (path.endsWith('/')) {
+      return path.slice(0, -1)
+    }
   }
 
 }
