@@ -1,4 +1,4 @@
-import { createOrm } from "../../database/utils"
+import { createOrm } from "../../database/mikro-orm.config"
 import { EvmLog } from "../../database/entities/evm/log"
 import { AgentVaultInfo } from "../../database/entities/state/agent"
 import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../../database/entities/events/challenge"

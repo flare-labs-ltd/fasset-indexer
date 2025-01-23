@@ -7,9 +7,7 @@ import { logger } from '../logger'
 import {
   FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY,
   EVM_LOG_FETCH_SIZE,
-  EVM_LOG_FETCH_SLEEP_MS,
   EVM_BLOCK_HEIGHT_OFFSET,
-  SLEEP_AFTER_ERROR_MS,
   MIN_EVM_BLOCK_NUMBER_DB_KEY
 } from '../config/constants'
 import type { Log } from 'ethers'
@@ -27,19 +25,6 @@ export class EventIndexer {
     this.eventScraper = new EventScraper(context)
     this.eventParser = new EventParser(context, eventnames)
     this.stateUpdater = new StateUpdater(context)
-  }
-
-  async run(startBlock?: number): Promise<void> {
-    while (true) {
-      try {
-        await this.runHistoric(startBlock)
-      } catch (e: any) {
-        logger.error(`error running event indexer: ${e}`)
-        await sleep(SLEEP_AFTER_ERROR_MS)
-        continue
-      }
-      await sleep(EVM_LOG_FETCH_SLEEP_MS)
-    }
   }
 
   async runHistoric(startBlock?: number, endBlock?: number): Promise<void> {

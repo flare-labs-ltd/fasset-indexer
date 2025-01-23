@@ -29,6 +29,9 @@
     },
     {
       "path": "packages/fasset-indexer-core"
+    },
+    {
+      "path": "packages/fasset-indexer-doge"
     }
   ],
   "exclude": [

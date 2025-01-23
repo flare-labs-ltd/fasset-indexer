@@ -1,10 +1,10 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
-import { createOrm } from "../database/utils"
+import { createOrm } from "../database/mikro-orm.config"
 import { ContractLookup } from "./lookup"
 import { IAssetManager__factory, IERC20__factory, IAgentOwnerRegistry__factory, IPriceReader__factory } from "../../chain/typechain"
 import type { IAssetManager, IERC20, IAgentOwnerRegistry, IPriceReader } from "../../chain/typechain"
 import type { ORM } from "../database/interface"
-import { ConfigLoader } from "../config/config"
+import type { ConfigLoader } from "../config/config"
 
 
 export class Context extends ContractLookup {

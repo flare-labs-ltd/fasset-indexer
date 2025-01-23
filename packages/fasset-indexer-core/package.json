@@ -77,12 +77,5 @@
         "winston": "^3.17.0",
         "winston-daily-rotate-file": "^5.0.0"
     },
-    "mikro-orm": {
-        "useTsNode": true,
-        "configPaths": [
-            "./src/database/mikro-orm.config.ts",
-            "./dist/database/mikro-orm.config.js"
-        ]
-    },
     "packageManager": "yarn@3.6.4"
 }

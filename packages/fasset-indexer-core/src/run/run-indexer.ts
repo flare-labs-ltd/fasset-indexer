@@ -4,6 +4,7 @@ import { ensureConfigIntegrity } from "./integrity"
 import { ConfigLoader } from "../config"
 import { Context } from "../context/context"
 import { logger } from "../logger"
+import { IndexerRunner } from "../indexer/runner"
 
 async function fillCollateralPoolTokens(context: Context) {
   const em = context.orm.em.fork()
@@ -19,6 +20,7 @@ async function runIndexer(start?: number) {
   const config = new ConfigLoader()
   const context = await Context.create(config)
   const indexer = new EventIndexer(context)
+  const runner = new IndexerRunner(indexer, 'event indexer')
 
   process.on("SIGINT", async () => {
     logger.info("stopping indexer...")
@@ -31,7 +33,7 @@ async function runIndexer(start?: number) {
   logger.info("ensuring configuration integrity...")
   await ensureConfigIntegrity(context)
   logger.info(`starting FAsset ${context.chain} indexer...`)
-  await indexer.run()
+  await runner.run(start)
 }
 
 runIndexer()

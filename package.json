@@ -1,6 +1,5 @@
 {
   "name": "fasset-indexer",
-  "version": "0.1.1",
   "description": "FAsset Indexer",
   "workspaces": {
     "packages": [
@@ -17,8 +16,9 @@
     "build-base": "yarn clean && tsc --build",
     "build-api": "cd packages/fasset-indexer-api && yarn build",
     "build": "yarn build-base && yarn build-api",
-    "run-indexer": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-indexer.js",
-    "run-watchdog": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-watchdog.js",
+    "run-native-indexer": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-indexer.js",
+    "run-native-watchdog": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-watchdog.js",
+    "run-doge-indexer": "yarn build-base && node packages/fasset-indexer-doge/dist/src/run/run-indexer.js",
     "run-api": "yarn build && node packages/fasset-indexer-api/dist/src/main",
     "lint": "eslint . --ext .ts"
   },

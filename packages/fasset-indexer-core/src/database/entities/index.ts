@@ -32,3 +32,7 @@ export { AgentVaultInfo, AgentVaultSettings } from "./state/agent"
 export { AgentManager, AgentOwner, AgentVault } from "./agent"
 export { FtsoPrice } from "./state/price"
 export { TokenBalance } from "./state/balance"
+// doge
+export { DogeBlock } from "./doge/block"
+export { DogeAddress } from "./doge/address"
+export { DogeVoutReference } from "./doge/reference"

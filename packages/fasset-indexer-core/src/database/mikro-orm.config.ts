@@ -1,4 +1,4 @@
-import { defineConfig } from "@mikro-orm/core"
+import { defineConfig, MikroORM } from "@mikro-orm/core"
 import { UntrackedAgentVault, Var } from "./entities/state/var"
 import { EvmAddress, UnderlyingAddress } from "./entities/address"
 import { EvmBlock } from "./entities/evm/block"
@@ -41,9 +41,14 @@ import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
 import { TokenBalance } from "./entities/state/balance"
+import { DogeBlock } from "./entities/doge/block"
+import { DogeAddress } from "./entities/doge/address"
+import { DogeVoutReference } from "./entities/doge/reference"
+import { updateSchema } from "./utils"
 import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
 import type { Options } from "@mikro-orm/core"
 import type { AbstractSqlDriver } from "@mikro-orm/knex"
+import type { ORM, OrmOptions, SchemaUpdate } from "./interface"
 
 
 export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
@@ -64,7 +69,9 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     CollateralPoolPaidOut, CollateralPoolClaimedReward,
     ERC20Transfer, CollateralTypeAdded, AgentPing, AgentPingResponse,
     CurrentUnderlyingBlockUpdated, PricesPublished, PricePublished,
-    FtsoPrice, UntrackedAgentVault, TokenBalance
+    FtsoPrice, UntrackedAgentVault, TokenBalance,
+    // doge
+    DogeBlock, DogeAddress, DogeVoutReference
   ],
   pool: {
     min: MIN_DATABASE_POOL_CONNECTIONS,
@@ -73,5 +80,14 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
   migrations: { disableForeignKeys: false },
   debug: false
 })
+
+export async function createOrm(options: OrmOptions, update: SchemaUpdate): Promise<ORM> {
+  const initOptions = { ...ORM_OPTIONS, ...options }
+  const orm = await MikroORM.init(initOptions)
+  await updateSchema(orm, update)
+  if (!await orm.isConnected())
+    throw new Error("Failed to connect to database")
+  return orm
+}
 
 export default ORM_OPTIONS
