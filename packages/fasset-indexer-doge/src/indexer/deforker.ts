@@ -1,8 +1,8 @@
-import { setVar, type EntityManager } from "fasset-indexer-core/database"
+import { setVar, type EntityManager } from "fasset-indexer-core/orm"
 import { DogeBlock, DogeVoutReference } from "fasset-indexer-core/entities"
+import { logger } from "fasset-indexer-core/logger"
 import { DogeContext } from "../context"
 import { FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY } from "../config/constants"
-import { logger } from "fasset-indexer-core/logger"
 
 
 export class DogeDeforker {
@@ -25,7 +25,7 @@ export class DogeDeforker {
   }
 
   protected async purgeDataAtHeight(height: number): Promise<void> {
-    await this.context.orm.em.transactional(async em => {
+    await this.context.orm.em.transactional(async (em: EntityManager) => {
       await em.nativeDelete(DogeBlock, { height })
       await em.nativeDelete(DogeVoutReference, { block: { height } })
       await setVar(em, FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY, height.toString())

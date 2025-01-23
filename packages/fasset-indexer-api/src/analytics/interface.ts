@@ -1,4 +1,4 @@
-import type { FAsset } from "../shared"
+import type { FAsset } from "fasset-indexer-core"
 
 export type FAssetResult<T> = Record<Partial<FAsset>, T>
 

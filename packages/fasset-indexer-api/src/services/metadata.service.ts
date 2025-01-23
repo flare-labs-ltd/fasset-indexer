@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common'
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager'
-import { MetadataAnalytics } from 'fasset-indexer-core/analytics'
+import { MetadataAnalytics } from '../analytics/metadata'
 import type { ApiContext } from 'src/config/context'
 
 

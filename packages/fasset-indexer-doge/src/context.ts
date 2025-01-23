@@ -1,4 +1,4 @@
-import { createOrm, type ORM } from "fasset-indexer-core/database"
+import { createOrm, type ORM } from "fasset-indexer-core/orm"
 import { DogeCoin } from "./client/dogecoin"
 import { DogeConfigLoader } from "./config/config"
 

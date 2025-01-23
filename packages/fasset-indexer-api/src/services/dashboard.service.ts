@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { DashboardAnalytics } from 'fasset-indexer-core/analytics'
+import { DashboardAnalytics } from '../analytics/dashboard'
 import type { ApiContext } from 'src/config/context'
 
 

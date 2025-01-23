@@ -1,4 +1,4 @@
-import { ConfigLoader } from "fasset-indexer-core/config/config"
+import { ConfigLoader } from "fasset-indexer-core"
 
 
 export class ApiConfigLoader extends ConfigLoader {

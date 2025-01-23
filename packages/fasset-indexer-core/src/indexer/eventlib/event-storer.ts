@@ -3,12 +3,12 @@ import {
   isUntrackedAgentVault, findOrCreateEvmAddress,
   findOrCreateEvmBlock, findOrCreateEvmTransaction
 } from "../shared"
-import { EvmLog } from "../../database/entities/evm/log"
-import { CollateralTypeAdded, ERC20Transfer } from "../../database/entities/events/token"
-import { TokenBalance } from "../../database/entities/state/balance"
-import { RedemptionTicket } from "../../database/entities/state/redemption-ticket"
-import { AddressType, EvmAddress } from "../../database/entities/address"
-import { AgentOwner, AgentVault } from "../../database/entities/agent"
+import { EvmLog } from "../../orm/entities/evm/log"
+import { CollateralTypeAdded, ERC20Transfer } from "../../orm/entities/events/token"
+import { TokenBalance } from "../../orm/entities/state/balance"
+import { RedemptionTicket } from "../../orm/entities/state/redemption-ticket"
+import { AddressType, EvmAddress } from "../../orm/entities/address"
+import { AgentOwner, AgentVault } from "../../orm/entities/agent"
 import {
   AgentVaultCreated,
   AgentSettingChanged,
@@ -17,15 +17,15 @@ import {
   PoolTokenRedemptionAnnounced,
   UnderlyingWithdrawalAnnounced,
   UnderlyingWithdrawalConfirmed
-} from "../../database/entities/events/agent"
-import { AgentVaultInfo, AgentVaultSettings } from "../../database/entities/state/agent"
+} from "../../orm/entities/events/agent"
+import { AgentVaultInfo, AgentVaultSettings } from "../../orm/entities/state/agent"
 import {
   CollateralReservationDeleted,
   CollateralReserved,
   MintingExecuted,
   MintingPaymentDefault,
   SelfMint
-} from "../../database/entities/events/minting"
+} from "../../orm/entities/events/minting"
 import {
   RedemptionRequested,
   RedemptionPerformed,
@@ -35,34 +35,34 @@ import {
   RedemptionRejected,
   RedemptionRequestIncomplete,
   RedeemedInCollateral
-} from "../../database/entities/events/redemption"
+} from "../../orm/entities/events/redemption"
 import {
   RedemptionTicketCreated,
   RedemptionTicketDeleted,
   RedemptionTicketUpdated
-} from "../../database/entities/events/redemption-ticket"
+} from "../../orm/entities/events/redemption-ticket"
 import {
   AgentInCCB,
   FullLiquidationStarted,
   LiquidationEnded,
   LiquidationPerformed,
   LiquidationStarted
-} from "../../database/entities/events/liquidation"
+} from "../../orm/entities/events/liquidation"
 import {
   DuplicatePaymentConfirmed,
   IllegalPaymentConfirmed,
   UnderlyingBalanceTooLow
-} from "../../database/entities/events/challenge"
+} from "../../orm/entities/events/challenge"
 import {
   CollateralPoolClaimedReward,
   CollateralPoolDonated,
   CollateralPoolEntered,
   CollateralPoolExited,
   CollateralPoolPaidOut
-} from "../../database/entities/events/collateral-pool"
-import { AgentPing, AgentPingResponse } from "../../database/entities/events/ping"
-import { CurrentUnderlyingBlockUpdated } from "../../database/entities/events/system"
-import { PricesPublished } from "../../database/entities/events/price"
+} from "../../orm/entities/events/collateral-pool"
+import { AgentPing, AgentPingResponse } from "../../orm/entities/events/ping"
+import { CurrentUnderlyingBlockUpdated } from "../../orm/entities/events/system"
+import { PricesPublished } from "../../orm/entities/events/price"
 import { ContractLookup } from "../../context/lookup"
 import { EVENTS } from '../../config/constants'
 import type { EntityManager } from "@mikro-orm/knex"
@@ -115,7 +115,7 @@ import type {
 import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
-import type { ORM } from "../../database/interface"
+import type { ORM } from "../../orm/interface"
 
 
 export class EventStorer {

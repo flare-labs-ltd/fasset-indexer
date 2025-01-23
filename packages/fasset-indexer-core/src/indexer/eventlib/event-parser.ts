@@ -1,4 +1,4 @@
-import { AgentVault } from "../../database/entities/agent"
+import { AgentVault } from "../../orm/entities/agent"
 import { Context } from "../../context/context"
 import type { EntityManager } from "@mikro-orm/knex"
 import type { Log, LogDescription } from "ethers"

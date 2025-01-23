@@ -1,6 +1,6 @@
 import { EntityManager } from "@mikro-orm/core"
-import { Var } from "./database/entities/state/var"
-import { type AddressType, UnderlyingAddress } from "./database/entities/address"
+import { Var } from "./orm/entities/state/var"
+import { type AddressType, UnderlyingAddress } from "./orm/entities/address"
 
 export async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))

@@ -30,8 +30,8 @@ export class ConfigLoader {
     return this.required('RPC_URL')
   }
 
-  get rpcApiKey(): string {
-    return this.required('RPC_API_KEY')
+  get rpcApiKey(): string | undefined {
+    return process.env.RPC_API_KEY
   }
 
   get contractInfo(): ContractInfo[] {

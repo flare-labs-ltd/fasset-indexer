@@ -1,4 +1,4 @@
-import { getVar, setVar, type EntityManager } from "fasset-indexer-core/database"
+import { getVar, setVar, type EntityManager } from "fasset-indexer-core/orm"
 import { DogeAddress, DogeBlock, DogeVoutReference } from "fasset-indexer-core/entities"
 import { logger } from "fasset-indexer-core/logger"
 import { DogeDeforker } from "./deforker"

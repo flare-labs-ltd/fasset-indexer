@@ -1,4 +1,4 @@
-import { ConfigLoader } from "fasset-indexer-core/config"
+import { ConfigLoader } from "fasset-indexer-core"
 
 export class DogeConfigLoader extends ConfigLoader {
 
@@ -12,5 +12,9 @@ export class DogeConfigLoader extends ConfigLoader {
 
   get dogeRpcAuth(): string | undefined {
     return process.env.DOGE_RPC_AUTH
+  }
+
+  get dogeMinBlockNumber(): number {
+    return parseInt(this.required('DOGE_MIN_BLOCK_NUMBER'))
   }
 }

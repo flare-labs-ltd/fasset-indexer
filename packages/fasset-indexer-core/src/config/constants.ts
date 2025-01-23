@@ -100,11 +100,6 @@ export const EVENTS = {
 export const ADDRESS_LENGTH = 42
 export const BYTES32_LENGTH = 66
 
-// analytics
-export const PRICE_DECIMALS = 8
-export const PRICE_FACTOR = BigInt(10 ** PRICE_DECIMALS)
-export const MAX_BIPS = BigInt(1e4)
-
 // block explorers
 export const BLOCK_EXPLORERS = {
   coston: 'https://coston-explorer.flare.network',

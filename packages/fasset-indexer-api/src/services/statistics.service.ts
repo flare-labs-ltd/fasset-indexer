@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { AgentStatistics } from 'fasset-indexer-core/analytics'
+import { AgentStatistics } from '../analytics/statistics'
 import type { ApiContext } from 'src/config/context'
 
 

@@ -1,7 +1,7 @@
+import { FullLiquidationStarted } from "fasset-indexer-core/entities"
 import { AgentStatistics } from "./statistics"
-import { MAX_BIPS } from "../../config/constants"
-import type { ORM } from "../../database/interface"
-import { FullLiquidationStarted } from "../../database/entities/events/liquidation"
+import { MAX_BIPS } from "../config/constants"
+import type { ORM } from "fasset-indexer-core/orm"
 
 enum Score { A, B, C, D, E, F }
 

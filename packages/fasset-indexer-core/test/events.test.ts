@@ -3,33 +3,33 @@ import { use, expect } from "chai"
 import chaiAsPromised from "chai-as-promised"
 import { unlink } from "fs"
 import { FAssetType } from "../src"
-import { EvmLog } from "../src/database/entities/evm/log"
-import { AgentVaultCreated } from "../src/database/entities/events/agent"
-import { AgentVaultSettings } from "../src/database/entities/state/agent"
-import { CollateralTypeAdded, ERC20Transfer } from "../src/database/entities/events/token"
+import { EvmLog } from "../src/orm/entities/evm/log"
+import { AgentVaultCreated } from "../src/orm/entities/events/agent"
+import { AgentVaultSettings } from "../src/orm/entities/state/agent"
+import { CollateralTypeAdded, ERC20Transfer } from "../src/orm/entities/events/token"
 import { EventFixture } from "./fixtures/event"
 import {
   CollateralReservationDeleted, CollateralReserved,
   MintingExecuted, MintingPaymentDefault,
   SelfMint
-} from "../src/database/entities/events/minting"
+} from "../src/orm/entities/events/minting"
 import {
   RedeemedInCollateral,
   RedemptionDefault, RedemptionPaymentBlocked, RedemptionPaymentFailed,
   RedemptionPerformed, RedemptionRejected, RedemptionRequested
-} from "../src/database/entities/events/redemption"
+} from "../src/orm/entities/events/redemption"
 import {
   FullLiquidationStarted, LiquidationEnded,
   LiquidationPerformed, LiquidationStarted
-} from "../src/database/entities/events/liquidation"
-import { AgentPing, AgentPingResponse } from "../src/database/entities/events/ping"
-import { CurrentUnderlyingBlockUpdated } from "../src/database/entities/events/system"
-import { TokenBalance } from "../src/database/entities/state/balance"
+} from "../src/orm/entities/events/liquidation"
+import { AgentPing, AgentPingResponse } from "../src/orm/entities/events/ping"
+import { CurrentUnderlyingBlockUpdated } from "../src/orm/entities/events/system"
+import { TokenBalance } from "../src/orm/entities/state/balance"
 import { EventStorer } from "../src/indexer/eventlib/event-storer"
 import { Context } from "../src/context/context"
 import { EVENTS } from "../src/config/constants"
-import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/database/entities/events/redemption-ticket"
-import { RedemptionTicket } from "../src/database/entities/state/redemption-ticket"
+import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/orm/entities/events/redemption-ticket"
+import { RedemptionTicket } from "../src/orm/entities/state/redemption-ticket"
 import { TestConfigLoader } from "./fixtures/config"
 
 

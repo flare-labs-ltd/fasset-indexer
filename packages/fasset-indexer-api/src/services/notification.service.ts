@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common'
-import { NotificationAnalytics } from 'fasset-indexer-core/analytics'
+import { NotificationAnalytics } from '../analytics/notification'
 import type { ApiContext } from 'src/config/context'
 
 

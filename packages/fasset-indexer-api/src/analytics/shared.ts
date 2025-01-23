@@ -1,10 +1,9 @@
-import { raw } from "@mikro-orm/core"
-import type { SelectQueryBuilder } from "@mikro-orm/knex"
-import type { ORM } from "../../database/interface"
-import { CollateralPoolEntered, CollateralPoolExited } from "../../database/entities/events/collateral-pool"
-import { MintingExecuted } from "../../database/entities/events/minting"
-import { RedemptionRequested } from "../../database/entities/events/redemption"
-import { LiquidationPerformed } from "../../database/entities/events/liquidation"
+import { SelectQueryBuilder, ORM, raw } from "fasset-indexer-core/orm"
+import {
+  CollateralPoolEntered, CollateralPoolExited,
+  MintingExecuted, RedemptionRequested, LiquidationPerformed
+} from "fasset-indexer-core/entities"
+
 
 export abstract class SharedAnalytics {
   constructor(public readonly orm: ORM) {}

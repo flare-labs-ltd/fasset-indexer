@@ -1,8 +1,7 @@
-import { FAssetType } from "../../shared"
-import { CollateralTypeAdded } from "../../database/entities/events/token"
-import { FtsoPrice } from "../../database/entities/state/price"
+import { FAssetType } from "fasset-indexer-core"
+import { CollateralTypeAdded, FtsoPrice } from "fasset-indexer-core/entities"
 import { PRICE_FACTOR } from "../../config/constants"
-import type { EntityManager } from "@mikro-orm/core"
+import type { EntityManager } from "fasset-indexer-core/orm"
 
 
 export function fassetDecimals(fasset: FAssetType): number {

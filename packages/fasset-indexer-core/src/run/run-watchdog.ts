@@ -1,6 +1,6 @@
 import { EvmStateWatchdog } from "../indexer/watchdog"
 import { ensureConfigIntegrity } from "./integrity"
-import { ConfigLoader } from "../config"
+import { ConfigLoader } from "../config/config"
 import { Context } from "../context/context"
 import { logger } from "../logger"
 

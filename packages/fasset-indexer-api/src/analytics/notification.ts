@@ -1,10 +1,13 @@
-import { createOrm } from "../../database/mikro-orm.config"
-import { EvmLog } from "../../database/entities/evm/log"
-import { AgentVaultInfo } from "../../database/entities/state/agent"
-import { DuplicatePaymentConfirmed, IllegalPaymentConfirmed, UnderlyingBalanceTooLow } from "../../database/entities/events/challenge"
-import { ConfigLoader } from "../../config"
-import { EVENTS } from "../../config/constants"
-import type { ORM } from "../../database/interface"
+import { createOrm } from "fasset-indexer-core/orm"
+import {
+  EvmLog, AgentVaultInfo,
+  DuplicatePaymentConfirmed,
+  IllegalPaymentConfirmed,
+  UnderlyingBalanceTooLow
+} from "fasset-indexer-core/entities"
+import { ConfigLoader } from "fasset-indexer-core"
+import { EVENTS } from "fasset-indexer-core/config"
+import type { ORM } from "fasset-indexer-core/orm"
 
 
 export class NotificationAnalytics {

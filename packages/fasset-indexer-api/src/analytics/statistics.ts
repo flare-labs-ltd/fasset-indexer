@@ -1,14 +1,13 @@
-import { raw } from "@mikro-orm/core"
-import { AgentVault } from "../../database/entities/agent"
-import { MintingExecuted } from "../../database/entities/events/minting"
-import { RedemptionDefault, RedemptionPerformed, RedemptionRequested } from "../../database/entities/events/redemption"
-import { LiquidationPerformed } from "../../database/entities/events/liquidation"
-import { CollateralTypeAdded } from "../../database/entities/events/token"
+import { raw, type ORM } from "fasset-indexer-core/orm"
+import {
+  AgentVault, MintingExecuted,
+  RedemptionDefault, RedemptionPerformed, RedemptionRequested,
+  LiquidationPerformed, CollateralTypeAdded
+} from "fasset-indexer-core/entities"
 import { SharedAnalytics } from "./shared"
-import { weightedAverage } from "../utils/weighted-average"
-import { fassetToUsd, tokenToUsd } from "../utils/prices"
-import { LIQUIDATION_DURATION_SQL } from "../utils/raw-sql"
-import type { ORM } from "../../database/interface"
+import { weightedAverage } from "./utils/weighted-average"
+import { fassetToUsd, tokenToUsd } from "./utils/prices"
+import { LIQUIDATION_DURATION_SQL } from "./utils/raw-sql"
 
 
 export class AgentStatistics extends SharedAnalytics {

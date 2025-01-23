@@ -4,7 +4,7 @@
  * of the given data point values.
  */
 
-import { MAX_BIPS } from "../../config/constants"
+import { MAX_BIPS } from "src/config/constants"
 import type { Timespan } from "../interface"
 
 export function weightedAverage(timespan: Timespan<bigint>, T: number, d: number): bigint {

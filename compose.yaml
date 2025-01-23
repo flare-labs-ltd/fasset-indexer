@@ -10,6 +10,7 @@ services:
       DB_NAME: ${POSTGRES_DB}
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      API_ROOT_PATH: ${API_ROOT_PATH:-}
     restart: unless-stopped
     ports:
       - "${API_PORT}:3000"

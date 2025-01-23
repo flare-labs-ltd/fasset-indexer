@@ -1,5 +1,5 @@
 import { resolve } from "path"
-import { ConfigLoader } from "../../src/config"
+import { ConfigLoader } from "../../src/config/config"
 
 
 export class TestConfigLoader extends ConfigLoader {

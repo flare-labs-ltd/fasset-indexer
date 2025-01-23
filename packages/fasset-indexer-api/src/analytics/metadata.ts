@@ -1,6 +1,9 @@
-import { getVar } from "../../utils"
-import { FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY, backUpdateLastBlockName, backUpdateFirstUnhandledBlockName } from "../../config/constants"
-import type { ORM } from "../../database/interface"
+import { getVar, type ORM } from "fasset-indexer-core/orm"
+import {
+  FIRST_UNHANDLED_EVENT_BLOCK_DB_KEY,
+  backUpdateLastBlockName,
+  backUpdateFirstUnhandledBlockName
+} from "fasset-indexer-core/config"
 
 
 export class MetadataAnalytics {
