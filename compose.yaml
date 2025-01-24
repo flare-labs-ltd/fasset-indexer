@@ -10,6 +10,7 @@ services:
   core:
     <<: *base-svc
     container_name: ${COMPOSE_PROJECT_NAME}-core
+    profiles: ["core"]
     command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-indexer.js"]
     environment:
       DB_TYPE: postgres
@@ -27,6 +28,7 @@ services:
   watchdog:
     <<: *base-svc
     container_name: ${COMPOSE_PROJECT_NAME}-watchdog
+    profiles: ["watchdog"]
     command: ["node", "/app/packages/fasset-indexer-core/dist/src/run/run-watchdog.js"]
     environment:
       DB_TYPE: postgres
@@ -38,9 +40,27 @@ services:
       CHAIN: ${CHAIN}
       RPC_URL: ${RPC_URL}
       RPC_API_KEY: ${RPC_API_KEY:-}
+  dogecoin:
+    <<: *base-svc
+    container_name: ${COMPOSE_PROJECT_NAME}-dogecoin
+    profiles: ["dogecoin"]
+    command: ["node", "/app/packages/fasset-indexer-doge/dist/src/run/run-indexer.js"]
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: db-postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DOGE_RPC_URL: ${RPC_URL}
+      DOGE_RPC_API_KEY: ${RPC_API_KEY:-}
+      DOGE_RPC_USER: ${RPC_USER:-}
+      DOGE_RPC_PASSWORD: ${RPC_PASSWORD:-}
+      DOGE_MIN_BLOCK_NUMBER: ${DOGE_MIN_BLOCK_NUMBER}
   api:
     <<: *base-svc
     container_name: ${COMPOSE_PROJECT_NAME}-api
+    profiles: ["api"]
     command: ["node", "/app/packages/fasset-indexer-api/dist/src/main"]
     environment:
       DB_TYPE: postgres
@@ -55,6 +75,7 @@ services:
   db-postgres:
     image: postgres:16
     container_name: ${COMPOSE_PROJECT_NAME}-db
+    profiles: ["core", "watchdog", "dogecoin", "api"]
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
