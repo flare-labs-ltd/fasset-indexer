@@ -1,9 +1,10 @@
 import { getVar, setVar, type EntityManager } from "fasset-indexer-core/orm"
 import { DogeAddress, DogeBlock, DogeVoutReference } from "fasset-indexer-core/entities"
+import { PaymentReference } from "fasset-indexer-core/utils"
 import { logger } from "fasset-indexer-core/logger"
 import { DogeDeforker } from "./deforker"
 import { FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY, MIN_DOGE_BLOCK_NUMBER_DB_KEY } from "../config/constants"
-import type { IDogeBlock, IDogeVout } from "../client/interface"
+import type { IDogeBlock, IDogeTx, IDogeVout } from "../client/interface"
 import type { DogeContext } from "../context"
 
 
@@ -70,13 +71,13 @@ export class DogeIndexer {
   protected async processTx(em: EntityManager, txhash: string, block: DogeBlock): Promise<void> {
     const tx = await this.context.dogecoin.dogeTransaction(txhash)
     for (const vout of tx.vout) {
-      const data = this.extractReferenceWithAddress(vout)
-      if (data === null) continue
-      const [reference, address] = data
-      console.log(reference)
-      const addr = await this.getOrCreateAddress(em, address)
-      await this.storeVoutReference(em, reference, txhash, addr, block)
+      const reference = this.extractReference(vout)
+      if (reference == null) continue
+      const sender = await this.extractTransactionSender(tx)
+      const address = await this.getOrCreateAddress(em, sender)
+      await this.storeVoutReference(em, reference, txhash, address, block)
       logger.info(`stored reference ${reference} for address ${address}`)
+      break
     }
   }
 
@@ -102,13 +103,21 @@ export class DogeIndexer {
     return addr
   }
 
-  private extractReferenceWithAddress(vout: IDogeVout): [string, string] | null {
+  private extractReference(vout: IDogeVout): string | null {
     const candidate = vout?.scriptPubKey?.asm
-    if (typeof candidate !== 'string' || !candidate.startsWith('OP_RETURN ')) {
+    if (typeof candidate != 'string' || !candidate.startsWith('OP_RETURN ')) {
       return null
     }
-    const address = vout?.scriptPubKey?.addresses?.[0]
-    if (typeof address !== 'string') return null
-    return [candidate.slice(10), address]
+    const formattedReference = '0x' + candidate.slice(10)
+    const isValid = PaymentReference.isValid(formattedReference)
+    return isValid ? formattedReference : null
+  }
+
+  private async extractTransactionSender(tx: IDogeTx): Promise<string> {
+    const vin = tx.vin[0]
+    const txid = vin.txid
+    const vout = vin.vout
+    const txDetails = await this.context.dogecoin.dogeTransaction(txid)
+    return txDetails.vout[vout].scriptPubKey.addresses[0]
   }
 }

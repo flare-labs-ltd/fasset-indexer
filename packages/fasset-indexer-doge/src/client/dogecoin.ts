@@ -1,6 +1,6 @@
 import type { IDogeBlock, IDogeTx } from "./interface"
 
-export class DogeCoin {
+export class DogeClient {
   constructor(
     public readonly rpcUrl: string,
     public readonly apiKey?: string,

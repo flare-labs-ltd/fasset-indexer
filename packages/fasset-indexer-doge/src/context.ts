@@ -1,17 +1,17 @@
 import { createOrm, type ORM } from "fasset-indexer-core/orm"
-import { DogeCoin } from "./client/dogecoin"
+import { DogeClient } from "./client/dogecoin"
 import { DogeConfigLoader } from "./config/config"
 
 
 export class DogeContext {
 
   constructor(
-    public readonly dogecoin: DogeCoin,
+    public readonly dogecoin: DogeClient,
     public readonly orm: ORM
   ) { }
 
   static async create(config: DogeConfigLoader) {
-    const dogecoin = new DogeCoin(
+    const dogecoin = new DogeClient(
       config.dogeRpcUrl,
       config.dogeRpcApiKey,
       config.dogeRpcAuth
