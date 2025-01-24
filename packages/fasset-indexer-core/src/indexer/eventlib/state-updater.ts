@@ -21,9 +21,8 @@ export class StateUpdater extends EventStorer {
     super(context.orm, context)
   }
 
-  protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple): Promise<[
-    AgentVault, AgentVaultSettings, AgentVaultCreated
-  ]> {
+  protected override async onAgentVaultCreated(em: EntityManager, evmLog: EvmLog, args: AgentVaultCreatedEvent.OutputTuple):
+    Promise<[AgentVault, AgentVaultSettings, AgentVaultCreated]> {
     const [ owner, ] = args
     const manager = await this.ensureAgentManager(em, owner)
     await this.ensureAgentWorker(em, manager)
