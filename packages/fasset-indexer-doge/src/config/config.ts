@@ -10,8 +10,12 @@ export class DogeConfigLoader extends ConfigLoader {
     return process.env.DOGE_RPC_API_KEY
   }
 
-  get dogeRpcAuth(): string | undefined {
-    return process.env.DOGE_RPC_AUTH
+  get dogeRpcUser(): string | undefined {
+    return process.env.DOGE_RPC_USER
+  }
+
+  get dogeRpcPassword(): string | undefined {
+    return process.env.DOGE_RPC_PASSWORD
   }
 
   get dogeMinBlockNumber(): number {

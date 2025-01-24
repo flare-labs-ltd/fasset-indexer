@@ -1,10 +1,13 @@
 import type { IDogeBlock, IDogeTx } from "./interface"
 
 export class DogeClient {
+  private _authorization: string | undefined
+
   constructor(
     public readonly rpcUrl: string,
-    public readonly apiKey?: string,
-    public readonly authorization?: string
+    public readonly user?: string,
+    public readonly password?: string,
+    public readonly apiKey?: string
   ) { }
 
   async dogeBlockHeight(): Promise<number> {
@@ -43,11 +46,7 @@ export class DogeClient {
   protected async call(method: string, params: any[]): Promise<any> {
     const res = await fetch(this.rpcUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.authorization ?? '',
-        'x-apikey': this.apiKey ?? ''
-      },
+      headers: this.headers,
       body: JSON.stringify({
         jsonrpc: "2.0",
         method,
@@ -56,5 +55,20 @@ export class DogeClient {
       })
     })
     return await res.json()
+  }
+
+  protected get headers(): Record<string, string> {
+    if (this._authorization == null && this.user && this.password) {
+      this._authorization = this.basicAuthHeader(this.user, this.password)
+    }
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': this._authorization ?? '',
+      'x-apikey': this.apiKey ?? ''
+    }
+  }
+
+  private basicAuthHeader(user: string, pass: string): string {
+    return 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64')
   }
 }

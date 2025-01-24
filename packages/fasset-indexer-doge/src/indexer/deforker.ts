@@ -13,8 +13,8 @@ export class DogeDeforker {
     const lastBlock = await this.dbBlockHeight(em)
     if (lastBlock === null) return
     for (let i = lastBlock; i >= 0; i -= 1) {
-      const dbBlock = this.required(await this.dbBlockAt(em, i))
-      const rpcBlock = this.required(await this.context.dogecoin.dogeBlock(i))
+      const dbBlock = await em.findOneOrFail(DogeBlock, { height: i })
+      const rpcBlock = await this.context.dogecoin.dogeBlock(i)
       if (dbBlock.hash !== rpcBlock.hash) {
         logger.alert(`purging blocks at height ${i} due to found fork`)
         await this.purgeDataAtHeight(i)
@@ -35,17 +35,6 @@ export class DogeDeforker {
   protected async dbBlockHeight(em: EntityManager): Promise<number | null> {
     const lastBlock = await em.findAll(DogeBlock, { orderBy: { height: 'DESC' }, limit: 1 })
     return lastBlock?.[0]?.height ?? null
-  }
-
-  protected async dbBlockAt(em: EntityManager, height: number): Promise<DogeBlock | null> {
-    return em.findOne(DogeBlock, { height })
-  }
-
-  private required<T>(val: T | null): T {
-    if (val == null) {
-      throw new Error(`Unexpected null value ${val}`)
-    }
-    return val
   }
 
 }
