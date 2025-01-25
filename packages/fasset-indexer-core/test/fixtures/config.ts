@@ -8,6 +8,10 @@ export class TestConfigLoader extends ConfigLoader {
     return 'coston'
   }
 
+  override get rpcUrl() {
+    return 'http://localhost:8545'
+  }
+
   protected override get dbType(): string {
     return 'sqlite'
   }

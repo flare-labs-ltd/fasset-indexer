@@ -136,7 +136,7 @@ export class EventStorer {
   }
 
   protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
-    let ent: any
+    let ent: any = null
     switch (log.name) {
       case EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED: {
         ent = await this.onCollateralTypeAdded(em, evmLog, log.args as CollateralTypeAddedEvent.OutputTuple)
@@ -151,16 +151,16 @@ export class EventStorer {
         ent = await this.onAgentDestroyed(em, log.args as AgentDestroyedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.VAULT_COLLATERAL_WITHDRAWAL_ANNOUNCED: {
-        await this.onVaultCollateralWithdrawalAnnounced(em, evmLog, log.args as VaultCollateralWithdrawalAnnouncedEvent.OutputTuple)
+        ent = await this.onVaultCollateralWithdrawalAnnounced(em, evmLog, log.args as VaultCollateralWithdrawalAnnouncedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.POOL_TOKEN_REDEMPTION_ANNOUNCED: {
-        await this.onPoolTokenRedemptionAnnounced(em, evmLog, log.args as PoolTokenRedemptionAnnouncedEvent.OutputTuple)
+        ent = await this.onPoolTokenRedemptionAnnounced(em, evmLog, log.args as PoolTokenRedemptionAnnouncedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.UNDERLYING_WITHDRAWAL_ANNOUNCED: {
-        await this.onUnderlyingWithdrawalAnnounced(em, evmLog, log.args as UnderlyingWithdrawalAnnouncedEvent.OutputTuple)
+        ent = await this.onUnderlyingWithdrawalAnnounced(em, evmLog, log.args as UnderlyingWithdrawalAnnouncedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.UNDERLYING_WITHDRAWAL_CONFIRMED: {
-        await this.onUnderlyingWithdrawalConfirmed(em, evmLog, log.args as UnderlyingWithdrawalConfirmedEvent.OutputTuple)
+        ent = await this.onUnderlyingWithdrawalConfirmed(em, evmLog, log.args as UnderlyingWithdrawalConfirmedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.SELF_CLOSE: {
         ent = await this.onSelfClose(em, evmLog, log.args as SelfCloseEvent.OutputTuple)
@@ -199,13 +199,13 @@ export class EventStorer {
         ent = await this.onRedemptionRejected(em, evmLog, log.args as RedemptionRejectedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_CREATED: {
-        await this.onRedemptionTicketCreated(em, evmLog, log.args as RedemptionTicketCreatedEvent.OutputTuple)
+        ent = await this.onRedemptionTicketCreated(em, evmLog, log.args as RedemptionTicketCreatedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_UPDATED: {
-        await this.onRedemptionTicketUpdated(em, evmLog, log.args as RedemptionTicketUpdatedEvent.OutputTuple)
+        ent = await this.onRedemptionTicketUpdated(em, evmLog, log.args as RedemptionTicketUpdatedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.REDEMPTION_TICKET_DELETED: {
-        await this.onRedemptionTicketDeleted(em, evmLog, log.args as RedemptionTicketDeletedEvent.OutputTuple)
+        ent = await this.onRedemptionTicketDeleted(em, evmLog, log.args as RedemptionTicketDeletedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.REDEEMED_IN_COLLATERAL: {
         ent = await this.onRedeemedInCollateral(em, evmLog, log.args as RedeemedInCollateralEvent.OutputTuple)
@@ -259,19 +259,19 @@ export class EventStorer {
         ent = await this.onCollateralPoolExited(em, evmLog, log.args as ExitedEvent.OutputTuple)
         break
       } case EVENTS.COLLATERAL_POOL.PAID_OUT: {
-        await this.onCollateralPoolPaidOut(em, evmLog, log.args as PaidOutEvent.OutputTuple)
+        ent = await this.onCollateralPoolPaidOut(em, evmLog, log.args as PaidOutEvent.OutputTuple)
         break
       } case EVENTS.COLLATERAL_POOL.DONATED: {
-        await this.onCollateralPoolDonated(em, evmLog, log.args as DonatedEvent.OutputTuple)
+        ent = await this.onCollateralPoolDonated(em, evmLog, log.args as DonatedEvent.OutputTuple)
         break
       } case EVENTS.COLLATERAL_POOL.CLAIMED_REWARD: {
-        await this.onCollateralPoolClaimedReward(em, evmLog, log.args as ClaimedRewardEvent.OutputTuple)
+        ent = await this.onCollateralPoolClaimedReward(em, evmLog, log.args as ClaimedRewardEvent.OutputTuple)
         break
       } case EVENTS.ERC20.TRANSFER: {
         ent = await this.onERC20Transfer(em, evmLog, log.args as TransferEvent.OutputTuple)
         break
       } case EVENTS.PRICE_READER.PRICES_PUBLISHED: {
-        await this.onPublishedPrices(em, evmLog, log.args as PricesPublishedEvent.OutputTuple)
+        ent = await this.onPublishedPrices(em, evmLog, log.args as PricesPublishedEvent.OutputTuple)
         break
       } default: {
         return false
