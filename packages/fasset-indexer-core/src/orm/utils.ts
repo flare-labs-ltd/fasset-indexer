@@ -1,5 +1,5 @@
 import { Var } from "../orm/entities/state/var"
-import { UnderlyingAddress } from "../orm/entities/address"
+import { UnderlyingAddress } from "../orm/entities/underlying/address"
 import type { EntityManager } from "@mikro-orm/core"
 import type { ORM, SchemaUpdate, AddressType } from "./interface"
 

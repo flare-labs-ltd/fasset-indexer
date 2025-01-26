@@ -1,6 +1,6 @@
 import { defineConfig, MikroORM } from "@mikro-orm/core"
 import { UntrackedAgentVault, Var } from "./entities/state/var"
-import { EvmAddress, UnderlyingAddress } from "./entities/address"
+import { EvmAddress } from "./entities/address"
 import { EvmBlock } from "./entities/evm/block"
 import { EvmTransaction } from "./entities/evm/transaction"
 import { EvmLog } from "./entities/evm/log"
@@ -41,8 +41,9 @@ import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
 import { TokenBalance } from "./entities/state/balance"
-import { DogeBlock } from "./entities/doge/block"
-import { DogeVoutReference } from "./entities/doge/reference"
+import { UnderlyingBlock } from "./entities/underlying/block"
+import { UnderlyingAddress } from "./entities/underlying/address"
+import { UnderlyingVoutReference } from "./entities/underlying/reference"
 import { updateSchema } from "./utils"
 import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
 import type { Options } from "@mikro-orm/core"
@@ -52,7 +53,7 @@ import type { ORM, OrmOptions, SchemaUpdate } from "./interface"
 
 export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
   entities: [
-    Var, EvmBlock, EvmTransaction, EvmLog, EvmAddress, UnderlyingAddress,
+    Var, EvmBlock, EvmTransaction, EvmLog, EvmAddress,
     AgentManager, AgentOwner, AgentVault, AgentVaultSettings, AgentVaultInfo,
     AgentVaultCreated, AgentSettingChanged, SelfClose, SelfMint,
     VaultCollateralWithdrawalAnnounced, PoolTokenRedemptionAnnounced,
@@ -69,8 +70,8 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     ERC20Transfer, CollateralTypeAdded, AgentPing, AgentPingResponse,
     CurrentUnderlyingBlockUpdated, PricesPublished, PricePublished,
     FtsoPrice, UntrackedAgentVault, TokenBalance,
-    // doge
-    DogeBlock, DogeVoutReference
+    // underlying
+    UnderlyingBlock, UnderlyingVoutReference, UnderlyingAddress
   ],
   pool: {
     min: MIN_DATABASE_POOL_CONNECTIONS,

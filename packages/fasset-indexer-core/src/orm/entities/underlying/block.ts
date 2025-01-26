@@ -2,7 +2,7 @@ import { Entity, Property } from "@mikro-orm/core"
 
 
 @Entity()
-export class DogeBlock {
+export class UnderlyingBlock {
 
   @Property({ type: 'integer', unique: true, primary: true })
   height: number

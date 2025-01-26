@@ -1,6 +1,7 @@
 import { Entity, ManyToOne, Property, OneToOne, Unique } from "@mikro-orm/core"
 import { uint256 } from "../../custom/uint"
-import { EvmAddress, UnderlyingAddress } from "../address"
+import { EvmAddress } from "../address"
+import { UnderlyingAddress } from "../underlying/address"
 import { EvmLog } from "../evm/log"
 import { AgentVault } from "../agent"
 import { FAssetEventBound } from "./_bound"

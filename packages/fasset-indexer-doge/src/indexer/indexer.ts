@@ -1,5 +1,6 @@
+import { FAssetType } from "fasset-indexer-core"
 import { getVar, setVar, findOrCreateUnderlyingAddress, AddressType, type EntityManager } from "fasset-indexer-core/orm"
-import { DogeBlock, DogeVoutReference, UnderlyingAddress } from "fasset-indexer-core/entities"
+import { UnderlyingBlock, UnderlyingAddress, UnderlyingVoutReference } from "fasset-indexer-core/entities"
 import { PaymentReference } from "fasset-indexer-core/utils"
 import { logger } from "fasset-indexer-core/logger"
 import { DogeDeforker } from "./deforker"
@@ -68,7 +69,7 @@ export class DogeIndexer {
     })
   }
 
-  protected async processTx(em: EntityManager, txhash: string, block: DogeBlock): Promise<void> {
+  protected async processTx(em: EntityManager, txhash: string, block: UnderlyingBlock): Promise<void> {
     const tx = await this.context.dogecoin.dogeTransaction(txhash)
     for (const vout of tx.vout) {
       const reference = this.extractReference(vout)
@@ -81,16 +82,16 @@ export class DogeIndexer {
     }
   }
 
-  private async storeDogeBlock(em: EntityManager, dogeBlock: IDogeBlock): Promise<DogeBlock> {
-    const block = new DogeBlock(dogeBlock.hash, dogeBlock.height, dogeBlock.time)
+  private async storeDogeBlock(em: EntityManager, dogeBlock: IDogeBlock): Promise<UnderlyingBlock> {
+    const block = new UnderlyingBlock(dogeBlock.hash, dogeBlock.height, dogeBlock.time)
     em.persist(block)
     return block
   }
 
   private async storeVoutReference(
-    em: EntityManager, reference: string, txhash: string, address: UnderlyingAddress, block: DogeBlock
-  ): Promise<DogeVoutReference> {
-    const ref = new DogeVoutReference(reference, txhash, address, block)
+    em: EntityManager, reference: string, txhash: string, address: UnderlyingAddress, block: UnderlyingBlock
+  ): Promise<UnderlyingVoutReference> {
+    const ref = new UnderlyingVoutReference(FAssetType.FDOGE, reference, txhash, address, block)
     em.persist(ref)
     return ref
   }

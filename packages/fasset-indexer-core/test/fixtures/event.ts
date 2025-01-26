@@ -1,6 +1,7 @@
 import { FAssetType } from "../../src"
 import { ORM } from "../../src/orm"
-import { EvmAddress, UnderlyingAddress } from "../../src/orm/entities/address"
+import { EvmAddress } from "../../src/orm/entities/address"
+import { UnderlyingAddress } from "../../src/orm/entities/underlying/address"
 import { CollateralTypeAdded } from "../../src/orm/entities/events/token"
 import { AgentManager, AgentOwner, AgentVault } from "../../src/orm/entities/agent"
 import { CollateralReserved } from "../../src/orm/entities/events/minting"

@@ -1,5 +1,5 @@
 export { UntrackedAgentVault, Var } from "./state/var"
-export { EvmAddress, UnderlyingAddress } from "./address"
+export { EvmAddress } from "./address"
 export { EvmBlock } from "./evm/block"
 export { EvmTransaction } from "./evm/transaction"
 export { EvmLog } from "./evm/log"
@@ -32,8 +32,9 @@ export { AgentVaultInfo, AgentVaultSettings } from "./state/agent"
 export { AgentManager, AgentOwner, AgentVault } from "./agent"
 export { FtsoPrice } from "./state/price"
 export { TokenBalance } from "./state/balance"
-// doge
-export { DogeBlock } from "./doge/block"
-export { DogeVoutReference } from "./doge/reference"
+// underlying data
+export { UnderlyingBlock } from "./underlying/block"
+export { UnderlyingAddress } from "./underlying/address"
+export { UnderlyingVoutReference } from "./underlying/reference"
 // building event bound stuff
 export { EventBound, FAssetEventBound } from "./events/_bound"
