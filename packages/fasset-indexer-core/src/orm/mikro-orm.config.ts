@@ -42,7 +42,6 @@ import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
 import { TokenBalance } from "./entities/state/balance"
 import { DogeBlock } from "./entities/doge/block"
-import { DogeAddress } from "./entities/doge/address"
 import { DogeVoutReference } from "./entities/doge/reference"
 import { updateSchema } from "./utils"
 import { MIN_DATABASE_POOL_CONNECTIONS, MAX_DATABASE_POOL_CONNECTIONS } from "../config/constants"
@@ -71,7 +70,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     CurrentUnderlyingBlockUpdated, PricesPublished, PricePublished,
     FtsoPrice, UntrackedAgentVault, TokenBalance,
     // doge
-    DogeBlock, DogeAddress, DogeVoutReference
+    DogeBlock, DogeVoutReference
   ],
   pool: {
     min: MIN_DATABASE_POOL_CONNECTIONS,

@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, Property, PrimaryKey, Unique } from "@mikro-orm/core"
-import { DogeAddress } from "./address"
 import { DogeBlock } from "./block"
+import { UnderlyingAddress } from "../address"
 
 
 @Entity()
@@ -16,13 +16,13 @@ export class DogeVoutReference {
   @Property({ type: 'text' })
   transactionHash: string
 
-  @ManyToOne(() => DogeAddress)
-  address: DogeAddress
+  @ManyToOne(() => UnderlyingAddress)
+  address: UnderlyingAddress
 
   @ManyToOne(() => DogeBlock)
   block: DogeBlock
 
-  constructor(reference: string, transactionHash: string, address: DogeAddress, block: DogeBlock) {
+  constructor(reference: string, transactionHash: string, address: UnderlyingAddress, block: DogeBlock) {
     this.reference = reference
     this.transactionHash = transactionHash
     this.address = address

@@ -1,5 +1,5 @@
 import { EntityManager } from "@mikro-orm/knex"
-import { AddressType, EvmAddress } from "../orm/entities/address"
+import { EvmAddress } from "../orm/entities/address"
 import { EvmTransaction } from "../orm/entities/evm/transaction"
 import { EvmBlock } from "../orm/entities/evm/block"
 import { AgentVault } from "../orm/entities/agent"
@@ -7,6 +7,7 @@ import { AgentVaultInfo } from "../orm/entities/state/agent"
 import { UntrackedAgentVault } from "../orm/entities/state/var"
 import type { Context } from "../context/context"
 import type { AgentInfo } from "../../chain/typechain/IAssetManager"
+import type { AddressType } from "../orm/interface"
 
 
 export async function findOrCreateEvmAddress(em: EntityManager, address: string, type: AddressType): Promise<EvmAddress> {

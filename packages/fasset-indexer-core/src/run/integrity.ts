@@ -1,5 +1,5 @@
 
-import { getVar, setVar } from "../utils"
+import { getVar, setVar } from "../orm/utils"
 import { Context } from "../context/context"
 import { backUpdateLastBlockName, backUpdateFirstUnhandledBlockName, BLOCK_EXPLORERS, MIN_EVM_BLOCK_NUMBER_DB_KEY } from "../config/constants"
 import type { JsonRpcApiProvider } from "ethers"

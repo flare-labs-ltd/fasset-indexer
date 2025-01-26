@@ -1,5 +1,5 @@
-import { getVar, setVar, type EntityManager } from "fasset-indexer-core/orm"
-import { DogeAddress, DogeBlock, DogeVoutReference } from "fasset-indexer-core/entities"
+import { getVar, setVar, findOrCreateUnderlyingAddress, AddressType, type EntityManager } from "fasset-indexer-core/orm"
+import { DogeBlock, DogeVoutReference, UnderlyingAddress } from "fasset-indexer-core/entities"
 import { PaymentReference } from "fasset-indexer-core/utils"
 import { logger } from "fasset-indexer-core/logger"
 import { DogeDeforker } from "./deforker"
@@ -74,7 +74,7 @@ export class DogeIndexer {
       const reference = this.extractReference(vout)
       if (reference == null) continue
       const sender = await this.extractTransactionSender(tx)
-      const address = await this.getOrCreateAddress(em, sender)
+      const address = await findOrCreateUnderlyingAddress(em, sender, AddressType.AGENT)
       await this.storeVoutReference(em, reference, txhash, address, block)
       logger.info(`stored reference ${reference} for sender ${sender}`)
       break
@@ -88,19 +88,11 @@ export class DogeIndexer {
   }
 
   private async storeVoutReference(
-    em: EntityManager, reference: string, txhash: string, address: DogeAddress, block: DogeBlock
+    em: EntityManager, reference: string, txhash: string, address: UnderlyingAddress, block: DogeBlock
   ): Promise<DogeVoutReference> {
     const ref = new DogeVoutReference(reference, txhash, address, block)
     em.persist(ref)
     return ref
-  }
-
-  private async getOrCreateAddress(em: EntityManager, address: string): Promise<DogeAddress> {
-    const existing = await em.findOne(DogeAddress, { hash: address })
-    if (existing !== null) return existing
-    const addr = new DogeAddress(address)
-    em.persist(addr)
-    return addr
   }
 
   private extractReference(vout: IDogeVout): string | null {

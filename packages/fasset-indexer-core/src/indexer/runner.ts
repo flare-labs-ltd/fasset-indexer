@@ -1,7 +1,7 @@
-import { getVar, setVar, sleep } from "../utils"
+import { getVar, setVar } from "../orm/utils"
+import { sleep } from "../utils/general"
 import { logger } from "../logger"
 import { SLEEP_AFTER_ERROR_MS, EVM_LOG_FETCH_SLEEP_MS } from "../config/constants"
-import type { Context } from "../context/context"
 import type { ORM } from "../orm"
 
 

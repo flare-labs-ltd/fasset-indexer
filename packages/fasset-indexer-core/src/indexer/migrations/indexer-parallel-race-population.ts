@@ -1,4 +1,4 @@
-import { getVar, setVar } from "../../utils"
+import { getVar, setVar } from "../../orm/utils"
 import { EventIndexer } from "../indexer"
 import { logger } from "../../logger"
 import type { Context } from "../../context/context"

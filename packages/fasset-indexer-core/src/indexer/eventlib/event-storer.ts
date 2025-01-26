@@ -1,4 +1,5 @@
-import { findOrCreateUnderlyingAddress } from "../../utils"
+import { AddressType } from "../../orm/interface"
+import { findOrCreateUnderlyingAddress } from "../../orm/utils"
 import {
   isUntrackedAgentVault, findOrCreateEvmAddress,
   findOrCreateEvmBlock, findOrCreateEvmTransaction
@@ -7,7 +8,7 @@ import { EvmLog } from "../../orm/entities/evm/log"
 import { CollateralTypeAdded, ERC20Transfer } from "../../orm/entities/events/token"
 import { TokenBalance } from "../../orm/entities/state/balance"
 import { RedemptionTicket } from "../../orm/entities/state/redemption-ticket"
-import { AddressType, EvmAddress } from "../../orm/entities/address"
+import { EvmAddress } from "../../orm/entities/address"
 import { AgentOwner, AgentVault } from "../../orm/entities/agent"
 import {
   AgentVaultCreated,

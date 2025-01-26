@@ -1,4 +1,4 @@
-import { getVar, setVar } from "../../utils"
+import { getVar, setVar } from "../../orm/utils"
 import { backUpdateLastBlockName, backUpdateFirstUnhandledBlockName } from "../../config/constants"
 import { EventIndexer } from "../indexer"
 import type { Context } from "../../context/context"

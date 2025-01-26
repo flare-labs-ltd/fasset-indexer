@@ -34,7 +34,6 @@ export { FtsoPrice } from "./state/price"
 export { TokenBalance } from "./state/balance"
 // doge
 export { DogeBlock } from "./doge/block"
-export { DogeAddress } from "./doge/address"
 export { DogeVoutReference } from "./doge/reference"
 // building event bound stuff
 export { EventBound, FAssetEventBound } from "./events/_bound"

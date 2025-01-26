@@ -1,4 +1,4 @@
-import { AddressType } from "../../orm/entities/address"
+import { AddressType } from "../../orm/interface"
 import { AgentManager, AgentOwner, AgentVault } from "../../orm/entities/agent"
 import { AgentVaultSettings } from "../../orm/entities/state/agent"
 import { AgentVaultCreated } from "../../orm/entities/events/agent"

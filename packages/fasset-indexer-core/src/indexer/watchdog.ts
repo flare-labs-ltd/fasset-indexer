@@ -1,4 +1,4 @@
-import { sleep } from "../utils"
+import { sleep } from "../utils/general"
 import { CollateralTypeAdded } from "../orm/entities/events/token"
 import { AgentVault } from "../orm/entities/agent"
 import { FtsoPrice } from "../orm/entities/state/price"

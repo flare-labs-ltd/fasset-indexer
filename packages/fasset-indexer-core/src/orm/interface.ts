@@ -8,3 +8,5 @@ export type DatabaseType = "mysql" | "sqlite" | "postgresql";
 export type SchemaUpdate = "none" | "safe" | "full" | "recreate"
 
 export type OrmOptions = Options<AbstractSqlDriver>
+
+export enum AddressType { USER, AGENT, SYSTEM, SERVICE }

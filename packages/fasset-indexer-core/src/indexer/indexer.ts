@@ -1,5 +1,4 @@
-import { sleep } from '../utils'
-import { getVar, setVar } from '../utils'
+import { getVar, setVar } from '../orm/utils'
 import { StateUpdater } from './eventlib/state-updater'
 import { EventParser } from './eventlib/event-parser'
 import { EventScraper } from './eventlib/event-scraper'
