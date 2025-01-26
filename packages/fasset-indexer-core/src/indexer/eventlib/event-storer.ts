@@ -3,7 +3,7 @@ import { findOrCreateUnderlyingAddress } from "../../orm/utils"
 import {
   isUntrackedAgentVault, findOrCreateEvmAddress,
   findOrCreateEvmBlock, findOrCreateEvmTransaction
-} from "../shared"
+} from "../utils"
 import { EvmLog } from "../../orm/entities/evm/log"
 import { CollateralTypeAdded, ERC20Transfer } from "../../orm/entities/events/token"
 import { TokenBalance } from "../../orm/entities/state/balance"
