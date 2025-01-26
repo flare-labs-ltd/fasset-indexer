@@ -82,7 +82,7 @@ export class EventParser {
         return this.context.interfaces.collateralPoolInterface.parseLog(log)
       }
     } else if (iface === 'PRICE_READER') {
-      if (log.address === await this.context.contracts.priceReader.getAddress()) {
+      if (await this.isPriceReader(log.address)) {
         return this.context.interfaces.priceReader.parseLog(log)
       }
     }
@@ -102,6 +102,10 @@ export class EventParser {
   protected async isAgentVault(em: EntityManager, address: string): Promise<boolean> {
     const vault = await em.findOne(AgentVault, { address: { hex: address }})
     return vault !== null
+  }
+
+  protected async isPriceReader(address: string): Promise<boolean> {
+    return address === await this.context.contracts.priceReader.getAddress()
   }
 
   protected async getBlock(blockNumber: number): Promise<Block> {
