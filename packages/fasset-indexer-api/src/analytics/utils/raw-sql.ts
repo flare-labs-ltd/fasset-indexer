@@ -1,3 +1,6 @@
+import { FAssetType } from "fasset-indexer-core"
+
+
 export const COLLATERAL_POOL_PORTFOLIO_SQL = `
 with cpt as (
     select collateral_pool_token_id
@@ -66,3 +69,16 @@ order by
 limit
     ?
 `
+
+export const UNFINALIZED_DOGE_REDEMPTIONS = `
+select (rr.fasset, am.name, ea.hex, rr.request_id, eb.index, eb.timestamp)
+from redemption_requested rr
+join evm_log el on rr.evm_log_id = el.id
+join evm_block eb on eb.index = el.block_index
+join agent_vault av on rr.agent_vault_address_id = av.address_id
+join agent_owner ao on av.vaults = ao.id
+join agent_manager am on ao.agents = am.address_id
+join evm_address ea on av.address_id = ea.id
+left join underlying_vout_reference dvr on rr.payment_reference = dvr.reference and dvr.address_id = av.underlying_address_id
+left join redemption_defaulted rd on rd.redemption_requested_id = rr.id
+where fasset=${FAssetType.FDOGE} and eb.timestamp > ? and dvr.id is null and rd.id is null`

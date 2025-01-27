@@ -3,9 +3,15 @@ import {
   EvmLog, AgentVaultInfo,
   DuplicatePaymentConfirmed,
   IllegalPaymentConfirmed,
-  UnderlyingBalanceTooLow
+  UnderlyingBalanceTooLow,
+  RedemptionRequested,
+  RedemptionDefault,
+  RedemptionPerformed,
+  UnderlyingVoutReference
 } from "fasset-indexer-core/entities"
 import { ConfigLoader } from "fasset-indexer-core"
+import { unixnow } from "src/shared/utils"
+import { UNFINALIZED_DOGE_REDEMPTIONS } from "./utils/raw-sql"
 import { EVENTS } from "fasset-indexer-core/config"
 import type { ORM } from "fasset-indexer-core/orm"
 
@@ -16,6 +22,29 @@ export class NotificationAnalytics {
   async create(loader: ConfigLoader): Promise<NotificationAnalytics> {
     const orm = await createOrm(loader.dbConfig, 'safe')
     return new NotificationAnalytics(orm)
+  }
+
+  ////////////////////////////////////////////////////////////////////////////
+  // underlying connectors
+
+  async getRedemptionPaymentStatus(redemptionId: number): Promise<any> {
+    const em = this.orm.em.fork()
+    const redemption = await em.findOneOrFail(RedemptionRequested, { requestId: redemptionId })
+    const succeeded = await em.findOne(RedemptionPerformed, { redemptionRequested: redemption }, { populate: ['evmLog.block'] })
+    if (succeeded != null) return succeeded
+    const defaulted = await em.findOne(RedemptionDefault, { redemptionRequested: redemption }, { populate: ['evmLog.block'] })
+    if (defaulted != null) return defaulted
+    const doge = await em.findOne(UnderlyingVoutReference, { reference: redemption.paymentReference }, { populate: ['block'] })
+    if (doge != null) return doge
+    return null
+  }
+
+  async unhandledDogeRedemptions(startTime: number): Promise<any> {
+    const em = this.orm.em.fork()
+    const result = await em.getConnection('read').execute(UNFINALIZED_DOGE_REDEMPTIONS, [startTime]) as {
+      fasset: string, name: string, hex: string, request_id: string, index: number, timestamp: number
+    }[]
+    return result.map(x => ({ ...x, diff: unixnow() - x.timestamp }))
   }
 
   //////////////////////////////////////////////////////////////////////

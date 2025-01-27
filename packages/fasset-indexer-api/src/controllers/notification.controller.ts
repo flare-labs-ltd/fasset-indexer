@@ -9,6 +9,16 @@ import { NotificationService } from 'src/services/notification.service'
 export class NotificationController {
   constructor(private readonly service: NotificationService) {}
 
+  @Get('/redemption-payment-status?')
+  getRedemptionPaymentStatus(@Query('redemptionId') redemptionId: number): Promise<ApiResponse<any>> {
+    return apiResponse(this.service.getRedemptionPaymentStatus(redemptionId), 200)
+  }
+
+  @Get('/unhandled-redemptions?')
+  getUnhandledDogeRedemptions(@Query('startTime') startTime: number): Promise<any> {
+    return apiResponse(this.service.unhandledDogeRedemptions(startTime), 200)
+  }
+
   @Get('/last-collateral-pool-withdrawal?')
   getLastCollateralPoolClaim(@Query('pool') pool: string): Promise<ApiResponse<number>> {
     return apiResponse(this.service.lastCollateralPoolClaim(pool), 200)
