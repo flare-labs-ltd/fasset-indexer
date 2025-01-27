@@ -80,5 +80,5 @@ join agent_owner ao on av.vaults = ao.id
 join agent_manager am on ao.agents = am.address_id
 join evm_address ea on av.address_id = ea.id
 left join underlying_vout_reference dvr on rr.payment_reference = dvr.reference and dvr.address_id = av.underlying_address_id
-left join redemption_default rd on rd.redemption_requested_id = rr.id
-where fasset=${FAssetType.FDOGE} and eb.timestamp > ? and dvr.id is null and rd.id is null`
+left join redemption_default rd on rd.redemption_requested_evm_log_id = rr.evm_log_id
+where rr.fasset=${FAssetType.FDOGE} and eb.timestamp > ? and dvr.id is null and rd.evm_log_id is null`
