@@ -12,6 +12,7 @@ export class ApiConfigLoader extends ConfigLoader {
     if (path.endsWith('/')) {
       return path.slice(0, -1)
     }
+    return path
   }
 
 }
