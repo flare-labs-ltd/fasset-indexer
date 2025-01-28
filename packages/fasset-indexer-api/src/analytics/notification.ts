@@ -39,9 +39,9 @@ export class NotificationAnalytics {
     return null
   }
 
-  async unhandledDogeRedemptions(startTime: number): Promise<any> {
+  async unhandledDogeRedemptions(startTime: number, limit = 100): Promise<any> {
     const em = this.orm.em.fork()
-    const result = await em.getConnection('read').execute(UNFINALIZED_DOGE_REDEMPTIONS, [startTime]) as {
+    const result = await em.getConnection('read').execute(UNFINALIZED_DOGE_REDEMPTIONS, [startTime, limit]) as {
       fasset: string, name: string, hex: string, request_id: string, index: number, timestamp: number
     }[]
     return result.map(x => ({ ...x, diff: unixnow() - x.timestamp }))

@@ -71,7 +71,7 @@ limit
 `
 
 export const UNFINALIZED_DOGE_REDEMPTIONS = `
-select (rr.fasset, am.name, ea.hex, rr.request_id, eb.index, eb.timestamp)
+select rr.fasset, am.name, ea.hex, rr.request_id, eb.index, eb.timestamp
 from redemption_requested rr
 join evm_log el on rr.evm_log_id = el.id
 join evm_block eb on eb.index = el.block_index
@@ -81,4 +81,5 @@ join agent_manager am on ao.agents = am.address_id
 join evm_address ea on av.address_id = ea.id
 left join underlying_vout_reference dvr on rr.payment_reference = dvr.reference and dvr.address_id = av.underlying_address_id
 left join redemption_default rd on rd.redemption_requested_evm_log_id = rr.evm_log_id
-where rr.fasset=${FAssetType.FDOGE} and eb.timestamp > ? and dvr.id is null and rd.evm_log_id is null`
+where rr.fasset=${FAssetType.FDOGE} and eb.timestamp > ? and dvr.id is null and rd.evm_log_id is null
+limit ?`
