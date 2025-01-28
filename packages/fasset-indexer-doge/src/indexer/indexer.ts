@@ -35,7 +35,7 @@ export class DogeIndexer {
       const block = await this.context.dogecoin.dogeBlock(blockhash)
       await this.processBlock(block)
       await this.setFirstUnhandledBlock(i + 1)
-      logger.info(`doge indexer processed block ${blockhash} at height ${i}`)
+      logger.info(`doge indexer processed block height ${i}`)
     }
   }
 
@@ -77,7 +77,6 @@ export class DogeIndexer {
       const sender = await this.extractTransactionSender(tx)
       const address = await findOrCreateUnderlyingAddress(em, sender, AddressType.AGENT)
       await this.storeVoutReference(em, reference, txhash, address, block)
-      logger.info(`stored reference ${reference} for sender ${sender}`)
       break
     }
   }
