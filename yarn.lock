@@ -3297,6 +3297,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"fasset-indexer-btc@workspace:packages/fasset-indexer-btc":
+  version: 0.0.0-use.local
+  resolution: "fasset-indexer-btc@workspace:packages/fasset-indexer-btc"
+  dependencies:
+    fasset-indexer-core: "workspace:*"
+    fasset-indexer-doge: "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "fasset-indexer-core@workspace:*, fasset-indexer-core@workspace:packages/fasset-indexer-core":
   version: 0.0.0-use.local
   resolution: "fasset-indexer-core@workspace:packages/fasset-indexer-core"
@@ -3325,7 +3334,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"fasset-indexer-doge@workspace:packages/fasset-indexer-doge":
+"fasset-indexer-doge@workspace:*, fasset-indexer-doge@workspace:packages/fasset-indexer-doge":
   version: 0.0.0-use.local
   resolution: "fasset-indexer-doge@workspace:packages/fasset-indexer-doge"
   dependencies:

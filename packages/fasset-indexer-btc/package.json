@@ -1,0 +1,16 @@
+{
+    "name": "fasset-indexer-btc",
+    "version": "0.1.10",
+    "description": "FAsset Indexer for Bitcoin",
+    "author": "",
+    "license": "MIT",
+    "scripts": {
+        "build": "rm -rf dist && tsc --build",
+        "run-indexer": "node dist/src/run/run-indexer.js"
+    },
+    "dependencies": {
+        "fasset-indexer-core": "workspace:*",
+        "fasset-indexer-doge": "workspace:*"
+    },
+    "packageManager": "yarn@3.6.4"
+}

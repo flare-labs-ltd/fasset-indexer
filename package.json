@@ -18,6 +18,7 @@
     "build": "yarn build-base && yarn build-api",
     "run-native-indexer": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-indexer.js",
     "run-native-watchdog": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-watchdog.js",
+    "run-btc-indexer": "yarn build-base && node packages/fasset-indexer-btc/dist/src/run/run-indexer.js",
     "run-doge-indexer": "yarn build-base && node packages/fasset-indexer-doge/dist/src/run/run-indexer.js",
     "run-api": "yarn build && node packages/fasset-indexer-api/dist/src/main",
     "lint": "eslint . --ext .ts"

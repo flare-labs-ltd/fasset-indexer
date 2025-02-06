@@ -32,6 +32,9 @@
     },
     {
       "path": "packages/fasset-indexer-doge"
+    },
+    {
+      "path": "packages/fasset-indexer-btc"
     }
   ],
   "exclude": [

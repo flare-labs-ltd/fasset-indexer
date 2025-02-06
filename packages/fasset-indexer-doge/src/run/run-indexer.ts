@@ -1,7 +1,7 @@
+import { IndexerRunner } from "fasset-indexer-core"
 import { DogeConfigLoader } from "../config/config"
 import { DogeContext } from "../context"
 import { DogeIndexer } from "../indexer/indexer"
-import { IndexerRunner } from "fasset-indexer-core"
 
 
 async function runIndexer(): Promise<void> {

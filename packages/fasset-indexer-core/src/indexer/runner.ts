@@ -23,7 +23,7 @@ export class IndexerRunner {
       try {
         await this.indexer.runHistoric(startBlock)
       } catch (e: any) {
-        logger.error(`error running ${this.name}: ${e}`)
+        logger.error(`error running ${this.name} indexer: ${e}`)
         await sleep(SLEEP_AFTER_ERROR_MS)
         continue
       }

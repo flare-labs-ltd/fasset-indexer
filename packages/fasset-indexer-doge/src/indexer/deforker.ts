@@ -2,7 +2,6 @@ import { setVar, type EntityManager } from "fasset-indexer-core/orm"
 import { UnderlyingBlock, UnderlyingVoutReference } from "fasset-indexer-core/entities"
 import { logger } from "fasset-indexer-core/logger"
 import { DogeContext } from "../context"
-import { FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY } from "../config/constants"
 
 
 export class DogeDeforker {
@@ -14,9 +13,9 @@ export class DogeDeforker {
     if (lastBlock === null) return
     for (let i = lastBlock; i >= 0; i -= 1) {
       const dbBlock = await em.findOneOrFail(UnderlyingBlock, { height: i })
-      const rpcBlock = await this.context.dogecoin.dogeBlock(i)
+      const rpcBlock = await this.context.provider.block(i)
       if (dbBlock.hash !== rpcBlock.hash) {
-        logger.alert(`purging blocks at height ${i} due to found fork`)
+        logger.alert(`purging ${this.context.chainName} blocks at height ${i} due to found fork`)
         await this.purgeDataAtHeight(i)
       } else {
         break
@@ -28,7 +27,7 @@ export class DogeDeforker {
     await this.context.orm.em.transactional(async (em: EntityManager) => {
       await em.nativeDelete(UnderlyingBlock, { height })
       await em.nativeDelete(UnderlyingVoutReference, { block: { height } })
-      await setVar(em, FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY, height.toString())
+      await setVar(em, this.context.firstUnhandledBlockDbKey, height.toString())
     })
   }
 

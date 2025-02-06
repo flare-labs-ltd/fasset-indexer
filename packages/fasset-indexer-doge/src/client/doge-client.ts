@@ -10,37 +10,37 @@ export class DogeClient {
     public readonly apiKey?: string
   ) { }
 
-  async dogeBlockHeight(): Promise<number> {
+  async blockHeight(): Promise<number> {
     const res = await this.call('getblockcount', [])
     return res.result
   }
 
-  async dogeBlock(id: number | string): Promise<IDogeBlock> {
+  async block(id: number | string): Promise<IDogeBlock> {
     if (typeof id === 'number') {
-      return this.dogeBlockFromHeight(id)
+      return this.blockFromHeight(id)
     } else {
-      return this.dogeBlockFromHash(id)
+      return this.blockFromHash(id)
     }
   }
 
-  async dogeTransaction(tx: string): Promise<IDogeTx> {
+  async transaction(tx: string): Promise<IDogeTx> {
     const res = await this.call('getrawtransaction', [tx, true])
     return res.result
   }
 
-  async dogeBlockHash(height: number): Promise<string> {
+  async blockHash(height: number): Promise<string> {
     const res = await this.call('getblockhash', [height])
     return res.result
   }
 
-  protected async dogeBlockFromHash(hash: string): Promise<IDogeBlock> {
+  protected async blockFromHash(hash: string): Promise<IDogeBlock> {
     const res = await this.call('getblock', [hash])
     return res.result
   }
 
-  protected async dogeBlockFromHeight(height: number): Promise<IDogeBlock> {
-    const hash = await this.dogeBlockHash(height)
-    return this.dogeBlockFromHash(hash)
+  protected async blockFromHeight(height: number): Promise<IDogeBlock> {
+    const hash = await this.blockHash(height)
+    return this.blockFromHash(hash)
   }
 
   protected async call(method: string, params: any[]): Promise<any> {

@@ -10,7 +10,7 @@ async function runIndexer(start?: number) {
   const config = new ConfigLoader()
   const context = await Context.create(config)
   const indexer = new EventIndexer(context, config.json?.indexEvents)
-  const runner = new IndexerRunner(indexer, 'event indexer')
+  const runner = new IndexerRunner(indexer, 'native')
 
   process.on("SIGINT", async () => {
     logger.info("stopping indexer...")

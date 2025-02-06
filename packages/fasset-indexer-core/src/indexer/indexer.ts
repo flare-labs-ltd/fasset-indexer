@@ -51,8 +51,7 @@ export class EventIndexer {
 
   async firstUnhandledBlock(startBlock?: number): Promise<number> {
     const firstUnhandled = await getVar(this.context.orm.em.fork(), this.firstUnhandledEventBlockName)
-    const aux = firstUnhandled !== null ? parseInt(firstUnhandled.value!) : startBlock
-    return aux !== undefined ? aux: await this.minBlockNumber()
+    return (firstUnhandled !== null ? parseInt(firstUnhandled.value!) : startBlock) ?? await this.minBlockNumber()
   }
 
   async setFirstUnhandledBlock(blockNumber: number): Promise<void> {

@@ -15,6 +15,10 @@
         {
             "name": "🐶 doge",
             "path": "packages/fasset-indexer-doge"
+        },
+        {
+            "name": "🪙 btc",
+            "path": "packages/fasset-indexer-btc"
         }
 	],
 	"settings": {

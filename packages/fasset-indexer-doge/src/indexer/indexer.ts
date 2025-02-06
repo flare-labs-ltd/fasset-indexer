@@ -4,7 +4,6 @@ import { UnderlyingBlock, UnderlyingAddress, UnderlyingVoutReference } from "fas
 import { PaymentReference } from "fasset-indexer-core/utils"
 import { logger } from "fasset-indexer-core/logger"
 import { DogeDeforker } from "./deforker"
-import { FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY, MIN_DOGE_BLOCK_NUMBER_DB_KEY } from "../config/constants"
 import type { IDogeBlock, IDogeTx, IDogeVout } from "../client/interface"
 import type { DogeContext } from "../context"
 
@@ -16,12 +15,12 @@ export class DogeIndexer {
     this.deforker = new DogeDeforker(context)
   }
 
-  async runHistoricWithDefork(startBlock?: number, endBlock?: number) {
+  async runHistoric(startBlock?: number, endBlock?: number) {
     await this.deforker.defork()
-    await this.runHistoric(startBlock, endBlock)
+    await this.runHistoricWithoutDefork(startBlock, endBlock)
   }
 
-  async runHistoric(startBlock?: number, endBlock?: number): Promise<void> {
+  async runHistoricWithoutDefork(startBlock?: number, endBlock?: number): Promise<void> {
     const firstUnhandledBlock = await this.firstUnhandledBlock(startBlock)
     if (startBlock === undefined || firstUnhandledBlock > startBlock) {
       startBlock = firstUnhandledBlock
@@ -31,33 +30,32 @@ export class DogeIndexer {
       endBlock = lastBlockToHandle
     }
     for (let i = startBlock; i <= endBlock; i += 1) {
-      const blockhash = await this.context.dogecoin.dogeBlockHash(i)
-      const block = await this.context.dogecoin.dogeBlock(blockhash)
+      const blockhash = await this.context.provider.blockHash(i)
+      const block = await this.context.provider.block(blockhash)
       await this.processBlock(block)
       await this.setFirstUnhandledBlock(i + 1)
-      logger.info(`doge indexer processed block height ${i}`)
+      logger.info(`${this.context.chainName} indexer processed block height ${i}`)
     }
   }
 
   async firstUnhandledBlock(startBlock?: number): Promise<number> {
-    const block = await getVar(this.context.orm.em.fork(), FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY)
-    const blockNum = block !== null ? Number(block.value!) : startBlock
-    return blockNum !== undefined ? blockNum : await this.minBlock()
+    const block = await getVar(this.context.orm.em.fork(), this.context.firstUnhandledBlockDbKey)
+    return (block !== null ? Number(block.value!) : startBlock) ?? await this.minBlock()
   }
 
   async lastBlockToHandle(): Promise<number> {
-    return await this.context.dogecoin.dogeBlockHeight()
+    return this.context.provider.blockHeight()
   }
 
   async minBlock(): Promise<number> {
-    const fromDb = await getVar(this.context.orm.em.fork(), MIN_DOGE_BLOCK_NUMBER_DB_KEY)
+    const fromDb = await getVar(this.context.orm.em.fork(), this.context.minBlockNumberDbKey)
     if (fromDb?.value != null) return Number(fromDb.value)
-    throw new Error('No min block number found in the database')
+    throw new Error(`No min ${this.context.chainName} block number found for in the database`)
   }
 
   protected async setFirstUnhandledBlock(block: number): Promise<void> {
     const em = this.context.orm.em.fork()
-    await setVar(em, FIRST_UNHANDLED_DOGE_BLOCK_DB_KEY, block.toString())
+    await setVar(em, this.context.firstUnhandledBlockDbKey, block.toString())
   }
 
   protected async processBlock(block: IDogeBlock): Promise<void> {
@@ -70,7 +68,7 @@ export class DogeIndexer {
   }
 
   protected async processTx(em: EntityManager, txhash: string, block: UnderlyingBlock): Promise<void> {
-    const tx = await this.context.dogecoin.dogeTransaction(txhash)
+    const tx = await this.context.provider.transaction(txhash)
     for (const vout of tx.vout) {
       const reference = this.extractReference(vout)
       if (reference == null) continue
@@ -109,7 +107,7 @@ export class DogeIndexer {
     const vin = tx.vin[0]
     const txid = vin.txid
     const vout = vin.vout
-    const txDetails = await this.context.dogecoin.dogeTransaction(txid)
+    const txDetails = await this.context.provider.transaction(txid)
     return txDetails.vout[vout].scriptPubKey.addresses[0]
   }
 }

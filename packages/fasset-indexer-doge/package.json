@@ -4,6 +4,12 @@
     "description": "FAsset Indexer for Dogecoin",
     "author": "",
     "license": "MIT",
+    "exports": {
+        ".": {
+            "types": "./dist/src/index.d.ts",
+            "default": "./dist/src/index.js"
+        }
+    },
     "scripts": {
         "build": "rm -rf dist && tsc --build",
         "run-indexer": "node dist/src/run/run-indexer.js"
