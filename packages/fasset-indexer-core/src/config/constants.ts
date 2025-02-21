@@ -110,5 +110,5 @@ export const BLOCK_EXPLORERS = {
 export const FASSET_LOT_SIZE = {
   [FAssetType[FAssetType.FXRP]]: BigInt(100e6),
   [FAssetType[FAssetType.FDOGE]]: BigInt(200e8),
-  [FAssetType[FAssetType.FBTC]]: BigInt(1e7),
+  [FAssetType[FAssetType.FBTC]]: BigInt(5e6),
 }
