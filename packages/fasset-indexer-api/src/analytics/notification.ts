@@ -10,7 +10,7 @@ import {
   UnderlyingVoutReference
 } from "fasset-indexer-core/entities"
 import { ConfigLoader } from "fasset-indexer-core"
-import { unixnow } from "src/shared/utils"
+import { unixnow } from "../shared/utils"
 import { UNFINALIZED_DOGE_REDEMPTIONS } from "./utils/raw-sql"
 import { EVENTS } from "fasset-indexer-core/config"
 import type { ORM } from "fasset-indexer-core/orm"

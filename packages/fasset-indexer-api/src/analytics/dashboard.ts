@@ -11,7 +11,7 @@ import { EVENTS, FASSET_LOT_SIZE } from "fasset-indexer-core/config"
 import { fassetToUsdPrice } from "./utils/prices"
 import { SharedAnalytics } from "./shared"
 import { AgentStatistics } from "./statistics"
-import { PRICE_FACTOR } from "src/config/constants"
+import { PRICE_FACTOR } from "../config/constants"
 import { COLLATERAL_POOL_PORTFOLIO_SQL } from "./utils/raw-sql"
 import type {
   AmountResult,
