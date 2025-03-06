@@ -7,8 +7,8 @@ export class ApiConfigLoader extends ConfigLoader {
     return parseInt(process.env.API_PORT ?? '3000')
   }
 
-  get rootPath(): string | undefined {
-    const path = process.env.API_ROOT_PATH
+  get rootPath(): string {
+    const path = process.env.API_ROOT_PATH ?? ''
     if (path.endsWith('/')) {
       return path.slice(0, -1)
     }
