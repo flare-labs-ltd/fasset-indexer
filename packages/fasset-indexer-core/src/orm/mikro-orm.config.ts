@@ -37,6 +37,12 @@ import { RedemptionTicket } from "./entities/state/redemption-ticket"
 import { AgentPing, AgentPingResponse } from "./entities/events/ping"
 import { PricePublished, PricesPublished } from "./entities/events/price"
 import { CurrentUnderlyingBlockUpdated } from "./entities/events/system"
+import {
+  CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled,
+  ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested,
+  TransferToCoreVaultCancelled, TransferToCoreVaultStarted,
+  TransferToCoreVaultSuccessful
+} from "./entities/events/core-vault"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
@@ -70,6 +76,9 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     ERC20Transfer, CollateralTypeAdded, AgentPing, AgentPingResponse,
     CurrentUnderlyingBlockUpdated, PricesPublished, PricePublished,
     FtsoPrice, UntrackedAgentVault, TokenBalance,
+    TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultCancelled,
+    ReturnFromCoreVaultRequested, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultCancelled,
+    CoreVaultRedemptionRequested,
     // underlying
     UnderlyingBlock, UnderlyingVoutReference, UnderlyingAddress
   ],

@@ -31,6 +31,8 @@ import { EVENTS } from "../src/config/constants"
 import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/orm/entities/events/redemption-ticket"
 import { RedemptionTicket } from "../src/orm/entities/state/redemption-ticket"
 import { TestConfigLoader } from "./fixtures/config"
+import { EntityManager } from "@mikro-orm/knex"
+import { CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested, TransferToCoreVaultCancelled, TransferToCoreVaultStarted, TransferToCoreVaultSuccessful } from "../src/orm/entities/events/core-vault"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -589,6 +591,96 @@ describe("FAsset evm events", () => {
       await storer.processEventUnsafe(em, event1)
       const logs = await em.findAll(EvmLog)
       expect(logs).to.have.length(1)
+    })
+  })
+
+  describe("core vault", () => {
+
+    it("should store transfer to core vault data", async () => {
+      const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+      await fixture.storeInitialAgents(FAssetType.FXRP)
+      const em = context.orm.em.fork()
+      // test transfer to core vault started
+      const ettcvs = await fixture.generateEvent(EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_STARTED, assetManagerXrp)
+      await storer.processEventUnsafe(em, ettcvs)
+      const ttcvs = await em.findOneOrFail(TransferToCoreVaultStarted,
+        { evmLog: { block: { index: ettcvs.blockNumber }, index: ettcvs.logIndex }},
+        { populate: [ 'agentVault.address' ]}
+      )
+      expect(ttcvs.fasset).to.equal(FAssetType.FXRP)
+      expect(ttcvs.agentVault.address.hex).to.equal(ettcvs.args[0])
+      expect(ttcvs.transferRedemptionRequestId).to.equal(Number(ettcvs.args[1]))
+      expect(ttcvs.valueUBA).to.equal(ettcvs.args[2])
+      // test transfer to core vault successful
+      const ettcvf = await fixture.generateEvent(EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_SUCCESSFUL, assetManagerXrp)
+      await storer.processEventUnsafe(em, ettcvf)
+      const ttcvf = await em.findOneOrFail(TransferToCoreVaultSuccessful,
+        { evmLog: { block: { index: ettcvf.blockNumber }, index: ettcvf.logIndex }}
+      )
+      expect(ttcvf.fasset).to.equal(FAssetType.FXRP)
+      expect(ttcvf.transferToCoreVaultStarted).to.equal(ttcvs)
+      expect(ttcvf.valueUBA).to.equal(ettcvf.args[2])
+      // test transfer to core vault canceled
+      const ettcvc = await fixture.generateEvent(EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_CANCELLED, assetManagerXrp)
+      await storer.processEventUnsafe(em, ettcvc)
+      const ttcvc = await em.findOneOrFail(TransferToCoreVaultCancelled,
+        { evmLog: { block: { index: ettcvc.blockNumber }, index: ettcvc.logIndex }}
+      )
+      expect(ttcvc.fasset).to.equal(FAssetType.FXRP)
+      expect(ttcvc.transferToCoreVaultStarted).to.equal(ttcvs)
+    })
+
+    it("should store return from core vault", async () => {
+      const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+      await fixture.storeInitialAgents(FAssetType.FXRP)
+      const em = context.orm.em.fork()
+      // test transfer from core vault requested
+      const etfcvr = await fixture.generateEvent(EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_REQUESTED, assetManagerXrp)
+      await storer.processEventUnsafe(em, etfcvr)
+      const tfcvr = await em.findOneOrFail(ReturnFromCoreVaultRequested,
+        { evmLog: { block: { index: etfcvr.blockNumber }, index: etfcvr.logIndex }},
+        { populate: ['agentVault.address']}
+      )
+      expect(tfcvr.fasset).to.equal(FAssetType.FXRP)
+      expect(tfcvr.agentVault.address.hex).to.equal(etfcvr.args[0])
+      expect(tfcvr.requestId).to.equal(Number(etfcvr.args[1]))
+      expect(tfcvr.paymentReference).to.equal(etfcvr.args[2])
+      expect(tfcvr.valueUBA).to.equal(etfcvr.args[3])
+      // test transfer from core vault confirmed
+      const etfcvc = await fixture.generateEvent(EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_CONFIRMED, assetManagerXrp)
+      await storer.processEventUnsafe(em, etfcvc)
+      const tfcvc = await em.findOneOrFail(ReturnFromCoreVaultConfirmed,
+        { evmLog: { block: { index: etfcvc.blockNumber }, index: etfcvc.logIndex }}
+      )
+      expect(tfcvc.fasset).to.equal(FAssetType.FXRP)
+      expect(tfcvc.returnFromCoreVaultRequested).to.equal(tfcvr)
+      expect(tfcvc.receivedUnderlyingUBA).to.equal(etfcvc.args[2])
+      expect(tfcvc.remintedUBA).to.equal(etfcvc.args[3])
+      // test transfer from core vault canceled
+      const etfcvd = await fixture.generateEvent(EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_CANCELLED, assetManagerXrp)
+      await storer.processEventUnsafe(em, etfcvd)
+      const tfcvd = await em.findOneOrFail(ReturnFromCoreVaultCancelled,
+        { evmLog: { block: { index: etfcvd.blockNumber }, index: etfcvd.logIndex }}
+      )
+      expect(tfcvd.fasset).to.equal(FAssetType.FXRP)
+      expect(tfcvd.returnFromCoreVaultRequested).to.equal(tfcvr)
+    })
+
+    it("should store core vault redemption requested", async () => {
+      const assetManagerXrp = context.getContractAddress(ASSET_MANAGER_FXRP)
+      await fixture.storeInitialAgents(FAssetType.FXRP)
+      const em = context.orm.em.fork()
+      // test core vault redemption requested
+      const ecvrr = await fixture.generateEvent(EVENTS.ASSET_MANAGER.CORE_VAULT_REDEMPTION_REQUESTED, assetManagerXrp)
+      await storer.processEventUnsafe(em, ecvrr)
+      const cvrr = await em.findOneOrFail(CoreVaultRedemptionRequested,
+        { evmLog: { block: { index: ecvrr.blockNumber }, index: ecvrr.logIndex }}
+      )
+      expect(cvrr.fasset).to.equal(FAssetType.FXRP)
+      expect(cvrr.redeemer.hex).to.equal(ecvrr.args[0])
+      expect(cvrr.paymentAddress.text).to.equal(ecvrr.args[1])
+      expect(cvrr.valueUBA).to.equal(ecvrr.args[2])
+      expect(cvrr.feeUBA).to.equal(ecvrr.args[3])
     })
   })
 

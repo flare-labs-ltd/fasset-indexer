@@ -79,7 +79,15 @@ export const EVENTS = {
     AGENT_PING: "AgentPing",
     AGENT_PING_RESPONSE: "AgentPingResponse",
     // system
-    CURRENT_UNDERLYING_BLOCK_UPDATED: 'CurrentUnderlyingBlockUpdated'
+    CURRENT_UNDERLYING_BLOCK_UPDATED: 'CurrentUnderlyingBlockUpdated',
+    // core vault
+    TRANSFER_TO_CORE_VAULT_STARTED: 'TransferToCoreVaultStarted',
+    TRANSFER_TO_CORE_VAULT_SUCCESSFUL: 'TransferToCoreVaultSuccessful',
+    TRANSFER_TO_CORE_VAULT_CANCELLED: 'TransferToCoreVaultCancelled',
+    RETURN_FROM_CORE_VAULT_REQUESTED: 'ReturnFromCoreVaultRequested',
+    RETURN_FROM_CORE_VAULT_CONFIRMED: 'ReturnFromCoreVaultConfirmed',
+    RETURN_FROM_CORE_VAULT_CANCELLED: 'ReturnFromCoreVaultCancelled',
+    CORE_VAULT_REDEMPTION_REQUESTED: 'CoreVaultRedemptionRequested'
   },
   COLLATERAL_POOL: {
     ENTER: "Entered",

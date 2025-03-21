@@ -117,6 +117,8 @@ import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
 import type { ORM } from "../../orm/interface"
+import { CoreVaultRedemptionRequestedEvent, ReturnFromCoreVaultCancelledEvent, ReturnFromCoreVaultConfirmedEvent, ReturnFromCoreVaultRequestedEvent, TransferToCoreVaultCancelledEvent, TransferToCoreVaultStartedEvent, TransferToCoreVaultSuccessfulEvent } from "../../../chain/typechain/ICoreVault"
+import { CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested, TransferToCoreVaultCancelled, TransferToCoreVaultStarted, TransferToCoreVaultSuccessful } from "../../orm/entities/events/core-vault"
 
 
 export class EventStorer {
@@ -252,6 +254,27 @@ export class EventStorer {
         break
       } case EVENTS.ASSET_MANAGER.CURRENT_UNDERLYING_BLOCK_UPDATED: {
         ent = await this.onCurrentUnderlyingBlockUpdated(em, evmLog, log.args as CurrentUnderlyingBlockUpdatedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_STARTED: {
+        ent = await this.onTransferToCoreVaultStarted(em, evmLog, log.args as TransferToCoreVaultStartedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_SUCCESSFUL: {
+        ent = await this.onTransferToCoreVaultSuccessful(em, evmLog, log.args as TransferToCoreVaultSuccessfulEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_CANCELLED: {
+        ent = await this.onTransferToCoreVaultCancelled(em, evmLog, log.args as TransferToCoreVaultCancelledEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_REQUESTED: {
+        ent = await this.onReturnFromCoreVaultRequested(em, evmLog, log.args as ReturnFromCoreVaultRequestedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_CONFIRMED: {
+        ent = await this.onReturnFromCoreVaultConfirmed(em, evmLog, log.args as ReturnFromCoreVaultConfirmedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_CANCELLED: {
+        ent = await this.onReturnFromCoreVaultCancelled(em, evmLog, log.args as ReturnFromCoreVaultCancelledEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.CORE_VAULT_REDEMPTION_REQUESTED: {
+        ent = await this.onCoreVaultRedemptionRequested(em, evmLog, log.args as CoreVaultRedemptionRequestedEvent.OutputTuple)
         break
       } case EVENTS.COLLATERAL_POOL.ENTER: {
         ent = await this.onCollateralPoolEntered(em, evmLog, log.args as EnteredEvent.OutputTuple)
@@ -793,6 +816,7 @@ export class EventStorer {
     return new AgentPingResponse(evmLog, agentVaultEntity.fasset, agentVaultEntity, query, response)
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
   // system
 
   protected async onCurrentUnderlyingBlockUpdated(em: EntityManager, evmLog: EvmLog, logArgs: CurrentUnderlyingBlockUpdatedEvent.OutputTuple):
@@ -802,6 +826,75 @@ export class EventStorer {
     const [ underlyingBlockNumber, underlyingBlockTimestamp, updatedAt ] = logArgs
     return new CurrentUnderlyingBlockUpdated(evmLog, fasset,
       Number(underlyingBlockNumber), Number(underlyingBlockTimestamp), Number(updatedAt))
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // core vault
+
+  protected async onTransferToCoreVaultStarted(em: EntityManager, evmLog: EvmLog, logArgs: TransferToCoreVaultStartedEvent.OutputTuple):
+    Promise<TransferToCoreVaultStarted>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, transferRedemptionRequestId, valueUBA ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    return new TransferToCoreVaultStarted(evmLog, fasset, agentVaultEntity, Number(transferRedemptionRequestId), valueUBA)
+  }
+
+  protected async onTransferToCoreVaultSuccessful(em: EntityManager, evmLog: EvmLog, logArgs: TransferToCoreVaultSuccessfulEvent.OutputTuple):
+    Promise<TransferToCoreVaultSuccessful>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, transferRedemptionRequestId, valueUBA ] = logArgs
+    const transferToCoreVaultStarted = await em.findOneOrFail(TransferToCoreVaultStarted,
+      { transferRedemptionRequestId: Number(transferRedemptionRequestId), fasset })
+    return new TransferToCoreVaultSuccessful(evmLog, fasset, transferToCoreVaultStarted, valueUBA)
+  }
+
+  protected async onTransferToCoreVaultCancelled(em: EntityManager, evmLog: EvmLog, logArgs: TransferToCoreVaultCancelledEvent.OutputTuple):
+    Promise<TransferToCoreVaultCancelled>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, transferRedemptionRequestId ] = logArgs
+    const transferToCoreVaultCancelled = await em.findOneOrFail(TransferToCoreVaultStarted,
+      { transferRedemptionRequestId: Number(transferRedemptionRequestId), fasset })
+    return new TransferToCoreVaultCancelled(evmLog, fasset, transferToCoreVaultCancelled)
+  }
+
+  protected async onReturnFromCoreVaultRequested(em: EntityManager, evmLog: EvmLog, logArgs: ReturnFromCoreVaultRequestedEvent.OutputTuple):
+    Promise<ReturnFromCoreVaultRequested>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, requestId, paymentReference, valueUBA ] = logArgs
+    const agentVaultEntity = await em.findOneOrFail(AgentVault, { address: { hex: agentVault }})
+    return new ReturnFromCoreVaultRequested(evmLog, fasset, agentVaultEntity, Number(requestId), paymentReference, valueUBA)
+  }
+
+  protected async onReturnFromCoreVaultConfirmed(em: EntityManager, evmLog: EvmLog, logArgs: ReturnFromCoreVaultConfirmedEvent.OutputTuple):
+    Promise<ReturnFromCoreVaultConfirmed>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, requestId, receivedUnderlyingUBA, remintedUBA ] = logArgs
+    const returnFromCoreVaultRequested = await em.findOneOrFail(ReturnFromCoreVaultRequested, { requestId: Number(requestId), fasset })
+    return new ReturnFromCoreVaultConfirmed(evmLog, fasset, returnFromCoreVaultRequested, receivedUnderlyingUBA, remintedUBA)
+  }
+
+  protected async onReturnFromCoreVaultCancelled(em: EntityManager, evmLog: EvmLog, logArgs: ReturnFromCoreVaultCancelledEvent.OutputTuple):
+    Promise<ReturnFromCoreVaultCancelled>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, requestId ] = logArgs
+    const returnFromCoreVaultRequested = await em.findOneOrFail(ReturnFromCoreVaultRequested, { requestId: Number(requestId), fasset })
+    return new ReturnFromCoreVaultCancelled(evmLog, fasset, returnFromCoreVaultRequested)
+  }
+
+  protected async onCoreVaultRedemptionRequested(em: EntityManager, evmLog: EvmLog, logArgs: CoreVaultRedemptionRequestedEvent.OutputTuple):
+    Promise<CoreVaultRedemptionRequested>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ redeemer, paymentAddress, valueUBA, feeUBA ] = logArgs
+    const redeemerEntity = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
+    const paymentAddressEntity = await findOrCreateUnderlyingAddress(em, paymentAddress, AddressType.USER)
+    return new CoreVaultRedemptionRequested(evmLog, fasset, redeemerEntity, paymentAddressEntity, valueUBA, feeUBA)
   }
 
   // price publisher

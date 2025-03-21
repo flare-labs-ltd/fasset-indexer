@@ -7,7 +7,10 @@ import { AgentManager, AgentOwner, AgentVault } from "../../src/orm/entities/age
 import { CollateralReserved } from "../../src/orm/entities/events/minting"
 import { RedemptionRequested } from "../../src/orm/entities/events/redemption"
 import { RedemptionTicketCreated } from "../../src/orm/entities/events/redemption-ticket"
-import { randomBoolean, randomChoice, randomHash, randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress } from "./utils"
+import {
+  randomBoolean, randomChoice, randomHash, randomHex,
+  randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress
+} from "./utils"
 import { ASSET_MANAGERS, AGENT_SETTINGS, WNAT_TOKEN } from "./constants"
 import type {
   AgentVaultCreatedEvent,
@@ -44,6 +47,9 @@ import type {
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/IERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
+import { CoreVaultRedemptionRequestedEvent, ReturnFromCoreVaultCancelledEvent, ReturnFromCoreVaultConfirmedEvent, ReturnFromCoreVaultRequestedEvent, TransferToCoreVaultCancelledEvent, TransferToCoreVaultStartedEvent, TransferToCoreVaultSuccessfulEvent } from "../../chain/typechain/ICoreVault"
+import { ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested, TransferToCoreVaultStarted } from "../../src/orm/entities/events/core-vault"
+import { randomBytes } from "crypto"
 
 
 export class EventFixture {
@@ -422,6 +428,66 @@ export class EventFixture {
     ]
   }
 
+  protected async generateTransferToCoreVaultStarted(): Promise<TransferToCoreVaultStartedEvent.OutputTuple> {
+    const agentVault = await this.getRandomAgentVault()
+    return [
+      agentVault,
+      BigInt(randomNumber(0, 1e8)),
+      BigInt(randomNumber(1e4, 1e12))
+    ]
+  }
+
+  protected async generateTransferToCoreVaultCancelled(): Promise<TransferToCoreVaultCancelledEvent.OutputTuple> {
+    const transferToCoreVaultStarted = await this.getRandomTransferToCoreVaultStarted()
+    return [
+      transferToCoreVaultStarted.agentVault.address.hex,
+      BigInt(transferToCoreVaultStarted.transferRedemptionRequestId)
+    ]
+  }
+
+  protected async generateTransferToCoreVaultSuccessful(): Promise<TransferToCoreVaultSuccessfulEvent.OutputTuple> {
+    const transferToCoreVaultStarted = await this.getRandomTransferToCoreVaultStarted()
+    return [
+      transferToCoreVaultStarted.agentVault.address.hex,
+      BigInt(transferToCoreVaultStarted.transferRedemptionRequestId),
+      BigInt(randomNumber(1e4, 1e12))
+    ]
+  }
+
+  protected async generateReturnFromCoreVaultRequested(): Promise<ReturnFromCoreVaultRequestedEvent.OutputTuple> {
+    const agentVault = await this.getRandomAgentVault()
+    return [
+      agentVault,
+      BigInt(randomNumber(1, 1e5)),
+      randomHex(32),
+      BigInt(randomNumber(1e4, 1e12))
+    ]
+  }
+
+  protected async generateReturnFromCoreVaultConfirmed(): Promise<ReturnFromCoreVaultConfirmedEvent.OutputTuple> {
+    const returnFromCoreVaultRequested = await this.getRandomReturnFromCoreVaultRequested()
+    return [
+      returnFromCoreVaultRequested.agentVault.address.hex,
+      BigInt(returnFromCoreVaultRequested.requestId),
+      BigInt(randomNumber(1e4, 1e12)),
+      BigInt(randomNumber(1e4, 1e12))
+    ]
+  }
+
+  protected async generateReturnFromCoreVaultCancelled(): Promise<ReturnFromCoreVaultCancelledEvent.OutputTuple> {
+    const returnFromCoreVaultRequested = await this.getRandomReturnFromCoreVaultRequested()
+    return [returnFromCoreVaultRequested.agentVault.address.hex, BigInt(returnFromCoreVaultRequested.requestId)]
+  }
+
+  protected async generateCoreVaultRedemptionRequested(): Promise<CoreVaultRedemptionRequestedEvent.OutputTuple> {
+    return [
+      randomNativeAddress(),
+      randomUnderlyingAddress(),
+      BigInt(randomNumber(1e4, 1e12)),
+      BigInt(randomNumber(1e4, 1e12))
+    ]
+  }
+
   /////////////////////////////////////////////////////////////////////////////
   // utils
 
@@ -459,6 +525,18 @@ export class EventFixture {
     const redemptionTicketCreated = await this.orm.em.fork().findAll(RedemptionTicketCreated, { populate: ['agentVault.address'] })
     if (redemptionTicketCreated === null || redemptionTicketCreated.length === 0) throw new Error('RedemptionTicketCreated not found')
     return randomChoice(redemptionTicketCreated)
+  }
+
+  private async getRandomTransferToCoreVaultStarted(): Promise<TransferToCoreVaultStarted> {
+    const transferToCoreVaultStarted = await this.orm.em.fork().findAll(TransferToCoreVaultStarted, { populate: ['agentVault.address'] })
+    if (transferToCoreVaultStarted === null || transferToCoreVaultStarted.length === 0) throw new Error('TransferToCoreVaultStarted not found')
+    return randomChoice(transferToCoreVaultStarted)
+  }
+
+  private async getRandomReturnFromCoreVaultRequested(): Promise<ReturnFromCoreVaultRequested> {
+    const returnFromCoreVaultRequested = await this.orm.em.fork().findAll(ReturnFromCoreVaultRequested, { populate: ['agentVault.address'] })
+    if (returnFromCoreVaultRequested === null || returnFromCoreVaultRequested.length === 0) throw new Error('ReturnFromCoreVaultRequested not found')
+    return randomChoice(returnFromCoreVaultRequested)
   }
 
   private async argumentsFromEventName(name: string): Promise<EventArgs> {

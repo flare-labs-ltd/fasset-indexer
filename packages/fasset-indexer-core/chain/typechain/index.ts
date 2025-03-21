@@ -4,6 +4,7 @@
 export type { IAgentOwnerRegistry } from "./IAgentOwnerRegistry";
 export type { IAssetManager } from "./IAssetManager";
 export type { ICollateralPool } from "./ICollateralPool";
+export type { ICoreVault } from "./ICoreVault";
 export type { IERC20 } from "./IERC20";
 export type { IPriceChangeEmitter } from "./IPriceChangeEmitter";
 export type { IPriceReader } from "./IPriceReader";
@@ -11,6 +12,7 @@ export * as factories from "./factories";
 export { IAgentOwnerRegistry__factory } from "./factories/IAgentOwnerRegistry__factory";
 export { IAssetManager__factory } from "./factories/IAssetManager__factory";
 export { ICollateralPool__factory } from "./factories/ICollateralPool__factory";
+export { ICoreVault__factory } from "./factories/ICoreVault__factory";
 export { IERC20__factory } from "./factories/IERC20__factory";
 export { IPriceChangeEmitter__factory } from "./factories/IPriceChangeEmitter__factory";
 export { IPriceReader__factory } from "./factories/IPriceReader__factory";
