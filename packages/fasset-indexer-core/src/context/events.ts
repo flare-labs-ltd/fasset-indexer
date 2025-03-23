@@ -47,24 +47,26 @@ export class EventInterface {
     return mp
   }
 
-  getEventTopic(eventName: string, iface: Interface): string {
-    const parsed = iface.getEvent(eventName)
-    if (parsed === null) {
-      throw new Error(`Event ${eventName} not found in interface`)
+  getEventTopic(eventName: string, ifaces: Interface[]): string {
+    for (const iface of ifaces) {
+      const parsed = iface.getEvent(eventName)
+      if (parsed != null) {
+        return ethersId(parsed.format('sighash'))
+      }
     }
-    return ethersId(parsed.format('sighash'))
+    throw new Error(`Event ${eventName} not found in interface`)
   }
 
-  contractToIface(name: string): Interface {
+  contractToIface(name: string): Interface[] {
     switch (name) {
       case "ERC20":
-        return this.interfaces.erc20Interface
+        return [this.interfaces.erc20Interface]
       case "ASSET_MANAGER":
-        return this.interfaces.assetManagerInterface
+        return [this.interfaces.assetManagerInterface, this.interfaces.coreVaultInterface]
       case "COLLATERAL_POOL":
-        return this.interfaces.collateralPoolInterface
+        return [this.interfaces.collateralPoolInterface]
       case "PRICE_READER":
-        return this.interfaces.priceReader
+        return [this.interfaces.priceReader]
       default:
         throw new Error(`Unknown interface ${name}`)
     }

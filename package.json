@@ -17,6 +17,7 @@
     "build-api": "cd packages/fasset-indexer-api && yarn build",
     "build": "yarn build-base && yarn build-api",
     "run-native-indexer": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-indexer.js",
+    "run-native-indexer-debug": "ts-node packages/fasset-indexer-core/src/run/run-indexer.ts",
     "run-native-watchdog": "yarn build-base && node packages/fasset-indexer-core/dist/src/run/run-watchdog.js",
     "run-btc-indexer": "yarn build-base && node packages/fasset-indexer-btc/dist/src/run/run-indexer.js",
     "run-doge-indexer": "yarn build-base && node packages/fasset-indexer-doge/dist/src/run/run-indexer.js",
