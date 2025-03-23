@@ -165,10 +165,70 @@ export class DashboardController {
     const er = this.restrictTimespan(ts)
     if (er !== null) return apiResponse(Promise.reject(er), 400)
     if (usd === true) {
-      return apiResponse(this.service.totalClaimedPoolFeesAggregateTimespan(ts), 200)
+      return apiResponse(this.service.claimedPoolFeesAggregateTimespan(ts), 200)
     } else {
-      return apiResponse(this.service.totalClaimedPoolFeesTimespan(ts, pool, undefined), 200)
+      return apiResponse(this.service.claimedPoolFeesTimespan(ts, pool, undefined), 200)
     }
+  }
+
+  @Get('timespan/core-vault-inflows?')
+  @ApiOperation({ summary: 'Timespan of inflows to the core vault by fasset' })
+  @ApiQuery({ name: "timestamps", type: Number, isArray: true })
+  getCoreVaultInflowTimespan(
+    @Query('timestamps') timestamps: string | string[]
+  ): Promise<ApiResponse<FAssetTimespan<bigint>>> {
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
+    return apiResponse(this.service.coreVaultInflowTimespan(ts), 200)
+  }
+
+  @Get('/timespan/core-vault-inflows-usd?')
+  @ApiOperation({ summary: 'Timespan of inflows to the core vault aggregated in $' })
+  @ApiQuery({ name: "timestamps", type: Number, isArray: true })
+  getCoreVaultInflowsAggregateTimespan(
+    @Query('timestamps') timestamps: string | string[]
+  ): Promise<ApiResponse<Timespan<bigint>>>{
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
+    return apiResponse(this.service.coreVaultInflowAggregateTimespan(ts), 200)
+  }
+
+  @Get('/timespan/core-vault-outflows?')
+  @ApiOperation({ summary: 'Timespan of outflows to the core vault vault by fasset' })
+  @ApiQuery({ name: "timestamps", type: Number, isArray: true })
+  getCoreVaultOutflowTimespan(
+    @Query('timestamps') timestamps: string | string[]
+  ): Promise<ApiResponse<FAssetTimespan<bigint>>>{
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
+    return apiResponse(this.service.coreVaultOutflowTimespan(ts), 200)
+  }
+
+  @Get('/timespan/core-vault-outflows-usd?')
+  @ApiOperation({ summary: 'Timespan of outflows to the core vault aggregated in $' })
+  @ApiQuery({ name: "timestamps", type: Number, isArray: true })
+  getCoreVaultOutflowAggregateTimespan(
+    @Query('timestamps') timestamps: string | string[]
+  ): Promise<ApiResponse<Timespan<bigint>>>{
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
+    return apiResponse(this.service.coreVaultOutflowAggregateTimespan(ts), 200)
+  }
+
+  @Get('/timespan/core-vault-balance-usd?')
+  @ApiOperation({ summary: 'Timespan of core vault balance aggregated in $' })
+  @ApiQuery({ name: "timestamps", type: Number, isArray: true })
+  getCoreVaultBalanceAggregateTimespan(
+    @Query('timestamps') timestamps: string | string[]
+  ): Promise<ApiResponse<Timespan<bigint>>>{
+    const ts = this.parseTimestamps(timestamps)
+    const er = this.restrictTimespan(ts)
+    if (er !== null) return apiResponse(Promise.reject(er), 400)
+      return apiResponse(this.service.coreVaultBalanceAggregateTimespan(ts), 200)
   }
 
   ///////////////////////////////////////////////////////////////
@@ -198,6 +258,32 @@ export class DashboardController {
     const err = this.restrictPoints(end, npoints, start)
     if (err !== null) return apiResponse(Promise.reject(err), 400)
     return apiResponse(this.service.mintedAggregateTimeSeries(end, npoints, start), 200)
+  }
+
+  @Get('/timeseries/core-vault-inflow?')
+  @ApiOperation({ summary: 'Time series of the total $ inflow of assets to core vault' })
+  @ApiQuery({ name: "startTime", type: Number, required: false })
+  getTimeSeriesCoreVaultInflow(
+    @Query('endtime', ParseIntPipe) end: number,
+    @Query('npoints', ParseIntPipe) npoints: number,
+    @Query('startTime', new ParseIntPipe({ optional: true })) start?: number
+  ): Promise<ApiResponse<TimeSeries<bigint>>> {
+    const err = this.restrictPoints(end, npoints, start)
+    if (err !== null) return apiResponse(Promise.reject(err), 400)
+    return apiResponse(this.service.coreVaultInflowAggregateTimeSeries(end, npoints, start), 200)
+  }
+
+  @Get('/timeseries/core-vault-outflow?')
+  @ApiOperation({ summary: 'Time series of the total $ outflow of assets from core vault' })
+  @ApiQuery({ name: "startTime", type: Number, required: false })
+  getTimeSeriesCoreVaultOutflow(
+    @Query('endtime', ParseIntPipe) end: number,
+    @Query('npoints', ParseIntPipe) npoints: number,
+    @Query('startTime', new ParseIntPipe({ optional: true })) start?: number
+  ): Promise<ApiResponse<TimeSeries<bigint>>> {
+    const err = this.restrictPoints(end, npoints, start)
+    if (err !== null) return apiResponse(Promise.reject(err), 400)
+    return apiResponse(this.service.coreVaultOutflowAggregateTimeSeries(end, npoints, start), 200)
   }
 
   //////////////////////////////////////////////////////////////////////
