@@ -1,7 +1,7 @@
 import helmet from 'helmet'
 import { NestFactory } from '@nestjs/core'
-import { FAssetIndexerModule } from './app.module'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { FAssetIndexerModule } from './app.module'
 import { ApiConfigLoader } from './config/config'
 
 let apiDocPath = 'api-doc'

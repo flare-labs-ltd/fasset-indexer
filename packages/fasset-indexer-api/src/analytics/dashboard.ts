@@ -5,7 +5,8 @@ import {
   RedemptionDefault, RedemptionPerformed, RedemptionRequested,
   CollateralPoolEntered, CollateralPoolExited,
   LiquidationPerformed, TokenBalance, AgentVaultInfo,
-  FAssetEventBound
+  FAssetEventBound, CoreVaultRedemptionRequested,
+  ReturnFromCoreVaultConfirmed, TransferToCoreVaultSuccessful
 } from "fasset-indexer-core/entities"
 import { EVENTS, FASSET_LOT_SIZE } from "fasset-indexer-core/config"
 import { fassetToUsdPrice } from "./utils/prices"
@@ -19,7 +20,6 @@ import type {
   TokenPortfolio, FAssetCollateralPoolScore,
   FAssetValueResult, FAssetAmountResult
 } from "./interface"
-import { CoreVaultRedemptionRequested, ReturnFromCoreVaultConfirmed, TransferToCoreVaultSuccessful } from "node_modules/fasset-indexer-core/src/orm/entities/events/core-vault"
 
 
 /**

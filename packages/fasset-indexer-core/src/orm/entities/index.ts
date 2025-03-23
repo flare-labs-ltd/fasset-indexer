@@ -28,6 +28,11 @@ export { CollateralTypeAdded, ERC20Transfer } from "./events/token"
 export { CollateralPoolEntered, CollateralPoolExited } from "./events/collateral-pool"
 export { AgentPing, AgentPingResponse } from "./events/ping"
 export { CurrentUnderlyingBlockUpdated } from "./events/system"
+export {
+  TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultCancelled,
+  ReturnFromCoreVaultRequested, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultCancelled,
+  CoreVaultRedemptionRequested
+} from "./events/core-vault"
 export { AgentVaultInfo, AgentVaultSettings } from "./state/agent"
 export { AgentManager, AgentOwner, AgentVault } from "./agent"
 export { FtsoPrice } from "./state/price"
