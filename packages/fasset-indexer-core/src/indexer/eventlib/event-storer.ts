@@ -55,6 +55,15 @@ import {
   UnderlyingBalanceTooLow
 } from "../../orm/entities/events/challenge"
 import {
+  CoreVaultRedemptionRequested,
+  ReturnFromCoreVaultCancelled,
+  ReturnFromCoreVaultConfirmed,
+  ReturnFromCoreVaultRequested,
+  TransferToCoreVaultCancelled,
+  TransferToCoreVaultStarted,
+  TransferToCoreVaultSuccessful
+} from "../../orm/entities/events/core-vault"
+import {
   CollateralPoolClaimedReward,
   CollateralPoolDonated,
   CollateralPoolEntered,
@@ -104,7 +113,14 @@ import type {
   VaultCollateralWithdrawalAnnouncedEvent,
   PoolTokenRedemptionAnnouncedEvent,
   UnderlyingWithdrawalAnnouncedEvent,
-  UnderlyingWithdrawalConfirmedEvent
+  UnderlyingWithdrawalConfirmedEvent,
+  CoreVaultRedemptionRequestedEvent,
+  ReturnFromCoreVaultCancelledEvent,
+  ReturnFromCoreVaultConfirmedEvent,
+  ReturnFromCoreVaultRequestedEvent,
+  TransferToCoreVaultCancelledEvent,
+  TransferToCoreVaultStartedEvent,
+  TransferToCoreVaultSuccessfulEvent
 } from "../../../chain/typechain/IAssetManager"
 import type {
   ClaimedRewardEvent,
@@ -117,8 +133,6 @@ import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
 import type { ORM } from "../../orm/interface"
-import { CoreVaultRedemptionRequestedEvent, ReturnFromCoreVaultCancelledEvent, ReturnFromCoreVaultConfirmedEvent, ReturnFromCoreVaultRequestedEvent, TransferToCoreVaultCancelledEvent, TransferToCoreVaultStartedEvent, TransferToCoreVaultSuccessfulEvent } from "../../../chain/typechain/ICoreVault"
-import { CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested, TransferToCoreVaultCancelled, TransferToCoreVaultStarted, TransferToCoreVaultSuccessful } from "../../orm/entities/events/core-vault"
 
 
 export class EventStorer {

@@ -998,12 +998,14 @@ export declare namespace ITransferFees {
 export interface IAssetManagerInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "addAlwaysAllowedMinterForAgent"
       | "agentPing"
       | "agentPingResponse"
       | "agentRedemptionQueue"
       | "agentTransferFeeShare"
       | "agentTransferFeeShareForEpoch"
       | "agentUnclaimedTransferFeeEpochs"
+      | "alwaysAllowedMintersForAgent"
       | "announceAgentPoolTokenRedemption"
       | "announceAgentSettingUpdate"
       | "announceDestroyAgent"
@@ -1016,10 +1018,13 @@ export interface IAssetManagerInterface extends Interface {
       | "assetMintingGranularityUBA"
       | "buybackAgentCollateral"
       | "cancelCollateralReservation"
+      | "cancelReturnFromCoreVault"
+      | "cancelTransferToCoreVault"
       | "cancelUnderlyingWithdrawal"
       | "claimTransferFees"
       | "collateralReservationFee"
       | "confirmRedemptionPayment"
+      | "confirmReturnFromCoreVault"
       | "confirmTopupPayment"
       | "confirmUnderlyingWithdrawal"
       | "controllerAttached"
@@ -1050,6 +1055,7 @@ export interface IAssetManagerInterface extends Interface {
       | "getAgentLiquidationFactorsAndMaxAmount"
       | "getAgentMinPoolCollateralRatioBIPS"
       | "getAgentMinVaultCollateralRatioBIPS"
+      | "getAgentSetting"
       | "getAgentVaultCollateralToken"
       | "getAgentVaultOwner"
       | "getAllAgents"
@@ -1058,6 +1064,12 @@ export interface IAssetManagerInterface extends Interface {
       | "getCollateralPool"
       | "getCollateralType"
       | "getCollateralTypes"
+      | "getCoreVaultManager"
+      | "getCoreVaultMinimumAmountLeftBIPS"
+      | "getCoreVaultMinimumRedeemLots"
+      | "getCoreVaultNativeAddress"
+      | "getCoreVaultRedemptionFeeBIPS"
+      | "getCoreVaultTransferFeeBIPS"
       | "getSettings"
       | "illegalPaymentChallenge"
       | "initAgentsMintingHistory"
@@ -1065,12 +1077,14 @@ export interface IAssetManagerInterface extends Interface {
       | "liquidate"
       | "lotSize"
       | "makeAgentAvailable"
+      | "maximumTransferToCoreVault"
       | "mintFromFreeUnderlying"
       | "mintingPaused"
       | "mintingPaymentDefault"
       | "priceReader"
       | "proveUnderlyingAddressEOA"
       | "redeem"
+      | "redeemFromCoreVault"
       | "redemptionPaymentDefault"
       | "redemptionPaymentExtensionSeconds"
       | "redemptionQueue"
@@ -1078,9 +1092,17 @@ export interface IAssetManagerInterface extends Interface {
       | "rejectInvalidRedemption"
       | "rejectRedemptionRequest"
       | "rejectedRedemptionPaymentDefault"
+      | "removeAlwaysAllowedMinterForAgent"
+      | "requestReturnFromCoreVault"
       | "reserveCollateral"
       | "selfClose"
       | "selfMint"
+      | "setCoreVaultManager"
+      | "setCoreVaultMinimumAmountLeftBIPS"
+      | "setCoreVaultMinimumRedeemLots"
+      | "setCoreVaultNativeAddress"
+      | "setCoreVaultRedemptionFeeBIPS"
+      | "setCoreVaultTransferFeeBIPS"
       | "setRedemptionPaymentExtensionSeconds"
       | "setTransferFeeMillionths"
       | "startLiquidation"
@@ -1092,6 +1114,8 @@ export interface IAssetManagerInterface extends Interface {
       | "transferFeeEpochData"
       | "transferFeeMillionths"
       | "transferFeeSettings"
+      | "transferToCoreVault"
+      | "transferToCoreVaultFee"
       | "transfersEmergencyPaused"
       | "transfersEmergencyPausedUntil"
       | "unstickMinting"
@@ -1122,6 +1146,7 @@ export interface IAssetManagerInterface extends Interface {
       | "CollateralTypeAdded"
       | "CollateralTypeDeprecated"
       | "ContractChanged"
+      | "CoreVaultRedemptionRequested"
       | "CurrentUnderlyingBlockUpdated"
       | "DuplicatePaymentConfirmed"
       | "DustChanged"
@@ -1151,12 +1176,18 @@ export interface IAssetManagerInterface extends Interface {
       | "RedemptionTicketCreated"
       | "RedemptionTicketDeleted"
       | "RedemptionTicketUpdated"
+      | "ReturnFromCoreVaultCancelled"
+      | "ReturnFromCoreVaultConfirmed"
+      | "ReturnFromCoreVaultRequested"
       | "SelfClose"
       | "SelfMint"
       | "SettingArrayChanged"
       | "SettingChanged"
       | "TransferFeeChangeScheduled"
       | "TransferFeesClaimed"
+      | "TransferToCoreVaultCancelled"
+      | "TransferToCoreVaultStarted"
+      | "TransferToCoreVaultSuccessful"
       | "UnderlyingBalanceChanged"
       | "UnderlyingBalanceTooLow"
       | "UnderlyingBalanceToppedUp"
@@ -1166,6 +1197,10 @@ export interface IAssetManagerInterface extends Interface {
       | "VaultCollateralWithdrawalAnnounced"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "addAlwaysAllowedMinterForAgent",
+    values: [AddressLike, AddressLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "agentPing",
     values: [AddressLike, BigNumberish]
@@ -1188,6 +1223,10 @@ export interface IAssetManagerInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "agentUnclaimedTransferFeeEpochs",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "alwaysAllowedMintersForAgent",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -1239,6 +1278,14 @@ export interface IAssetManagerInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "cancelReturnFromCoreVault",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelTransferToCoreVault",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "cancelUnderlyingWithdrawal",
     values: [AddressLike]
   ): string;
@@ -1253,6 +1300,10 @@ export interface IAssetManagerInterface extends Interface {
   encodeFunctionData(
     functionFragment: "confirmRedemptionPayment",
     values: [IPayment.ProofStruct, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "confirmReturnFromCoreVault",
+    values: [IPayment.ProofStruct, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "confirmTopupPayment",
@@ -1373,6 +1424,10 @@ export interface IAssetManagerInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getAgentSetting",
+    values: [AddressLike, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getAgentVaultCollateralToken",
     values: [AddressLike]
   ): string;
@@ -1405,6 +1460,30 @@ export interface IAssetManagerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getCoreVaultManager",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCoreVaultMinimumAmountLeftBIPS",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCoreVaultMinimumRedeemLots",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCoreVaultNativeAddress",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCoreVaultRedemptionFeeBIPS",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getCoreVaultTransferFeeBIPS",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getSettings",
     values?: undefined
   ): string;
@@ -1430,6 +1509,10 @@ export interface IAssetManagerInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "maximumTransferToCoreVault",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "mintFromFreeUnderlying",
     values: [AddressLike, BigNumberish]
   ): string;
@@ -1452,6 +1535,10 @@ export interface IAssetManagerInterface extends Interface {
   encodeFunctionData(
     functionFragment: "redeem",
     values: [BigNumberish, string, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "redeemFromCoreVault",
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "redemptionPaymentDefault",
@@ -1482,6 +1569,14 @@ export interface IAssetManagerInterface extends Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "removeAlwaysAllowedMinterForAgent",
+    values: [AddressLike, AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "requestReturnFromCoreVault",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "reserveCollateral",
     values: [AddressLike, BigNumberish, BigNumberish, AddressLike, string[]]
   ): string;
@@ -1492,6 +1587,30 @@ export interface IAssetManagerInterface extends Interface {
   encodeFunctionData(
     functionFragment: "selfMint",
     values: [IPayment.ProofStruct, AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCoreVaultManager",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCoreVaultMinimumAmountLeftBIPS",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCoreVaultMinimumRedeemLots",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCoreVaultNativeAddress",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCoreVaultRedemptionFeeBIPS",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCoreVaultTransferFeeBIPS",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "setRedemptionPaymentExtensionSeconds",
@@ -1538,6 +1657,14 @@ export interface IAssetManagerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "transferToCoreVault",
+    values: [AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "transferToCoreVaultFee",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transfersEmergencyPaused",
     values?: undefined
   ): string;
@@ -1562,6 +1689,10 @@ export interface IAssetManagerInterface extends Interface {
     values: [AddressLike]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "addAlwaysAllowedMinterForAgent",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "agentPing", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "agentPingResponse",
@@ -1581,6 +1712,10 @@ export interface IAssetManagerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "agentUnclaimedTransferFeeEpochs",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "alwaysAllowedMintersForAgent",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1632,6 +1767,14 @@ export interface IAssetManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "cancelReturnFromCoreVault",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "cancelTransferToCoreVault",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "cancelUnderlyingWithdrawal",
     data: BytesLike
   ): Result;
@@ -1645,6 +1788,10 @@ export interface IAssetManagerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "confirmRedemptionPayment",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "confirmReturnFromCoreVault",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1762,6 +1909,10 @@ export interface IAssetManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getAgentSetting",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getAgentVaultCollateralToken",
     data: BytesLike
   ): Result;
@@ -1794,6 +1945,30 @@ export interface IAssetManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getCoreVaultManager",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCoreVaultMinimumAmountLeftBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCoreVaultMinimumRedeemLots",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCoreVaultNativeAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCoreVaultRedemptionFeeBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getCoreVaultTransferFeeBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getSettings",
     data: BytesLike
   ): Result;
@@ -1813,6 +1988,10 @@ export interface IAssetManagerInterface extends Interface {
   decodeFunctionResult(functionFragment: "lotSize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "makeAgentAvailable",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "maximumTransferToCoreVault",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1836,6 +2015,10 @@ export interface IAssetManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "redeem", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "redeemFromCoreVault",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "redemptionPaymentDefault",
     data: BytesLike
@@ -1865,11 +2048,43 @@ export interface IAssetManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "removeAlwaysAllowedMinterForAgent",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "requestReturnFromCoreVault",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "reserveCollateral",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "selfClose", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "selfMint", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setCoreVaultManager",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCoreVaultMinimumAmountLeftBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCoreVaultMinimumRedeemLots",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCoreVaultNativeAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCoreVaultRedemptionFeeBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCoreVaultTransferFeeBIPS",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "setRedemptionPaymentExtensionSeconds",
     data: BytesLike
@@ -1909,6 +2124,14 @@ export interface IAssetManagerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferFeeSettings",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferToCoreVault",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "transferToCoreVaultFee",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -2378,6 +2601,31 @@ export namespace ContractChangedEvent {
   export interface OutputObject {
     name: string;
     value: string;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace CoreVaultRedemptionRequestedEvent {
+  export type InputTuple = [
+    redeemer: AddressLike,
+    paymentAddress: string,
+    valueUBA: BigNumberish,
+    feeUBA: BigNumberish
+  ];
+  export type OutputTuple = [
+    redeemer: string,
+    paymentAddress: string,
+    valueUBA: bigint,
+    feeUBA: bigint
+  ];
+  export interface OutputObject {
+    redeemer: string;
+    paymentAddress: string;
+    valueUBA: bigint;
+    feeUBA: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -3029,6 +3277,69 @@ export namespace RedemptionTicketUpdatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace ReturnFromCoreVaultCancelledEvent {
+  export type InputTuple = [agentVault: AddressLike, requestId: BigNumberish];
+  export type OutputTuple = [agentVault: string, requestId: bigint];
+  export interface OutputObject {
+    agentVault: string;
+    requestId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace ReturnFromCoreVaultConfirmedEvent {
+  export type InputTuple = [
+    agentVault: AddressLike,
+    requestId: BigNumberish,
+    receivedUnderlyingUBA: BigNumberish,
+    remintedUBA: BigNumberish
+  ];
+  export type OutputTuple = [
+    agentVault: string,
+    requestId: bigint,
+    receivedUnderlyingUBA: bigint,
+    remintedUBA: bigint
+  ];
+  export interface OutputObject {
+    agentVault: string;
+    requestId: bigint;
+    receivedUnderlyingUBA: bigint;
+    remintedUBA: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace ReturnFromCoreVaultRequestedEvent {
+  export type InputTuple = [
+    agentVault: AddressLike,
+    requestId: BigNumberish,
+    paymentReference: BytesLike,
+    valueUBA: BigNumberish
+  ];
+  export type OutputTuple = [
+    agentVault: string,
+    requestId: bigint,
+    paymentReference: string,
+    valueUBA: bigint
+  ];
+  export interface OutputObject {
+    agentVault: string;
+    requestId: bigint;
+    paymentReference: string;
+    valueUBA: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export namespace SelfCloseEvent {
   export type InputTuple = [agentVault: AddressLike, valueUBA: BigNumberish];
   export type OutputTuple = [agentVault: string, valueUBA: bigint];
@@ -3136,6 +3447,69 @@ export namespace TransferFeesClaimedEvent {
     agentClaimedUBA: bigint;
     poolClaimedUBA: bigint;
     remainingUnclaimedEpochs: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace TransferToCoreVaultCancelledEvent {
+  export type InputTuple = [
+    agentVault: AddressLike,
+    transferRedemptionRequestId: BigNumberish
+  ];
+  export type OutputTuple = [
+    agentVault: string,
+    transferRedemptionRequestId: bigint
+  ];
+  export interface OutputObject {
+    agentVault: string;
+    transferRedemptionRequestId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace TransferToCoreVaultStartedEvent {
+  export type InputTuple = [
+    agentVault: AddressLike,
+    transferRedemptionRequestId: BigNumberish,
+    valueUBA: BigNumberish
+  ];
+  export type OutputTuple = [
+    agentVault: string,
+    transferRedemptionRequestId: bigint,
+    valueUBA: bigint
+  ];
+  export interface OutputObject {
+    agentVault: string;
+    transferRedemptionRequestId: bigint;
+    valueUBA: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
+export namespace TransferToCoreVaultSuccessfulEvent {
+  export type InputTuple = [
+    agentVault: AddressLike,
+    transferRedemptionRequestId: BigNumberish,
+    valueUBA: BigNumberish
+  ];
+  export type OutputTuple = [
+    agentVault: string,
+    transferRedemptionRequestId: bigint,
+    valueUBA: bigint
+  ];
+  export interface OutputObject {
+    agentVault: string;
+    transferRedemptionRequestId: bigint;
+    valueUBA: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -3331,6 +3705,12 @@ export interface IAssetManager extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  addAlwaysAllowedMinterForAgent: TypedContractMethod<
+    [_agentVault: AddressLike, _minter: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   agentPing: TypedContractMethod<
     [_agentVault: AddressLike, _query: BigNumberish],
     [void],
@@ -3373,6 +3753,12 @@ export interface IAssetManager extends BaseContract {
   agentUnclaimedTransferFeeEpochs: TypedContractMethod<
     [_agentVault: AddressLike],
     [[bigint, bigint] & { _first: bigint; _count: bigint }],
+    "view"
+  >;
+
+  alwaysAllowedMintersForAgent: TypedContractMethod<
+    [_agentVault: AddressLike],
+    [string[]],
     "view"
   >;
 
@@ -3436,6 +3822,18 @@ export interface IAssetManager extends BaseContract {
     "nonpayable"
   >;
 
+  cancelReturnFromCoreVault: TypedContractMethod<
+    [_agentVault: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  cancelTransferToCoreVault: TypedContractMethod<
+    [_agentVault: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   cancelUnderlyingWithdrawal: TypedContractMethod<
     [_agentVault: AddressLike],
     [void],
@@ -3466,6 +3864,12 @@ export interface IAssetManager extends BaseContract {
 
   confirmRedemptionPayment: TypedContractMethod<
     [_payment: IPayment.ProofStruct, _redemptionRequestId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  confirmReturnFromCoreVault: TypedContractMethod<
+    [_payment: IPayment.ProofStruct, _agentVault: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -3643,6 +4047,12 @@ export interface IAssetManager extends BaseContract {
     "view"
   >;
 
+  getAgentSetting: TypedContractMethod<
+    [_agentVault: AddressLike, _name: string],
+    [bigint],
+    "view"
+  >;
+
   getAgentVaultCollateralToken: TypedContractMethod<
     [_agentVault: AddressLike],
     [string],
@@ -3696,6 +4106,18 @@ export interface IAssetManager extends BaseContract {
     "view"
   >;
 
+  getCoreVaultManager: TypedContractMethod<[], [string], "view">;
+
+  getCoreVaultMinimumAmountLeftBIPS: TypedContractMethod<[], [bigint], "view">;
+
+  getCoreVaultMinimumRedeemLots: TypedContractMethod<[], [bigint], "view">;
+
+  getCoreVaultNativeAddress: TypedContractMethod<[], [string], "view">;
+
+  getCoreVaultRedemptionFeeBIPS: TypedContractMethod<[], [bigint], "view">;
+
+  getCoreVaultTransferFeeBIPS: TypedContractMethod<[], [bigint], "view">;
+
   getSettings: TypedContractMethod<
     [],
     [AssetManagerSettings.DataStructOutput],
@@ -3743,6 +4165,17 @@ export interface IAssetManager extends BaseContract {
     "nonpayable"
   >;
 
+  maximumTransferToCoreVault: TypedContractMethod<
+    [_agentVault: AddressLike],
+    [
+      [bigint, bigint] & {
+        _maximumTransferUBA: bigint;
+        _minimumLeftAmountUBA: bigint;
+      }
+    ],
+    "view"
+  >;
+
   mintFromFreeUnderlying: TypedContractMethod<
     [_agentVault: AddressLike, _lots: BigNumberish],
     [void],
@@ -3776,6 +4209,12 @@ export interface IAssetManager extends BaseContract {
     ],
     [bigint],
     "payable"
+  >;
+
+  redeemFromCoreVault: TypedContractMethod<
+    [_lots: BigNumberish, _redeemerUnderlyingAddress: string],
+    [void],
+    "nonpayable"
   >;
 
   redemptionPaymentDefault: TypedContractMethod<
@@ -3824,6 +4263,18 @@ export interface IAssetManager extends BaseContract {
     "nonpayable"
   >;
 
+  removeAlwaysAllowedMinterForAgent: TypedContractMethod<
+    [_agentVault: AddressLike, _minter: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  requestReturnFromCoreVault: TypedContractMethod<
+    [_agentVault: AddressLike, _lots: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   reserveCollateral: TypedContractMethod<
     [
       _agentVault: AddressLike,
@@ -3848,6 +4299,42 @@ export interface IAssetManager extends BaseContract {
       _agentVault: AddressLike,
       _lots: BigNumberish
     ],
+    [void],
+    "nonpayable"
+  >;
+
+  setCoreVaultManager: TypedContractMethod<
+    [_coreVaultManager: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setCoreVaultMinimumAmountLeftBIPS: TypedContractMethod<
+    [_minimumAmountLeftBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setCoreVaultMinimumRedeemLots: TypedContractMethod<
+    [_minimumRedeemLots: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setCoreVaultNativeAddress: TypedContractMethod<
+    [_nativeAddress: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
+  setCoreVaultRedemptionFeeBIPS: TypedContractMethod<
+    [_redemptionFeeBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setCoreVaultTransferFeeBIPS: TypedContractMethod<
+    [_transferFeeBIPS: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -3915,6 +4402,18 @@ export interface IAssetManager extends BaseContract {
     "view"
   >;
 
+  transferToCoreVault: TypedContractMethod<
+    [_agentVault: AddressLike, _amountUBA: BigNumberish],
+    [void],
+    "payable"
+  >;
+
+  transferToCoreVaultFee: TypedContractMethod<
+    [_amountUBA: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
   transfersEmergencyPaused: TypedContractMethod<[], [boolean], "view">;
 
   transfersEmergencyPausedUntil: TypedContractMethod<[], [bigint], "view">;
@@ -3950,6 +4449,13 @@ export interface IAssetManager extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "addAlwaysAllowedMinterForAgent"
+  ): TypedContractMethod<
+    [_agentVault: AddressLike, _minter: AddressLike],
+    [void],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "agentPing"
   ): TypedContractMethod<
@@ -4001,6 +4507,9 @@ export interface IAssetManager extends BaseContract {
     [[bigint, bigint] & { _first: bigint; _count: bigint }],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "alwaysAllowedMintersForAgent"
+  ): TypedContractMethod<[_agentVault: AddressLike], [string[]], "view">;
   getFunction(
     nameOrSignature: "announceAgentPoolTokenRedemption"
   ): TypedContractMethod<
@@ -4058,6 +4567,12 @@ export interface IAssetManager extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "cancelReturnFromCoreVault"
+  ): TypedContractMethod<[_agentVault: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "cancelTransferToCoreVault"
+  ): TypedContractMethod<[_agentVault: AddressLike], [void], "nonpayable">;
+  getFunction(
     nameOrSignature: "cancelUnderlyingWithdrawal"
   ): TypedContractMethod<[_agentVault: AddressLike], [void], "nonpayable">;
   getFunction(
@@ -4084,6 +4599,13 @@ export interface IAssetManager extends BaseContract {
     nameOrSignature: "confirmRedemptionPayment"
   ): TypedContractMethod<
     [_payment: IPayment.ProofStruct, _redemptionRequestId: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "confirmReturnFromCoreVault"
+  ): TypedContractMethod<
+    [_payment: IPayment.ProofStruct, _agentVault: AddressLike],
     [void],
     "nonpayable"
   >;
@@ -4251,6 +4773,13 @@ export interface IAssetManager extends BaseContract {
     nameOrSignature: "getAgentMinVaultCollateralRatioBIPS"
   ): TypedContractMethod<[_agentVault: AddressLike], [bigint], "view">;
   getFunction(
+    nameOrSignature: "getAgentSetting"
+  ): TypedContractMethod<
+    [_agentVault: AddressLike, _name: string],
+    [bigint],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "getAgentVaultCollateralToken"
   ): TypedContractMethod<[_agentVault: AddressLike], [string], "view">;
   getFunction(
@@ -4296,6 +4825,24 @@ export interface IAssetManager extends BaseContract {
     nameOrSignature: "getCollateralTypes"
   ): TypedContractMethod<[], [CollateralType.DataStructOutput[]], "view">;
   getFunction(
+    nameOrSignature: "getCoreVaultManager"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getCoreVaultMinimumAmountLeftBIPS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getCoreVaultMinimumRedeemLots"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getCoreVaultNativeAddress"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "getCoreVaultRedemptionFeeBIPS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "getCoreVaultTransferFeeBIPS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "getSettings"
   ): TypedContractMethod<[], [AssetManagerSettings.DataStructOutput], "view">;
   getFunction(
@@ -4333,6 +4880,18 @@ export interface IAssetManager extends BaseContract {
   getFunction(
     nameOrSignature: "makeAgentAvailable"
   ): TypedContractMethod<[_agentVault: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "maximumTransferToCoreVault"
+  ): TypedContractMethod<
+    [_agentVault: AddressLike],
+    [
+      [bigint, bigint] & {
+        _maximumTransferUBA: bigint;
+        _minimumLeftAmountUBA: bigint;
+      }
+    ],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "mintFromFreeUnderlying"
   ): TypedContractMethod<
@@ -4373,6 +4932,13 @@ export interface IAssetManager extends BaseContract {
     ],
     [bigint],
     "payable"
+  >;
+  getFunction(
+    nameOrSignature: "redeemFromCoreVault"
+  ): TypedContractMethod<
+    [_lots: BigNumberish, _redeemerUnderlyingAddress: string],
+    [void],
+    "nonpayable"
   >;
   getFunction(
     nameOrSignature: "redemptionPaymentDefault"
@@ -4428,6 +4994,20 @@ export interface IAssetManager extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "removeAlwaysAllowedMinterForAgent"
+  ): TypedContractMethod<
+    [_agentVault: AddressLike, _minter: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "requestReturnFromCoreVault"
+  ): TypedContractMethod<
+    [_agentVault: AddressLike, _lots: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "reserveCollateral"
   ): TypedContractMethod<
     [
@@ -4455,6 +5035,44 @@ export interface IAssetManager extends BaseContract {
       _agentVault: AddressLike,
       _lots: BigNumberish
     ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setCoreVaultManager"
+  ): TypedContractMethod<
+    [_coreVaultManager: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setCoreVaultMinimumAmountLeftBIPS"
+  ): TypedContractMethod<
+    [_minimumAmountLeftBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setCoreVaultMinimumRedeemLots"
+  ): TypedContractMethod<
+    [_minimumRedeemLots: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setCoreVaultNativeAddress"
+  ): TypedContractMethod<[_nativeAddress: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setCoreVaultRedemptionFeeBIPS"
+  ): TypedContractMethod<
+    [_redemptionFeeBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setCoreVaultTransferFeeBIPS"
+  ): TypedContractMethod<
+    [_transferFeeBIPS: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -4524,6 +5142,16 @@ export interface IAssetManager extends BaseContract {
     [ITransferFees.TransferFeeSettingsStructOutput],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "transferToCoreVault"
+  ): TypedContractMethod<
+    [_agentVault: AddressLike, _amountUBA: BigNumberish],
+    [void],
+    "payable"
+  >;
+  getFunction(
+    nameOrSignature: "transferToCoreVaultFee"
+  ): TypedContractMethod<[_amountUBA: BigNumberish], [bigint], "view">;
   getFunction(
     nameOrSignature: "transfersEmergencyPaused"
   ): TypedContractMethod<[], [boolean], "view">;
@@ -4693,6 +5321,13 @@ export interface IAssetManager extends BaseContract {
     ContractChangedEvent.InputTuple,
     ContractChangedEvent.OutputTuple,
     ContractChangedEvent.OutputObject
+  >;
+  getEvent(
+    key: "CoreVaultRedemptionRequested"
+  ): TypedContractEvent<
+    CoreVaultRedemptionRequestedEvent.InputTuple,
+    CoreVaultRedemptionRequestedEvent.OutputTuple,
+    CoreVaultRedemptionRequestedEvent.OutputObject
   >;
   getEvent(
     key: "CurrentUnderlyingBlockUpdated"
@@ -4898,6 +5533,27 @@ export interface IAssetManager extends BaseContract {
     RedemptionTicketUpdatedEvent.OutputObject
   >;
   getEvent(
+    key: "ReturnFromCoreVaultCancelled"
+  ): TypedContractEvent<
+    ReturnFromCoreVaultCancelledEvent.InputTuple,
+    ReturnFromCoreVaultCancelledEvent.OutputTuple,
+    ReturnFromCoreVaultCancelledEvent.OutputObject
+  >;
+  getEvent(
+    key: "ReturnFromCoreVaultConfirmed"
+  ): TypedContractEvent<
+    ReturnFromCoreVaultConfirmedEvent.InputTuple,
+    ReturnFromCoreVaultConfirmedEvent.OutputTuple,
+    ReturnFromCoreVaultConfirmedEvent.OutputObject
+  >;
+  getEvent(
+    key: "ReturnFromCoreVaultRequested"
+  ): TypedContractEvent<
+    ReturnFromCoreVaultRequestedEvent.InputTuple,
+    ReturnFromCoreVaultRequestedEvent.OutputTuple,
+    ReturnFromCoreVaultRequestedEvent.OutputObject
+  >;
+  getEvent(
     key: "SelfClose"
   ): TypedContractEvent<
     SelfCloseEvent.InputTuple,
@@ -4938,6 +5594,27 @@ export interface IAssetManager extends BaseContract {
     TransferFeesClaimedEvent.InputTuple,
     TransferFeesClaimedEvent.OutputTuple,
     TransferFeesClaimedEvent.OutputObject
+  >;
+  getEvent(
+    key: "TransferToCoreVaultCancelled"
+  ): TypedContractEvent<
+    TransferToCoreVaultCancelledEvent.InputTuple,
+    TransferToCoreVaultCancelledEvent.OutputTuple,
+    TransferToCoreVaultCancelledEvent.OutputObject
+  >;
+  getEvent(
+    key: "TransferToCoreVaultStarted"
+  ): TypedContractEvent<
+    TransferToCoreVaultStartedEvent.InputTuple,
+    TransferToCoreVaultStartedEvent.OutputTuple,
+    TransferToCoreVaultStartedEvent.OutputObject
+  >;
+  getEvent(
+    key: "TransferToCoreVaultSuccessful"
+  ): TypedContractEvent<
+    TransferToCoreVaultSuccessfulEvent.InputTuple,
+    TransferToCoreVaultSuccessfulEvent.OutputTuple,
+    TransferToCoreVaultSuccessfulEvent.OutputObject
   >;
   getEvent(
     key: "UnderlyingBalanceChanged"
@@ -5208,6 +5885,17 @@ export interface IAssetManager extends BaseContract {
       ContractChangedEvent.InputTuple,
       ContractChangedEvent.OutputTuple,
       ContractChangedEvent.OutputObject
+    >;
+
+    "CoreVaultRedemptionRequested(address,string,uint256,uint256)": TypedContractEvent<
+      CoreVaultRedemptionRequestedEvent.InputTuple,
+      CoreVaultRedemptionRequestedEvent.OutputTuple,
+      CoreVaultRedemptionRequestedEvent.OutputObject
+    >;
+    CoreVaultRedemptionRequested: TypedContractEvent<
+      CoreVaultRedemptionRequestedEvent.InputTuple,
+      CoreVaultRedemptionRequestedEvent.OutputTuple,
+      CoreVaultRedemptionRequestedEvent.OutputObject
     >;
 
     "CurrentUnderlyingBlockUpdated(uint256,uint256,uint256)": TypedContractEvent<
@@ -5529,6 +6217,39 @@ export interface IAssetManager extends BaseContract {
       RedemptionTicketUpdatedEvent.OutputObject
     >;
 
+    "ReturnFromCoreVaultCancelled(address,uint256)": TypedContractEvent<
+      ReturnFromCoreVaultCancelledEvent.InputTuple,
+      ReturnFromCoreVaultCancelledEvent.OutputTuple,
+      ReturnFromCoreVaultCancelledEvent.OutputObject
+    >;
+    ReturnFromCoreVaultCancelled: TypedContractEvent<
+      ReturnFromCoreVaultCancelledEvent.InputTuple,
+      ReturnFromCoreVaultCancelledEvent.OutputTuple,
+      ReturnFromCoreVaultCancelledEvent.OutputObject
+    >;
+
+    "ReturnFromCoreVaultConfirmed(address,uint256,uint256,uint256)": TypedContractEvent<
+      ReturnFromCoreVaultConfirmedEvent.InputTuple,
+      ReturnFromCoreVaultConfirmedEvent.OutputTuple,
+      ReturnFromCoreVaultConfirmedEvent.OutputObject
+    >;
+    ReturnFromCoreVaultConfirmed: TypedContractEvent<
+      ReturnFromCoreVaultConfirmedEvent.InputTuple,
+      ReturnFromCoreVaultConfirmedEvent.OutputTuple,
+      ReturnFromCoreVaultConfirmedEvent.OutputObject
+    >;
+
+    "ReturnFromCoreVaultRequested(address,uint256,bytes32,uint256)": TypedContractEvent<
+      ReturnFromCoreVaultRequestedEvent.InputTuple,
+      ReturnFromCoreVaultRequestedEvent.OutputTuple,
+      ReturnFromCoreVaultRequestedEvent.OutputObject
+    >;
+    ReturnFromCoreVaultRequested: TypedContractEvent<
+      ReturnFromCoreVaultRequestedEvent.InputTuple,
+      ReturnFromCoreVaultRequestedEvent.OutputTuple,
+      ReturnFromCoreVaultRequestedEvent.OutputObject
+    >;
+
     "SelfClose(address,uint256)": TypedContractEvent<
       SelfCloseEvent.InputTuple,
       SelfCloseEvent.OutputTuple,
@@ -5593,6 +6314,39 @@ export interface IAssetManager extends BaseContract {
       TransferFeesClaimedEvent.InputTuple,
       TransferFeesClaimedEvent.OutputTuple,
       TransferFeesClaimedEvent.OutputObject
+    >;
+
+    "TransferToCoreVaultCancelled(address,uint256)": TypedContractEvent<
+      TransferToCoreVaultCancelledEvent.InputTuple,
+      TransferToCoreVaultCancelledEvent.OutputTuple,
+      TransferToCoreVaultCancelledEvent.OutputObject
+    >;
+    TransferToCoreVaultCancelled: TypedContractEvent<
+      TransferToCoreVaultCancelledEvent.InputTuple,
+      TransferToCoreVaultCancelledEvent.OutputTuple,
+      TransferToCoreVaultCancelledEvent.OutputObject
+    >;
+
+    "TransferToCoreVaultStarted(address,uint256,uint256)": TypedContractEvent<
+      TransferToCoreVaultStartedEvent.InputTuple,
+      TransferToCoreVaultStartedEvent.OutputTuple,
+      TransferToCoreVaultStartedEvent.OutputObject
+    >;
+    TransferToCoreVaultStarted: TypedContractEvent<
+      TransferToCoreVaultStartedEvent.InputTuple,
+      TransferToCoreVaultStartedEvent.OutputTuple,
+      TransferToCoreVaultStartedEvent.OutputObject
+    >;
+
+    "TransferToCoreVaultSuccessful(address,uint256,uint256)": TypedContractEvent<
+      TransferToCoreVaultSuccessfulEvent.InputTuple,
+      TransferToCoreVaultSuccessfulEvent.OutputTuple,
+      TransferToCoreVaultSuccessfulEvent.OutputObject
+    >;
+    TransferToCoreVaultSuccessful: TypedContractEvent<
+      TransferToCoreVaultSuccessfulEvent.InputTuple,
+      TransferToCoreVaultSuccessfulEvent.OutputTuple,
+      TransferToCoreVaultSuccessfulEvent.OutputObject
     >;
 
     "UnderlyingBalanceChanged(address,int256)": TypedContractEvent<

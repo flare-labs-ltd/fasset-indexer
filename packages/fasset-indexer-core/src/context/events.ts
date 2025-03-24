@@ -1,15 +1,13 @@
 import { id as ethersId, Interface } from "ethers"
 import {
   IAssetManager__factory, IERC20__factory, ICollateralPool__factory,
-  IPriceChangeEmitter__factory,
-  ICoreVault__factory
+  IPriceChangeEmitter__factory
 } from "../../chain/typechain"
 import { EVENTS } from "../config/constants"
 import type { IAssetManagerInterface } from "../../chain/typechain/IAssetManager"
 import type { ICollateralPoolInterface } from "../../chain/typechain/ICollateralPool"
 import type { IPriceChangeEmitterInterface } from "../../chain/typechain/IPriceChangeEmitter"
 import type { IERC20Interface } from "../../chain/typechain/IERC20"
-import type { ICoreVaultInterface } from "../../chain/typechain/ICoreVault"
 import type { FAssetIface } from "../shared"
 
 
@@ -19,7 +17,6 @@ export class EventInterface {
     erc20Interface: IERC20Interface,
     collateralPoolInterface: ICollateralPoolInterface,
     priceReader: IPriceChangeEmitterInterface
-    coreVaultInterface: ICoreVaultInterface
   }
 
   constructor() {
@@ -28,7 +25,6 @@ export class EventInterface {
       erc20Interface: IERC20__factory.createInterface(),
       collateralPoolInterface: ICollateralPool__factory.createInterface(),
       priceReader: IPriceChangeEmitter__factory.createInterface(),
-      coreVaultInterface: ICoreVault__factory.createInterface()
     }
   }
 
@@ -62,7 +58,7 @@ export class EventInterface {
       case "ERC20":
         return [this.interfaces.erc20Interface]
       case "ASSET_MANAGER":
-        return [this.interfaces.assetManagerInterface, this.interfaces.coreVaultInterface]
+        return [this.interfaces.assetManagerInterface]
       case "COLLATERAL_POOL":
         return [this.interfaces.collateralPoolInterface]
       case "PRICE_READER":

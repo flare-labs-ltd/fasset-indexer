@@ -7,6 +7,7 @@ import { AgentManager, AgentOwner, AgentVault } from "../../src/orm/entities/age
 import { CollateralReserved } from "../../src/orm/entities/events/minting"
 import { RedemptionRequested } from "../../src/orm/entities/events/redemption"
 import { RedemptionTicketCreated } from "../../src/orm/entities/events/redemption-ticket"
+import { ReturnFromCoreVaultRequested, TransferToCoreVaultStarted } from "../../src/orm/entities/events/core-vault"
 import {
   randomBoolean, randomChoice, randomHash, randomHex,
   randomNativeAddress, randomNumber, randomString, randomUnderlyingAddress
@@ -42,14 +43,18 @@ import type {
   SelfMintEvent,
   RedemptionTicketCreatedEvent,
   RedemptionTicketUpdatedEvent,
-  RedemptionTicketDeletedEvent
+  RedemptionTicketDeletedEvent,
+  CoreVaultRedemptionRequestedEvent,
+  ReturnFromCoreVaultCancelledEvent,
+  ReturnFromCoreVaultConfirmedEvent,
+  ReturnFromCoreVaultRequestedEvent,
+  TransferToCoreVaultCancelledEvent,
+  TransferToCoreVaultStartedEvent,
+  TransferToCoreVaultSuccessfulEvent
 } from "../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/IERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
-import { CoreVaultRedemptionRequestedEvent, ReturnFromCoreVaultCancelledEvent, ReturnFromCoreVaultConfirmedEvent, ReturnFromCoreVaultRequestedEvent, TransferToCoreVaultCancelledEvent, TransferToCoreVaultStartedEvent, TransferToCoreVaultSuccessfulEvent } from "../../chain/typechain/ICoreVault"
-import { ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested, TransferToCoreVaultStarted } from "../../src/orm/entities/events/core-vault"
-import { randomBytes } from "crypto"
 
 
 export class EventFixture {
