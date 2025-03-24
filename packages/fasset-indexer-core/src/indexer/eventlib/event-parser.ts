@@ -50,7 +50,6 @@ export class EventParser {
     if (iface === 'ASSET_MANAGER') {
       if (this.context.isAssetManager(log.address)) {
         return this.context.interfaces.assetManagerInterface.parseLog(log)
-          ?? this.context.interfaces.coreVaultInterface.parseLog(log)
       }
     } else if (iface === 'ERC20') {
       const em = this.context.orm.em.fork()
