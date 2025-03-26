@@ -528,7 +528,7 @@ export class DashboardAnalytics extends SharedAnalytics {
     ts2: TimeSeries<bigint>,
     add: (x: bigint, y: bigint) => bigint
   ): TimeSeries<bigint> {
-    const res = {} as TimeSeries<bigint>
+    const res = [] as TimeSeries<bigint>
     for (const elt of ts1) {
       const x = elt.value
       const y = ts2[elt.index].value
