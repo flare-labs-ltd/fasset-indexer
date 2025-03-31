@@ -128,7 +128,7 @@ export class CoreVaultRedemptionRequested extends FAssetEventBound {
   @ManyToOne({ entity: () => UnderlyingAddress })
   paymentAddress: UnderlyingAddress
 
-  @Property({ type: 'text', length: BYTES32_LENGTH })
+  @Property({ type: 'text', length: BYTES32_LENGTH, nullable: true })
   paymentReference: string
 
   @Property({ type: new uint256() })
