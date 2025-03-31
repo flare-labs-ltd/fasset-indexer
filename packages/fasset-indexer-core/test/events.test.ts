@@ -620,14 +620,7 @@ describe("FAsset evm events", () => {
       expect(ttcvf.fasset).to.equal(FAssetType.FXRP)
       expect(ttcvf.transferToCoreVaultStarted).to.equal(ttcvs)
       expect(ttcvf.valueUBA).to.equal(ettcvf.args[2])
-      // test transfer to core vault canceled
-      const ettcvc = await fixture.generateEvent(EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_CANCELLED, assetManagerXrp)
-      await storer.processEventUnsafe(em, ettcvc)
-      const ttcvc = await em.findOneOrFail(TransferToCoreVaultCancelled,
-        { evmLog: { block: { index: ettcvc.blockNumber }, index: ettcvc.logIndex }}
-      )
-      expect(ttcvc.fasset).to.equal(FAssetType.FXRP)
-      expect(ttcvc.transferToCoreVaultStarted).to.equal(ttcvs)
+      // TODO: test transfer to core vault defaulted
     })
 
     it("should store return from core vault", async () => {
@@ -679,8 +672,9 @@ describe("FAsset evm events", () => {
       expect(cvrr.fasset).to.equal(FAssetType.FXRP)
       expect(cvrr.redeemer.hex).to.equal(ecvrr.args[0])
       expect(cvrr.paymentAddress.text).to.equal(ecvrr.args[1])
-      expect(cvrr.valueUBA).to.equal(ecvrr.args[2])
-      expect(cvrr.feeUBA).to.equal(ecvrr.args[3])
+      expect(cvrr.paymentReference).to.equal(ecvrr.args[2])
+      expect(cvrr.valueUBA).to.equal(ecvrr.args[3])
+      expect(cvrr.feeUBA).to.equal(ecvrr.args[4])
     })
   })
 

@@ -118,7 +118,6 @@ import type {
   ReturnFromCoreVaultCancelledEvent,
   ReturnFromCoreVaultConfirmedEvent,
   ReturnFromCoreVaultRequestedEvent,
-  TransferToCoreVaultCancelledEvent,
   TransferToCoreVaultStartedEvent,
   TransferToCoreVaultSuccessfulEvent
 } from "../../../chain/typechain/IAssetManager"
@@ -274,9 +273,6 @@ export class EventStorer {
         break
       } case EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_SUCCESSFUL: {
         ent = await this.onTransferToCoreVaultSuccessful(em, evmLog, log.args as TransferToCoreVaultSuccessfulEvent.OutputTuple)
-        break
-      } case EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_CANCELLED: {
-        ent = await this.onTransferToCoreVaultCancelled(em, evmLog, log.args as TransferToCoreVaultCancelledEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_REQUESTED: {
         ent = await this.onReturnFromCoreVaultRequested(em, evmLog, log.args as ReturnFromCoreVaultRequestedEvent.OutputTuple)
@@ -864,16 +860,6 @@ export class EventStorer {
     return new TransferToCoreVaultSuccessful(evmLog, fasset, transferToCoreVaultStarted, valueUBA)
   }
 
-  protected async onTransferToCoreVaultCancelled(em: EntityManager, evmLog: EvmLog, logArgs: TransferToCoreVaultCancelledEvent.OutputTuple):
-    Promise<TransferToCoreVaultCancelled>
-  {
-    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
-    const [ agentVault, transferRedemptionRequestId ] = logArgs
-    const transferToCoreVaultCancelled = await em.findOneOrFail(TransferToCoreVaultStarted,
-      { transferRedemptionRequestId: Number(transferRedemptionRequestId), fasset })
-    return new TransferToCoreVaultCancelled(evmLog, fasset, transferToCoreVaultCancelled)
-  }
-
   protected async onReturnFromCoreVaultRequested(em: EntityManager, evmLog: EvmLog, logArgs: ReturnFromCoreVaultRequestedEvent.OutputTuple):
     Promise<ReturnFromCoreVaultRequested>
   {
@@ -905,10 +891,10 @@ export class EventStorer {
     Promise<CoreVaultRedemptionRequested>
   {
     const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
-    const [ redeemer, paymentAddress, valueUBA, feeUBA ] = logArgs
+    const [ redeemer, paymentAddress, paymentReference, valueUBA, feeUBA ] = logArgs
     const redeemerEntity = await findOrCreateEvmAddress(em, redeemer, AddressType.USER)
     const paymentAddressEntity = await findOrCreateUnderlyingAddress(em, paymentAddress, AddressType.USER)
-    return new CoreVaultRedemptionRequested(evmLog, fasset, redeemerEntity, paymentAddressEntity, valueUBA, feeUBA)
+    return new CoreVaultRedemptionRequested(evmLog, fasset, redeemerEntity, paymentAddressEntity, paymentReference, valueUBA, feeUBA)
   }
 
   // price publisher

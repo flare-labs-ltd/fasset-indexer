@@ -128,6 +128,9 @@ export class CoreVaultRedemptionRequested extends FAssetEventBound {
   @ManyToOne({ entity: () => UnderlyingAddress })
   paymentAddress: UnderlyingAddress
 
+  @Property({ type: 'text', length: BYTES32_LENGTH })
+  paymentReference: string
+
   @Property({ type: new uint256() })
   valueUBA: bigint
 
@@ -137,11 +140,13 @@ export class CoreVaultRedemptionRequested extends FAssetEventBound {
   constructor(evmLog: EvmLog, fasset: FAssetType,
     redeemer: EvmAddress,
     paymentAddress: UnderlyingAddress,
+    paymentReference: string,
     valueUBA: bigint, feeUBA: bigint
   ) {
     super(evmLog, fasset)
     this.redeemer = redeemer
     this.paymentAddress = paymentAddress
+    this.paymentReference = paymentReference
     this.valueUBA = valueUBA
     this.feeUBA = feeUBA
   }

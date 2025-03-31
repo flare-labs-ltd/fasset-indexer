@@ -1019,7 +1019,6 @@ export interface IAssetManagerInterface extends Interface {
       | "buybackAgentCollateral"
       | "cancelCollateralReservation"
       | "cancelReturnFromCoreVault"
-      | "cancelTransferToCoreVault"
       | "cancelUnderlyingWithdrawal"
       | "claimTransferFees"
       | "collateralReservationFee"
@@ -1070,6 +1069,7 @@ export interface IAssetManagerInterface extends Interface {
       | "getCoreVaultNativeAddress"
       | "getCoreVaultRedemptionFeeBIPS"
       | "getCoreVaultTransferFeeBIPS"
+      | "getCoreVaultTransferTimeExtensionSeconds"
       | "getSettings"
       | "illegalPaymentChallenge"
       | "initAgentsMintingHistory"
@@ -1103,6 +1103,7 @@ export interface IAssetManagerInterface extends Interface {
       | "setCoreVaultNativeAddress"
       | "setCoreVaultRedemptionFeeBIPS"
       | "setCoreVaultTransferFeeBIPS"
+      | "setCoreVaultTransferTimeExtensionSeconds"
       | "setRedemptionPaymentExtensionSeconds"
       | "setTransferFeeMillionths"
       | "startLiquidation"
@@ -1185,7 +1186,7 @@ export interface IAssetManagerInterface extends Interface {
       | "SettingChanged"
       | "TransferFeeChangeScheduled"
       | "TransferFeesClaimed"
-      | "TransferToCoreVaultCancelled"
+      | "TransferToCoreVaultDefaulted"
       | "TransferToCoreVaultStarted"
       | "TransferToCoreVaultSuccessful"
       | "UnderlyingBalanceChanged"
@@ -1279,10 +1280,6 @@ export interface IAssetManagerInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "cancelReturnFromCoreVault",
-    values: [AddressLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "cancelTransferToCoreVault",
     values: [AddressLike]
   ): string;
   encodeFunctionData(
@@ -1484,6 +1481,10 @@ export interface IAssetManagerInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getCoreVaultTransferTimeExtensionSeconds",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getSettings",
     values?: undefined
   ): string;
@@ -1610,6 +1611,10 @@ export interface IAssetManagerInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setCoreVaultTransferFeeBIPS",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setCoreVaultTransferTimeExtensionSeconds",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -1768,10 +1773,6 @@ export interface IAssetManagerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "cancelReturnFromCoreVault",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "cancelTransferToCoreVault",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1969,6 +1970,10 @@ export interface IAssetManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getCoreVaultTransferTimeExtensionSeconds",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getSettings",
     data: BytesLike
   ): Result;
@@ -2083,6 +2088,10 @@ export interface IAssetManagerInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setCoreVaultTransferFeeBIPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setCoreVaultTransferTimeExtensionSeconds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -2612,18 +2621,21 @@ export namespace CoreVaultRedemptionRequestedEvent {
   export type InputTuple = [
     redeemer: AddressLike,
     paymentAddress: string,
+    paymentReference: BytesLike,
     valueUBA: BigNumberish,
     feeUBA: BigNumberish
   ];
   export type OutputTuple = [
     redeemer: string,
     paymentAddress: string,
+    paymentReference: string,
     valueUBA: bigint,
     feeUBA: bigint
   ];
   export interface OutputObject {
     redeemer: string;
     paymentAddress: string;
+    paymentReference: string;
     valueUBA: bigint;
     feeUBA: bigint;
   }
@@ -3454,7 +3466,7 @@ export namespace TransferFeesClaimedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace TransferToCoreVaultCancelledEvent {
+export namespace TransferToCoreVaultDefaultedEvent {
   export type InputTuple = [
     agentVault: AddressLike,
     transferRedemptionRequestId: BigNumberish
@@ -3828,12 +3840,6 @@ export interface IAssetManager extends BaseContract {
     "nonpayable"
   >;
 
-  cancelTransferToCoreVault: TypedContractMethod<
-    [_agentVault: AddressLike],
-    [void],
-    "nonpayable"
-  >;
-
   cancelUnderlyingWithdrawal: TypedContractMethod<
     [_agentVault: AddressLike],
     [void],
@@ -4118,6 +4124,12 @@ export interface IAssetManager extends BaseContract {
 
   getCoreVaultTransferFeeBIPS: TypedContractMethod<[], [bigint], "view">;
 
+  getCoreVaultTransferTimeExtensionSeconds: TypedContractMethod<
+    [],
+    [bigint],
+    "view"
+  >;
+
   getSettings: TypedContractMethod<
     [],
     [AssetManagerSettings.DataStructOutput],
@@ -4335,6 +4347,12 @@ export interface IAssetManager extends BaseContract {
 
   setCoreVaultTransferFeeBIPS: TypedContractMethod<
     [_transferFeeBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
+  setCoreVaultTransferTimeExtensionSeconds: TypedContractMethod<
+    [_transferTimeExtensionSeconds: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -4568,9 +4586,6 @@ export interface IAssetManager extends BaseContract {
   >;
   getFunction(
     nameOrSignature: "cancelReturnFromCoreVault"
-  ): TypedContractMethod<[_agentVault: AddressLike], [void], "nonpayable">;
-  getFunction(
-    nameOrSignature: "cancelTransferToCoreVault"
   ): TypedContractMethod<[_agentVault: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "cancelUnderlyingWithdrawal"
@@ -4843,6 +4858,9 @@ export interface IAssetManager extends BaseContract {
     nameOrSignature: "getCoreVaultTransferFeeBIPS"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
+    nameOrSignature: "getCoreVaultTransferTimeExtensionSeconds"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "getSettings"
   ): TypedContractMethod<[], [AssetManagerSettings.DataStructOutput], "view">;
   getFunction(
@@ -5073,6 +5091,13 @@ export interface IAssetManager extends BaseContract {
     nameOrSignature: "setCoreVaultTransferFeeBIPS"
   ): TypedContractMethod<
     [_transferFeeBIPS: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "setCoreVaultTransferTimeExtensionSeconds"
+  ): TypedContractMethod<
+    [_transferTimeExtensionSeconds: BigNumberish],
     [void],
     "nonpayable"
   >;
@@ -5596,11 +5621,11 @@ export interface IAssetManager extends BaseContract {
     TransferFeesClaimedEvent.OutputObject
   >;
   getEvent(
-    key: "TransferToCoreVaultCancelled"
+    key: "TransferToCoreVaultDefaulted"
   ): TypedContractEvent<
-    TransferToCoreVaultCancelledEvent.InputTuple,
-    TransferToCoreVaultCancelledEvent.OutputTuple,
-    TransferToCoreVaultCancelledEvent.OutputObject
+    TransferToCoreVaultDefaultedEvent.InputTuple,
+    TransferToCoreVaultDefaultedEvent.OutputTuple,
+    TransferToCoreVaultDefaultedEvent.OutputObject
   >;
   getEvent(
     key: "TransferToCoreVaultStarted"
@@ -5887,7 +5912,7 @@ export interface IAssetManager extends BaseContract {
       ContractChangedEvent.OutputObject
     >;
 
-    "CoreVaultRedemptionRequested(address,string,uint256,uint256)": TypedContractEvent<
+    "CoreVaultRedemptionRequested(address,string,bytes32,uint256,uint256)": TypedContractEvent<
       CoreVaultRedemptionRequestedEvent.InputTuple,
       CoreVaultRedemptionRequestedEvent.OutputTuple,
       CoreVaultRedemptionRequestedEvent.OutputObject
@@ -6316,15 +6341,15 @@ export interface IAssetManager extends BaseContract {
       TransferFeesClaimedEvent.OutputObject
     >;
 
-    "TransferToCoreVaultCancelled(address,uint256)": TypedContractEvent<
-      TransferToCoreVaultCancelledEvent.InputTuple,
-      TransferToCoreVaultCancelledEvent.OutputTuple,
-      TransferToCoreVaultCancelledEvent.OutputObject
+    "TransferToCoreVaultDefaulted(address,uint256)": TypedContractEvent<
+      TransferToCoreVaultDefaultedEvent.InputTuple,
+      TransferToCoreVaultDefaultedEvent.OutputTuple,
+      TransferToCoreVaultDefaultedEvent.OutputObject
     >;
-    TransferToCoreVaultCancelled: TypedContractEvent<
-      TransferToCoreVaultCancelledEvent.InputTuple,
-      TransferToCoreVaultCancelledEvent.OutputTuple,
-      TransferToCoreVaultCancelledEvent.OutputObject
+    TransferToCoreVaultDefaulted: TypedContractEvent<
+      TransferToCoreVaultDefaultedEvent.InputTuple,
+      TransferToCoreVaultDefaultedEvent.OutputTuple,
+      TransferToCoreVaultDefaultedEvent.OutputObject
     >;
 
     "TransferToCoreVaultStarted(address,uint256,uint256)": TypedContractEvent<

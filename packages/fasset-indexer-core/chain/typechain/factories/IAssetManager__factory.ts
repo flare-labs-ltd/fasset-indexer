@@ -679,6 +679,12 @@ const _abi = [
       },
       {
         indexed: false,
+        internalType: "bytes32",
+        name: "paymentReference",
+        type: "bytes32",
+      },
+      {
+        indexed: false,
         internalType: "uint256",
         name: "valueUBA",
         type: "uint256",
@@ -1771,7 +1777,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "TransferToCoreVaultCancelled",
+    name: "TransferToCoreVaultDefaulted",
     type: "event",
   },
   {
@@ -2409,19 +2415,6 @@ const _abi = [
       },
     ],
     name: "cancelReturnFromCoreVault",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_agentVault",
-        type: "address",
-      },
-    ],
-    name: "cancelTransferToCoreVault",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -4800,6 +4793,19 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "getCoreVaultTransferTimeExtensionSeconds",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "getSettings",
     outputs: [
       {
@@ -6312,6 +6318,19 @@ const _abi = [
       },
     ],
     name: "setCoreVaultTransferFeeBIPS",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_transferTimeExtensionSeconds",
+        type: "uint256",
+      },
+    ],
+    name: "setCoreVaultTransferTimeExtensionSeconds",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

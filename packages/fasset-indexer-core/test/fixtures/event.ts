@@ -48,7 +48,6 @@ import type {
   ReturnFromCoreVaultCancelledEvent,
   ReturnFromCoreVaultConfirmedEvent,
   ReturnFromCoreVaultRequestedEvent,
-  TransferToCoreVaultCancelledEvent,
   TransferToCoreVaultStartedEvent,
   TransferToCoreVaultSuccessfulEvent
 } from "../../chain/typechain/IAssetManager"
@@ -442,14 +441,6 @@ export class EventFixture {
     ]
   }
 
-  protected async generateTransferToCoreVaultCancelled(): Promise<TransferToCoreVaultCancelledEvent.OutputTuple> {
-    const transferToCoreVaultStarted = await this.getRandomTransferToCoreVaultStarted()
-    return [
-      transferToCoreVaultStarted.agentVault.address.hex,
-      BigInt(transferToCoreVaultStarted.transferRedemptionRequestId)
-    ]
-  }
-
   protected async generateTransferToCoreVaultSuccessful(): Promise<TransferToCoreVaultSuccessfulEvent.OutputTuple> {
     const transferToCoreVaultStarted = await this.getRandomTransferToCoreVaultStarted()
     return [
@@ -488,6 +479,7 @@ export class EventFixture {
     return [
       randomNativeAddress(),
       randomUnderlyingAddress(),
+      randomHash(),
       BigInt(randomNumber(1e4, 1e12)),
       BigInt(randomNumber(1e4, 1e12))
     ]
