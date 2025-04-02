@@ -115,7 +115,14 @@ export const BLOCK_EXPLORERS = {
 
 // index this later
 export const FASSET_LOT_SIZE = {
-  [FAssetType[FAssetType.FXRP]]: BigInt(100e6),
-  [FAssetType[FAssetType.FDOGE]]: BigInt(200e8),
-  [FAssetType[FAssetType.FBTC]]: BigInt(5e6),
+  songbird: {
+    [FAssetType[FAssetType.FXRP]]: BigInt(100e6),
+    [FAssetType[FAssetType.FDOGE]]: BigInt(200e8),
+    [FAssetType[FAssetType.FBTC]]: BigInt(5e6)
+  },
+  coston: {
+    [FAssetType[FAssetType.FXRP]]: BigInt(20e6),
+    [FAssetType[FAssetType.FDOGE]]: BigInt(100e8),
+    [FAssetType[FAssetType.FBTC]]: BigInt(100000)
+  }
 }
