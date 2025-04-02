@@ -1,4 +1,4 @@
-import { EntityManager, SelectQueryBuilder, raw, type ORM, ZeroAddress } from "fasset-indexer-core/orm"
+import { EntityManager, SelectQueryBuilder, raw, type ORM, ZeroAddress, getVar } from "fasset-indexer-core/orm"
 import { ContractLookup, FAsset, FAssetType, FASSETS } from "fasset-indexer-core"
 import {
   EvmAddress, EvmBlock, EvmLog, ERC20Transfer, MintingExecuted,
@@ -32,7 +32,7 @@ export class DashboardAnalytics extends SharedAnalytics {
   private zeroAddressId: number | null = null
   private supportedFAssets: FAsset[]
 
-  constructor(public readonly orm: ORM, chain: string, addressesJson?: string) {
+  constructor(public readonly orm: ORM, public readonly chain: string, addressesJson?: string) {
     super(orm)
     this.lookup = new ContractLookup(chain, addressesJson)
     this.statistics = new AgentStatistics(orm)
@@ -92,7 +92,7 @@ export class DashboardAnalytics extends SharedAnalytics {
   async totalRedeemedLots(): Promise<FAssetAmountResult> {
     const tr = await this.totalRedeemed()
     return Object.fromEntries(Object.entries(tr).map(([fasset, { value }]) => [fasset, {
-      amount: Number(value / FASSET_LOT_SIZE[fasset])
+      amount: Number(value / FASSET_LOT_SIZE[this.chain][fasset])
     }])) as FAssetAmountResult
   }
 
