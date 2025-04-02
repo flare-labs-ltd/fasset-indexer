@@ -9,7 +9,7 @@ import {
   RedemptionPerformed,
   UnderlyingVoutReference
 } from "fasset-indexer-core/entities"
-import { ConfigLoader } from "fasset-indexer-core"
+import { ConfigLoader, FAssetType } from "fasset-indexer-core"
 import { unixnow } from "../shared/utils"
 import { UNFINALIZED_DOGE_REDEMPTIONS } from "./utils/raw-sql"
 import { EVENTS } from "fasset-indexer-core/config"
@@ -27,15 +27,15 @@ export class NotificationAnalytics {
   ////////////////////////////////////////////////////////////////////////////
   // underlying connectors
 
-  async getRedemptionPaymentStatus(redemptionId: number): Promise<any> {
+  async getRedemptionPaymentStatus(redemptionId: number, fasset: FAssetType): Promise<any> {
     const em = this.orm.em.fork()
-    const redemption = await em.findOneOrFail(RedemptionRequested, { requestId: redemptionId })
+    const redemption = await em.findOneOrFail(RedemptionRequested, { requestId: redemptionId, fasset })
     const succeeded = await em.findOne(RedemptionPerformed, { redemptionRequested: redemption }, { populate: ['evmLog.block'] })
     if (succeeded != null) return succeeded
     const defaulted = await em.findOne(RedemptionDefault, { redemptionRequested: redemption }, { populate: ['evmLog.block'] })
     if (defaulted != null) return defaulted
-    const doge = await em.findOne(UnderlyingVoutReference, { reference: redemption.paymentReference }, { populate: ['block'] })
-    if (doge != null) return doge
+    const underlying = await em.findOne(UnderlyingVoutReference, { reference: redemption.paymentReference }, { populate: ['block'] })
+    if (underlying != null) return underlying
     return null
   }
 

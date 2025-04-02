@@ -1,7 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+import { FAsset, FAssetType } from 'fasset-indexer-core'
 import { apiResponse, type ApiResponse } from '../shared/api-response'
-import { NotificationService } from 'src/services/notification.service'
+import { NotificationService } from '../services/notification.service'
 
 
 @ApiTags("Notification")
@@ -10,8 +11,8 @@ export class NotificationController {
   constructor(private readonly service: NotificationService) {}
 
   @Get('/redemption-payment-status?')
-  getRedemptionPaymentStatus(@Query('redemptionId') redemptionId: number): Promise<ApiResponse<any>> {
-    return apiResponse(this.service.getRedemptionPaymentStatus(redemptionId), 200)
+  getRedemptionPaymentStatus(@Query('redemptionId') redemptionId: number, fasset: FAsset): Promise<ApiResponse<any>> {
+    return apiResponse(this.service.getRedemptionPaymentStatus(redemptionId, FAssetType[fasset]), 200)
   }
 
   @Get('/unhandled-redemptions?')
