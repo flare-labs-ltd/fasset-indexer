@@ -31,12 +31,13 @@ import { EVENTS } from "../src/config/constants"
 import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/orm/entities/events/redemption-ticket"
 import { RedemptionTicket } from "../src/orm/entities/state/redemption-ticket"
 import { TestConfigLoader } from "./fixtures/config"
-import { EntityManager } from "@mikro-orm/knex"
 import { CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested, TransferToCoreVaultCancelled, TransferToCoreVaultStarted, TransferToCoreVaultSuccessful } from "../src/orm/entities/events/core-vault"
+import { CoreVaultManagerSettingsUpdated } from "../src/orm/entities/events/core-vault-manager"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
 const ASSET_MANAGER_FBTC = "AssetManager_FTestBTC"
+const CORE_VAULT_MANAGER_FXRP = "CoreVaultManager_FTestXRP"
 
 use(chaiAsPromised)
 
@@ -675,6 +676,23 @@ describe("FAsset evm events", () => {
       expect(cvrr.paymentReference).to.equal(ecvrr.args[2])
       expect(cvrr.valueUBA).to.equal(ecvrr.args[3])
       expect(cvrr.feeUBA).to.equal(ecvrr.args[4])
+    })
+  })
+
+  describe("core vault manager", () => {
+    it("should store settings changed", async () => {
+      const coreVaultManagerXrp = context.getContractAddress(CORE_VAULT_MANAGER_FXRP)
+      const em = context.orm.em.fork()
+      const esc = await fixture.generateEvent(EVENTS.CORE_VAULT_MANAGER.SETTINGS_UPDATED, coreVaultManagerXrp)
+      await storer.processEventUnsafe(em, esc)
+      const sc = await em.findOneOrFail(CoreVaultManagerSettingsUpdated,
+        { evmLog: { block: { index: esc.blockNumber }, index: esc.logIndex }}
+      )
+      expect(sc.fasset).to.equal(FAssetType.FXRP)
+      expect(sc.escrowEndTimeSeconds).to.equal(esc.args[0])
+      expect(sc.escrowAmount).to.equal(esc.args[1])
+      expect(sc.minimalAmount).to.equal(esc.args[2])
+      expect(sc.fee).to.equal(esc.args[3])
     })
   })
 

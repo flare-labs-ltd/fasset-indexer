@@ -100,6 +100,9 @@ export const EVENTS = {
   },
   PRICE_READER: {
     PRICES_PUBLISHED: "PricesPublished",
+  },
+  CORE_VAULT_MANAGER: {
+    SETTINGS_UPDATED: "SettingsUpdated"
   }
 }
 

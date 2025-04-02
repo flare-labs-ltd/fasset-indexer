@@ -72,6 +72,7 @@ import {
 } from "../../orm/entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "../../orm/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../orm/entities/events/system"
+import { CoreVaultManagerSettingsUpdated } from "../../orm/entities/events/core-vault-manager"
 import { PricesPublished } from "../../orm/entities/events/price"
 import { ContractLookup } from "../../context/lookup"
 import { EVENTS } from '../../config/constants'
@@ -128,6 +129,7 @@ import type {
   ExitedEvent,
   PaidOutEvent
 } from "../../../chain/typechain/ICollateralPool"
+import type { SettingsUpdatedEvent } from "../../../chain/typechain/ICoreVaultManager"
 import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
@@ -307,7 +309,11 @@ export class EventStorer {
       } case EVENTS.PRICE_READER.PRICES_PUBLISHED: {
         ent = await this.onPublishedPrices(em, evmLog, log.args as PricesPublishedEvent.OutputTuple)
         break
-      } default: {
+      } case EVENTS.CORE_VAULT_MANAGER.SETTINGS_UPDATED: {
+        ent = await this.onCoreVaultManagerSettingsUpdated(em, evmLog, log.args as SettingsUpdatedEvent.OutputTuple)
+        break
+      }
+       default: {
         return false
       }
     }
@@ -897,6 +903,18 @@ export class EventStorer {
     return new CoreVaultRedemptionRequested(evmLog, fasset, redeemerEntity, paymentAddressEntity, paymentReference, valueUBA, feeUBA)
   }
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // core vault manager
+
+  protected async onCoreVaultManagerSettingsUpdated(em: EntityManager, evmLog: EvmLog, logArgs: SettingsUpdatedEvent.OutputTuple):
+    Promise<CoreVaultManagerSettingsUpdated>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ escrowEndTimeSeconds, escrowAmount, minimalAmount, fee ] = logArgs
+    return new CoreVaultManagerSettingsUpdated(evmLog, fasset, escrowEndTimeSeconds, escrowAmount, minimalAmount, fee)
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
   // price publisher
 
   protected async onPublishedPrices(em: EntityManager, evmLog: EvmLog, logArgs: PricesPublishedEvent.OutputTuple): Promise<PricesPublished> {

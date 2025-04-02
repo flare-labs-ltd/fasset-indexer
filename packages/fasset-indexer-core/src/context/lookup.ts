@@ -11,8 +11,7 @@ export class ContractLookup extends EventInterface {
   private fAssetToAssetManager__cache: Map<FAssetType, string> = new Map()
   private fAssetTokenToFAsset__cache: Map<string, FAssetType> = new Map()
   private fAssetToFAssetToken__cache: Map<FAssetType, string> = new Map()
-  private isAssetManager__cache: Set<string> = new Set()
-  private isFAssetToken__cache: Set<string> = new Set()
+  private coreVaultToFAsset__cache: Map<string, FAssetType> = new Map()
   // public
   public fassetTokens: string[] = []
   public contractInfos!: ContractInfo[]
@@ -26,9 +25,8 @@ export class ContractLookup extends EventInterface {
     // populate caches for faster lookups
     this.populateFAssetTypeToAssetManagerCache()
     this.populateFAssetTypeToFAssetTokenCache()
-    this.populateIsAssetManagerCache()
-    this.populateIsFAssetTokenCache()
-    this.fassetTokens = Array.from(this.isFAssetToken__cache)
+    this.populateFAssetTypeToCoreVaultManagerCache()
+    this.fassetTokens = Array.from(this.fAssetTokenToFAsset__cache.keys())
     ContractLookup.singleton = this
   }
 
@@ -37,18 +35,30 @@ export class ContractLookup extends EventInterface {
   }
 
   isAssetManager(address: string): boolean {
-    return this.isAssetManager__cache.has(address)
+    return this.assetManagerToFAsset__cache.has(address)
   }
 
   isFAssetToken(address: string): boolean {
-    return this.isFAssetToken__cache.has(address)
+    return this.fAssetTokenToFAsset__cache.has(address)
+  }
+
+  isCoreVaultManager(address: string): boolean {
+    return this.coreVaultToFAsset__cache.has(address)
   }
 
   assetManagerAddressToFAssetType(address: string): FAssetType {
     if (this.assetManagerToFAsset__cache.has(address)) {
       return this.assetManagerToFAsset__cache.get(address)!
     } else {
-      throw new Error(`No FAsset found for address ${address}`)
+      throw new Error(`No FAsset found for asset manager ${address}`)
+    }
+  }
+
+  coreVaultManagerToFAssetType(address: string): FAssetType {
+    if (this.coreVaultToFAsset__cache.has(address)) {
+      return this.coreVaultToFAsset__cache.get(address)!
+    } else {
+      throw new Error(`No FAsset found for core vault manager ${address}`)
     }
   }
 
@@ -64,7 +74,7 @@ export class ContractLookup extends EventInterface {
     if (this.fAssetTokenToFAsset__cache.has(address)) {
       return this.fAssetTokenToFAsset__cache.get(address)!
     } else {
-      throw new Error(`No FAsset type found for address ${address}`)
+      throw new Error(`No FAsset type found for FAsset token ${address}`)
     }
   }
 
@@ -85,56 +95,42 @@ export class ContractLookup extends EventInterface {
   }
 
   protected populateFAssetTypeToAssetManagerCache(): void {
-    for (const info of this.contractInfos) {
-      let fasset = null
-      if (info.name === `AssetManager_${this.FXRP}`) {
-        fasset = FAssetType.FXRP
-      } else if (info.name === `AssetManager_${this.FBTC}`) {
-        fasset = FAssetType.FBTC
-      } else if (info.name === `AssetManager_${this.FDOGE}`) {
-        fasset = FAssetType.FDOGE
-      } else if (info.name === `AssetManager_${this.FSIMCOINX}`) {
-        fasset = FAssetType.FSIMCOINX
-      } else {
-        continue
-      }
-      this.assetManagerToFAsset__cache.set(info.address, fasset)
-      this.fAssetToAssetManager__cache.set(fasset, info.address)
+    for (const contract of this.contractInfos) {
+      const fasset = this.contractNameToFAssetType(contract.name, 'AssetManager_')
+      if (fasset == null) continue
+      this.assetManagerToFAsset__cache.set(contract.address, fasset)
+      this.fAssetToAssetManager__cache.set(fasset, contract.address)
+    }
+  }
+
+  protected populateFAssetTypeToCoreVaultManagerCache(): void {
+    for (const contract of this.contractInfos) {
+      const fasset = this.contractNameToFAssetType(contract.name, 'CoreVaultManager_')
+      if (fasset == null) continue
+      this.coreVaultToFAsset__cache.set(contract.address, fasset)
     }
   }
 
   protected populateFAssetTypeToFAssetTokenCache(): void {
     for (const contract of this.contractInfos) {
-      let fasset = null
-      if (contract.name === this.FXRP) {
-        fasset = FAssetType.FXRP
-      } else if (contract.name === this.FBTC) {
-        fasset = FAssetType.FBTC
-      } else if (contract.name === this.FDOGE) {
-        fasset = FAssetType.FDOGE
-      } else if (contract.name === this.FSIMCOINX) {
-        fasset = FAssetType.FSIMCOINX
-      } else {
-        continue
-      }
+      const fasset = this.contractNameToFAssetType(contract.name)
+      if (fasset == null) continue
       this.fAssetTokenToFAsset__cache.set(contract.address, fasset)
       this.fAssetToFAssetToken__cache.set(fasset, contract.address)
     }
   }
 
-  protected populateIsAssetManagerCache(): void {
-    for (const contract of this.contractInfos) {
-      if (contract.name.startsWith('AssetManager_')) {
-        this.isAssetManager__cache.add(contract.address)
-      }
-    }
-  }
-
-  protected populateIsFAssetTokenCache(): void {
-    for (const contract of this.contractInfos) {
-      if (contract.contractName === "FAssetProxy.sol") {
-        this.isFAssetToken__cache.add(contract.address)
-      }
+  protected contractNameToFAssetType(name: string, prefix = ''): FAssetType | null {
+    if (name === `${prefix}${this.FXRP}`) {
+      return FAssetType.FXRP
+    } else if (name === `${prefix}${this.FBTC}`) {
+      return FAssetType.FBTC
+    } else if (name === `${prefix}${this.FDOGE}`) {
+      return FAssetType.FDOGE
+    } else if (name === `${prefix}${this.FSIMCOINX}`) {
+      return FAssetType.FSIMCOINX
+    } else {
+      return null
     }
   }
 

@@ -43,6 +43,7 @@ import {
   TransferToCoreVaultCancelled, TransferToCoreVaultStarted,
   TransferToCoreVaultSuccessful
 } from "./entities/events/core-vault"
+import { CoreVaultManagerSettingsUpdated } from "./entities/events/core-vault-manager"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
@@ -78,7 +79,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     FtsoPrice, UntrackedAgentVault, TokenBalance,
     TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultCancelled,
     ReturnFromCoreVaultRequested, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultCancelled,
-    CoreVaultRedemptionRequested,
+    CoreVaultRedemptionRequested, CoreVaultManagerSettingsUpdated,
     // underlying
     UnderlyingBlock, UnderlyingVoutReference, UnderlyingAddress
   ],

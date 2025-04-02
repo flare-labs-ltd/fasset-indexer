@@ -85,6 +85,10 @@ export class EventParser {
       if (await this.isPriceReader(log.address)) {
         return this.context.interfaces.priceReader.parseLog(log)
       }
+    } else if (iface === 'CORE_VAULT_MANAGER') {
+      if (this.context.isCoreVaultManager(log.address)) {
+        return this.context.interfaces.coreVaultManager.parseLog(log)
+      }
     }
     return null
   }

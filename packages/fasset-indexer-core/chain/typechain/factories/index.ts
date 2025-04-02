@@ -4,6 +4,7 @@
 export { IAgentOwnerRegistry__factory } from "./IAgentOwnerRegistry__factory";
 export { IAssetManager__factory } from "./IAssetManager__factory";
 export { ICollateralPool__factory } from "./ICollateralPool__factory";
+export { ICoreVaultManager__factory } from "./ICoreVaultManager__factory";
 export { IERC20__factory } from "./IERC20__factory";
 export { IPriceChangeEmitter__factory } from "./IPriceChangeEmitter__factory";
 export { IPriceReader__factory } from "./IPriceReader__factory";

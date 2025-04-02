@@ -54,6 +54,7 @@ import type {
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/IERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
+import { SettingsUpdatedEvent } from "../../chain/typechain/ICoreVaultManager"
 
 
 export class EventFixture {
@@ -482,6 +483,15 @@ export class EventFixture {
       randomHash(),
       BigInt(randomNumber(1e4, 1e12)),
       BigInt(randomNumber(1e4, 1e12))
+    ]
+  }
+
+  protected async generateSettingsUpdated(): Promise<SettingsUpdatedEvent.OutputTuple> {
+    return [
+      BigInt(randomNumber(1e4, 1e12)),
+      BigInt(randomNumber(1e4, 1e12)),
+      BigInt(randomNumber(1e4, 1e12)),
+      BigInt(randomNumber(1e4, 1e6))
     ]
   }
 
