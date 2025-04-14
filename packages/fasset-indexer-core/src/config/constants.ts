@@ -102,6 +102,14 @@ export const EVENTS = {
     PRICES_PUBLISHED: "PricesPublished",
   },
   CORE_VAULT_MANAGER: {
+    TRANSFER_REQUESTED: "TransferRequested",
+    PAYMENT_CONFIRMED: "PaymentConfirmed",
+    PAYMENT_INSTRUCTIONS: "PaymentInstructions",
+    ESCROW_INSTRUCTIONS: "EscrowInstructions",
+    TRANSFER_REQUEST_CANCELED: "TransferRequestCanceled",
+    NOT_ALL_ESCROWS_PROCESSED: "NotAllEscrowsProcessed",
+    ESCROW_FINISHED: "EscrowFinished",
+    CUSTODIAN_ADDRESS_UPDATED: "CustodianAddressUpdated",
     SETTINGS_UPDATED: "SettingsUpdated"
   }
 }

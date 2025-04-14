@@ -43,7 +43,7 @@ import {
   TransferToCoreVaultCancelled, TransferToCoreVaultStarted,
   TransferToCoreVaultSuccessful
 } from "./entities/events/core-vault"
-import { CoreVaultManagerSettingsUpdated } from "./entities/events/core-vault-manager"
+import { CoreVaultManagerCustodianAddressUpdated, CoreVaultManagerPaymentConfirmed, CoreVaultManagerSettingsUpdated, CoreVaultManagerTransferRequestCanceled, CoreVaultManagerTransferRequested, EscrowFinished, CoreVaultManagerEscrowInstructions, CoreVaultManagerNotAllEscrowsProcessed, CoreVaultManagerPaymentInstructions } from "./entities/events/core-vault-manager"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
 import { FtsoPrice } from "./entities/state/price"
@@ -80,6 +80,9 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultCancelled,
     ReturnFromCoreVaultRequested, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultCancelled,
     CoreVaultRedemptionRequested, CoreVaultManagerSettingsUpdated,
+    CoreVaultManagerPaymentConfirmed, CoreVaultManagerPaymentInstructions, CoreVaultManagerEscrowInstructions,
+    CoreVaultManagerTransferRequested, CoreVaultManagerTransferRequestCanceled, CoreVaultManagerNotAllEscrowsProcessed,
+    EscrowFinished, CoreVaultManagerCustodianAddressUpdated,
     // underlying
     UnderlyingBlock, UnderlyingVoutReference, UnderlyingAddress
   ],

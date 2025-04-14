@@ -72,7 +72,7 @@ import {
 } from "../../orm/entities/events/collateral-pool"
 import { AgentPing, AgentPingResponse } from "../../orm/entities/events/ping"
 import { CurrentUnderlyingBlockUpdated } from "../../orm/entities/events/system"
-import { CoreVaultManagerSettingsUpdated } from "../../orm/entities/events/core-vault-manager"
+import { CoreVaultManagerCustodianAddressUpdated, CoreVaultManagerPaymentConfirmed, CoreVaultManagerSettingsUpdated, CoreVaultManagerTransferRequestCanceled, CoreVaultManagerTransferRequested, EscrowFinished, CoreVaultManagerEscrowInstructions, CoreVaultManagerNotAllEscrowsProcessed, CoreVaultManagerPaymentInstructions } from "../../orm/entities/events/core-vault-manager"
 import { PricesPublished } from "../../orm/entities/events/price"
 import { ContractLookup } from "../../context/lookup"
 import { EVENTS } from '../../config/constants'
@@ -129,7 +129,7 @@ import type {
   ExitedEvent,
   PaidOutEvent
 } from "../../../chain/typechain/ICollateralPool"
-import type { SettingsUpdatedEvent } from "../../../chain/typechain/ICoreVaultManager"
+import type { CustodianAddressUpdatedEvent, EscrowFinishedEvent, EscrowInstructionsEvent, NotAllEscrowsProcessedEvent, PaymentConfirmedEvent, PaymentInstructionsEvent, SettingsUpdatedEvent, TransferRequestCanceledEvent, TransferRequestedEvent } from "../../../chain/typechain/ICoreVaultManager"
 import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
@@ -308,6 +308,30 @@ export class EventStorer {
         break
       } case EVENTS.PRICE_READER.PRICES_PUBLISHED: {
         ent = await this.onPublishedPrices(em, evmLog, log.args as PricesPublishedEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.CUSTODIAN_ADDRESS_UPDATED: {
+        ent = await this.onCustodianAddressUpdated(em, evmLog, log.args as CustodianAddressUpdatedEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.ESCROW_FINISHED: {
+        ent = await this.onEscrowFinished(em, evmLog, log.args as EscrowFinishedEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.ESCROW_INSTRUCTIONS: {
+        ent = await this.onEscrowInstructions(em, evmLog, log.args as EscrowInstructionsEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.NOT_ALL_ESCROWS_PROCESSED: {
+        ent = await this.onNotAllEscrowsProcessed(em, evmLog, log.args as NotAllEscrowsProcessedEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.PAYMENT_CONFIRMED: {
+        ent = await this.onPaymentConfirmed(em, evmLog, log.args as PaymentConfirmedEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.PAYMENT_INSTRUCTIONS: {
+        ent = await this.onPaymentInstructions(em, evmLog, log.args as PaymentInstructionsEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.TRANSFER_REQUESTED: {
+        ent = await this.onTransferRequested(em, evmLog, log.args as TransferRequestedEvent.OutputTuple)
+        break
+      } case EVENTS.CORE_VAULT_MANAGER.TRANSFER_REQUEST_CANCELED: {
+        ent = await this.onTransferRequestCanceled(em, evmLog, log.args as TransferRequestCanceledEvent.OutputTuple)
         break
       } case EVENTS.CORE_VAULT_MANAGER.SETTINGS_UPDATED: {
         ent = await this.onCoreVaultManagerSettingsUpdated(em, evmLog, log.args as SettingsUpdatedEvent.OutputTuple)
@@ -912,6 +936,76 @@ export class EventStorer {
     const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
     const [ escrowEndTimeSeconds, escrowAmount, minimalAmount, fee ] = logArgs
     return new CoreVaultManagerSettingsUpdated(evmLog, fasset, escrowEndTimeSeconds, escrowAmount, minimalAmount, fee)
+  }
+
+  protected async onCustodianAddressUpdated(em: EntityManager, evmLog: EvmLog, logArgs: CustodianAddressUpdatedEvent.OutputTuple):
+    Promise<CoreVaultManagerCustodianAddressUpdated>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ custodian ] = logArgs
+    const custodianAddress = await findOrCreateUnderlyingAddress(em, custodian, AddressType.SYSTEM)
+    return new CoreVaultManagerCustodianAddressUpdated(evmLog, fasset, custodianAddress)
+  }
+
+  protected async onEscrowFinished(em: EntityManager, evmLog: EvmLog, logArgs: EscrowFinishedEvent.OutputTuple):
+    Promise<EscrowFinished>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ preimageHash, amount ] = logArgs
+    return new EscrowFinished(evmLog, fasset, preimageHash, amount)
+  }
+
+  protected async onEscrowInstructions(em: EntityManager, evmLog: EvmLog, logArgs: EscrowInstructionsEvent.OutputTuple):
+    Promise<CoreVaultManagerEscrowInstructions>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ sequence, preimageHash, account, destination, amount, fee, cancelAfterTs ] = logArgs
+    const accountAddress = await findOrCreateUnderlyingAddress(em, account, AddressType.USER)
+    const destinationAddress = await findOrCreateUnderlyingAddress(em, destination, AddressType.USER)
+    return new CoreVaultManagerEscrowInstructions(evmLog, fasset, sequence, preimageHash, accountAddress, destinationAddress, amount, fee, cancelAfterTs)
+  }
+
+  protected async onNotAllEscrowsProcessed(em: EntityManager, evmLog: EvmLog, logArgs: NotAllEscrowsProcessedEvent.OutputTuple):
+    Promise<CoreVaultManagerNotAllEscrowsProcessed>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    return new CoreVaultManagerNotAllEscrowsProcessed(evmLog, fasset)
+  }
+
+  protected async onPaymentConfirmed(em: EntityManager, evmLog: EvmLog, logArgs: PaymentConfirmedEvent.OutputTuple):
+    Promise<CoreVaultManagerPaymentConfirmed>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ transactionId, paymentReference, amount ] = logArgs
+    return new CoreVaultManagerPaymentConfirmed(evmLog, fasset, transactionId, paymentReference, amount)
+  }
+
+  protected async onPaymentInstructions(em: EntityManager, evmLog: EvmLog, logArgs: PaymentInstructionsEvent.OutputTuple):
+    Promise<CoreVaultManagerPaymentInstructions>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ sequence, account, destination, amount, fee, paymentReference ] = logArgs
+    const accountAddress = await findOrCreateUnderlyingAddress(em, account, AddressType.USER)
+    const destinationAddress = await findOrCreateUnderlyingAddress(em, destination, AddressType.USER)
+    return new CoreVaultManagerPaymentInstructions(evmLog, fasset, sequence, accountAddress, destinationAddress, amount, fee, paymentReference)
+  }
+
+  protected async onTransferRequested(em: EntityManager, evmLog: EvmLog, logArgs: TransferRequestedEvent.OutputTuple):
+    Promise<CoreVaultManagerTransferRequested>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ destination, paymentReference, amount, cancelable ] = logArgs
+    const destinationAddress = await findOrCreateUnderlyingAddress(em, destination, AddressType.USER)
+    return new CoreVaultManagerTransferRequested(evmLog, fasset, destinationAddress, paymentReference, amount, cancelable)
+  }
+
+  protected async onTransferRequestCanceled(em: EntityManager, evmLog: EvmLog, logArgs: TransferRequestCanceledEvent.OutputTuple):
+    Promise<CoreVaultManagerTransferRequestCanceled>
+  {
+    const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
+    const [ destination, paymentReference, amount ] = logArgs
+    const destinationAddress = await findOrCreateUnderlyingAddress(em, destination, AddressType.USER)
+    return new CoreVaultManagerTransferRequestCanceled(evmLog, fasset, destinationAddress, paymentReference, amount)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

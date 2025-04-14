@@ -53,6 +53,14 @@
         "PaidOut",
         "Transfer",
         "PricesPublished",
+        "TransferRequested",
+        "PaymentConfirmed",
+        "PaymentInstructions",
+        "EscrowInstructions",
+        "TransferRequestCanceled",
+        "NotAllEscrowsProcessed",
+        "EscrowFinished",
+        "CustodianAddressUpdated",
         "SettingsUpdated"
       ]
 }
