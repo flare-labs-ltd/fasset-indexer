@@ -589,7 +589,7 @@ export class DashboardAnalytics extends SharedAnalytics {
         value: value - accval
       })
       prevtsp = timestamp
-      accval += value
+      accval = value
     }
     return timeseries
   }
