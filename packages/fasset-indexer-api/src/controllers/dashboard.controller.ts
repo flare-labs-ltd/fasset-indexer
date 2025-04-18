@@ -286,6 +286,19 @@ export class DashboardController {
     return apiResponse(this.service.coreVaultOutflowAggregateTimeSeries(end, npoints, start), 200)
   }
 
+  @Get('/timeseries/core-vault-tvl?')
+  @ApiOperation({ summary: 'Time series of the total $ TVL of core vault (currently just XRP balance value)' })
+  @ApiQuery({ name: "startTime", type: Number, required: false })
+  getTimeSeriesCoreVaultTvl(
+    @Query('endtime', ParseIntPipe) end: number,
+    @Query('npoints', ParseIntPipe) npoints: number,
+    @Query('startTime', new ParseIntPipe({ optional: true })) start?: number
+  ): Promise<ApiResponse<TimeSeries<bigint>>> {
+    const err = this.restrictPoints(end, npoints, start)
+    if (err !== null) return apiResponse(Promise.reject(err), 400)
+    return apiResponse(this.service.coreVaultBalanceAggregateTimeSeries(end, npoints, start), 200)
+  }
+
   //////////////////////////////////////////////////////////////////////
   // helpers
 

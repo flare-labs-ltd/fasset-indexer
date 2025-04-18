@@ -49,7 +49,6 @@
         "ClaimedReward",
         "PaidOut",
         "Transfer",
-        "PricesPublished",
-        "SettingsUpdated"
+        "PricesPublished"
       ]
 }

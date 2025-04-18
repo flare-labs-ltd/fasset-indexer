@@ -295,7 +295,13 @@ export class DashboardAnalytics extends SharedAnalytics {
   async coreVaultOutflowAggregateTimeSeries(end: number, npoints: number, start?: number): Promise<TimeSeries<bigint>> {
     const ts1 = await this.coreVaultReturnOutflowAggregateTimeSeries(end, npoints, start)
     const ts2 = await this.coreVaultRedeemOutflowAggregateTimeSeries(end, npoints, start)
-    return this.addTimeSeries(ts1, ts2, (x, y) => x + y)
+    return this.transformTimeSeries(ts1, ts2, (x, y) => x + y)
+  }
+
+  async coreVaultBalanceAggregateTimeSeries(end: number, npoints: number, start?: number): Promise<TimeSeries<bigint>> {
+    const ts1 = await this.coreVaultInflowAggregateTimeSeries(end, npoints, start)
+    const ts2 = await this.coreVaultOutflowAggregateTimeSeries(end, npoints, start)
+    return this.transformTimeSeries(ts1, ts2, (x, y) => x - y)
   }
 
   async mintedTimeSeries(end: number, npoints: number, start?: number): Promise<FAssetTimeSeries<bigint>> {
@@ -426,13 +432,13 @@ export class DashboardAnalytics extends SharedAnalytics {
       .execute() as { fasset: FAssetType, value: string }[]
     const redemptionOutflowFAssetValueResult = this.convertOrmResultToFAssetValueResult(redemptionOutflow, 'value')
     const returnOutflowFAssetValueResult = this.convertOrmResultToFAssetValueResult(returnOutflow, 'value')
-    return this.addFAssetValueResults(redemptionOutflowFAssetValueResult, returnOutflowFAssetValueResult, (x, y) => x + y)
+    return this.transformFAssetValueResults(redemptionOutflowFAssetValueResult, returnOutflowFAssetValueResult, (x, y) => x + y)
   }
 
   private async coreVaultBalanceAt(timestamp: number): Promise<FAssetValueResult> {
     const inflow = await this.coreVaultInflowAt(timestamp)
     const outflow = await this.coreVaultOutflowAt(timestamp)
-    return this.addFAssetValueResults(inflow, outflow, (x, y) => x - y)
+    return this.transformFAssetValueResults(inflow, outflow, (x, y) => x - y)
   }
 
   //////////////////////////////////////////////////////////////////////
@@ -523,30 +529,30 @@ export class DashboardAnalytics extends SharedAnalytics {
       .then(zeroAddress => this.zeroAddressId = zeroAddress?.id ?? null)
   }
 
-  protected addTimeSeries(
+  protected transformTimeSeries(
     ts1: TimeSeries<bigint>,
     ts2: TimeSeries<bigint>,
-    add: (x: bigint, y: bigint) => bigint
+    transformer: (x: bigint, y: bigint) => bigint
   ): TimeSeries<bigint> {
     const res = [] as TimeSeries<bigint>
     for (const elt of ts1) {
       const x = elt.value
       const y = ts2[elt.index].value
-      res.push({ ...elt, value: add(x, y) })
+      res.push({ ...elt, value: transformer(x, y) })
     }
     return res
   }
 
-  protected addFAssetValueResults(
+  protected transformFAssetValueResults(
     res1: FAssetValueResult,
     res2: FAssetValueResult,
-    add: (x: bigint, y: bigint) => bigint
+    transformer: (x: bigint, y: bigint) => bigint
   ): FAssetValueResult {
     const res = {} as FAssetValueResult
     for (let fasset of this.supportedFAssets) {
       const x = res1[fasset]?.value ?? BigInt(0)
       const y = res2[fasset]?.value ?? BigInt(0)
-      res[fasset] = { value: add(x, y) }
+      res[fasset] = { value: transformer(x, y) }
     }
     return res
   }
@@ -569,5 +575,22 @@ export class DashboardAnalytics extends SharedAnalytics {
       ret[FAssetType[x.fasset] as FAsset] = { amount: Number(x?.[key] ?? 0) }
     }
     return ret
+  }
+
+  private convertTimespanToTimeSeries(timespan: Timespan<bigint>): TimeSeries<bigint> {
+    const timeseries: TimeSeries<bigint> = []
+    let { timestamp: prevtsp, value: accval } = timespan[0]
+    for (let i = 1; i < timeseries.length; i++) {
+      const { timestamp, value } = timespan[i]
+      timeseries.push({
+        index: i - 1,
+        start: prevtsp,
+        end: timestamp,
+        value: value - accval
+      })
+      prevtsp = timestamp
+      accval += value
+    }
+    return timeseries
   }
 }
