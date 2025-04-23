@@ -1,5 +1,3 @@
-import { FAssetType } from "../shared"
-
 // chain call config
 export const CHAIN_FETCH_RETRY_LIMIT = 20
 export const SLEEP_AFTER_ERROR_MS = 100
