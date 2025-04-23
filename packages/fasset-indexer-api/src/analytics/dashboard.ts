@@ -1,4 +1,4 @@
-import { EntityManager, SelectQueryBuilder, raw, type ORM, ZeroAddress, getVar } from "fasset-indexer-core/orm"
+import { EntityManager, SelectQueryBuilder, raw, type ORM, ZeroAddress } from "fasset-indexer-core/orm"
 import { ContractLookup, FAsset, FAssetType, FASSETS } from "fasset-indexer-core"
 import {
   EvmAddress, EvmBlock, EvmLog, ERC20Transfer, MintingExecuted,
@@ -6,9 +6,10 @@ import {
   CollateralPoolEntered, CollateralPoolExited,
   LiquidationPerformed, TokenBalance, AgentVaultInfo,
   FAssetEventBound, CoreVaultRedemptionRequested,
-  ReturnFromCoreVaultConfirmed, TransferToCoreVaultSuccessful
+  ReturnFromCoreVaultConfirmed, TransferToCoreVaultSuccessful,
+  AssetManagerSettings
 } from "fasset-indexer-core/entities"
-import { EVENTS, FASSET_LOT_SIZE } from "fasset-indexer-core/config"
+import { EVENTS } from "fasset-indexer-core/config"
 import { fassetToUsdPrice } from "./utils/prices"
 import { SharedAnalytics } from "./shared"
 import { AgentStatistics } from "./statistics"
@@ -90,10 +91,15 @@ export class DashboardAnalytics extends SharedAnalytics {
   }
 
   async totalRedeemedLots(): Promise<FAssetAmountResult> {
+    const ret = {} as FAssetAmountResult
+    const em = this.orm.em.fork()
     const tr = await this.totalRedeemed()
-    return Object.fromEntries(Object.entries(tr).map(([fasset, { value }]) => [fasset, {
-      amount: Number(value / FASSET_LOT_SIZE[this.chain][fasset])
-    }])) as FAssetAmountResult
+    for (const [ fasset, { value }] of Object.entries(tr)) {
+      const fassetType = FAssetType[fasset]
+      const settings = await em.findOneOrFail(AssetManagerSettings, { fasset: fassetType })
+      ret[fasset] = { amount: value / settings.lotSizeAmg }
+    }
+    return ret
   }
 
   async redemptionDefault(id: number, fasset: FAssetType): Promise<RedemptionDefault | null> {

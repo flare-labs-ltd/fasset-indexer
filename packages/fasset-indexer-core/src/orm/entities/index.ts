@@ -1,5 +1,5 @@
 export { UntrackedAgentVault, Var } from "./state/var"
-export { EvmAddress } from "./address"
+export { EvmAddress } from "./evm/address"
 export { EvmBlock } from "./evm/block"
 export { EvmTransaction } from "./evm/transaction"
 export { EvmLog } from "./evm/log"
@@ -29,7 +29,7 @@ export { CollateralPoolEntered, CollateralPoolExited } from "./events/collateral
 export { AgentPing, AgentPingResponse } from "./events/ping"
 export { CurrentUnderlyingBlockUpdated } from "./events/system"
 export {
-  TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultCancelled,
+  TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultDefaulted,
   ReturnFromCoreVaultRequested, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultCancelled,
   CoreVaultRedemptionRequested
 } from "./events/core-vault"
@@ -37,6 +37,7 @@ export { AgentVaultInfo, AgentVaultSettings } from "./state/agent"
 export { AgentManager, AgentOwner, AgentVault } from "./agent"
 export { FtsoPrice } from "./state/price"
 export { TokenBalance } from "./state/balance"
+export { AssetManagerSettings } from './state/settings'
 // underlying data
 export { UnderlyingBlock } from "./underlying/block"
 export { UnderlyingAddress } from "./underlying/address"

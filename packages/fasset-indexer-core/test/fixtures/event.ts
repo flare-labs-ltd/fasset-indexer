@@ -1,6 +1,6 @@
 import { FAssetType } from "../../src"
 import { ORM } from "../../src/orm"
-import { EvmAddress } from "../../src/orm/entities/address"
+import { EvmAddress } from "../../src/orm/entities/evm/address"
 import { UnderlyingAddress } from "../../src/orm/entities/underlying/address"
 import { CollateralTypeAdded } from "../../src/orm/entities/events/token"
 import { AgentManager, AgentOwner, AgentVault } from "../../src/orm/entities/agent"
@@ -50,7 +50,8 @@ import type {
   ReturnFromCoreVaultRequestedEvent,
   TransferToCoreVaultStartedEvent,
   TransferToCoreVaultSuccessfulEvent,
-  TransferToCoreVaultDefaultedEvent
+  TransferToCoreVaultDefaultedEvent,
+  SettingChangedEvent
 } from "../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/IERC20"
@@ -84,10 +85,10 @@ export class EventFixture {
     })
   }
 
-  async generateEvent(name: string, source?: string): Promise<Event> {
+  async generateEvent(name: string, source?: string, args: any[] = []): Promise<Event> {
     return {
       name: name,
-      args: await this.argumentsFromEventName(name),
+      args: await this.argumentsFromEventName(name, args),
       blockNumber: randomNumber(1, 1e6),
       transactionIndex: randomNumber(1, 1e6),
       logIndex: randomNumber(1, 1e6),
@@ -97,6 +98,10 @@ export class EventFixture {
       transactionSource: randomNativeAddress(),
       transactionTarget: randomNativeAddress()
     }
+  }
+
+  protected async generateSettingChanged(name: string): Promise<SettingChangedEvent.OutputTuple> {
+    return [ name, BigInt(randomNumber(1e2, 1e4)) ]
   }
 
   protected async generateCollateralTypeAdded(): Promise<CollateralTypeAddedEvent.OutputTuple> {
@@ -556,7 +561,7 @@ export class EventFixture {
     return randomChoice(returnFromCoreVaultRequested)
   }
 
-  private async argumentsFromEventName(name: string): Promise<EventArgs> {
-    return (this[`generate${name}` as keyof EventFixture] as any)()
+  private async argumentsFromEventName(name: string, args: any[]): Promise<EventArgs> {
+    return (this[`generate${name}` as keyof EventFixture] as any)(...args)
   }
 }

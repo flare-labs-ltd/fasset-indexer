@@ -8,7 +8,8 @@ import { EvmLog } from "../../orm/entities/evm/log"
 import { CollateralTypeAdded, ERC20Transfer } from "../../orm/entities/events/token"
 import { TokenBalance } from "../../orm/entities/state/balance"
 import { RedemptionTicket } from "../../orm/entities/state/redemption-ticket"
-import { EvmAddress } from "../../orm/entities/address"
+import { EvmAddress } from "../../orm/entities/evm/address"
+import { AssetManagerSettings } from "../../orm/entities"
 import { AgentOwner, AgentVault } from "../../orm/entities/agent"
 import {
   AgentVaultCreated,
@@ -121,7 +122,8 @@ import type {
   ReturnFromCoreVaultRequestedEvent,
   TransferToCoreVaultStartedEvent,
   TransferToCoreVaultSuccessfulEvent,
-  TransferToCoreVaultDefaultedEvent
+  TransferToCoreVaultDefaultedEvent,
+  SettingChangedEvent
 } from "../../../chain/typechain/IAssetManager"
 import type {
   ClaimedRewardEvent,
@@ -157,7 +159,10 @@ export class EventStorer {
   protected async _processEvent(em: EntityManager, log: Event, evmLog: EvmLog): Promise<boolean> {
     let ent: any = null
     switch (log.name) {
-      case EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED: {
+      case EVENTS.ASSET_MANAGER.SETTING_CHANGED: {
+        ent = await this.onAssetManagerSettingChanged(em, evmLog, log.args as SettingChangedEvent.OutputTuple)
+        break
+      } case EVENTS.ASSET_MANAGER.COLLATERAL_TYPE_ADDED: {
         ent = await this.onCollateralTypeAdded(em, evmLog, log.args as CollateralTypeAddedEvent.OutputTuple)
         break
       } case EVENTS.ASSET_MANAGER.AGENT_VAULT_CREATED: {
@@ -354,6 +359,26 @@ export class EventStorer {
     const { blockNumber, logIndex } = log
     const evmLog = await em.findOne(EvmLog, { index: logIndex, block: { index: blockNumber }})
     return evmLog !== null
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+  // settings
+
+  protected async onAssetManagerSettingChanged(em: EntityManager, evmLog: EvmLog, logArgs: SettingChangedEvent.OutputTuple):
+    Promise<AssetManagerSettings>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const settings = await em.findOneOrFail(AssetManagerSettings, { fasset })
+    const [ name, value ] = logArgs
+    switch (name) {
+      case 'lotSizeAMG': {
+        settings.lotSizeAmg = value
+        break
+      } default: {
+        break
+      }
+    }
+    return settings
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////

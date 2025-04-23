@@ -31,6 +31,8 @@ export function backUpdateLastBlockName(updateName: string): string {
 // agent
 export const EVENTS = {
   ASSET_MANAGER: {
+    // settings
+    SETTING_CHANGED: "SettingChanged",
     // agent
     AGENT_VAULT_CREATED: "AgentVaultCreated",
     AGENT_SETTING_CHANGED: "AgentSettingChanged",
@@ -123,18 +125,4 @@ export const BYTES32_LENGTH = 66
 export const BLOCK_EXPLORERS = {
   coston: 'https://coston-explorer.flare.network',
   songbird: 'https://songbird-explorer.flare.network',
-}
-
-// index this later
-export const FASSET_LOT_SIZE = {
-  songbird: {
-    [FAssetType[FAssetType.FXRP]]: BigInt(100e6),
-    [FAssetType[FAssetType.FDOGE]]: BigInt(200e8),
-    [FAssetType[FAssetType.FBTC]]: BigInt(5e6)
-  },
-  coston: {
-    [FAssetType[FAssetType.FXRP]]: BigInt(20e6),
-    [FAssetType[FAssetType.FDOGE]]: BigInt(100e8),
-    [FAssetType[FAssetType.FBTC]]: BigInt(100000)
-  }
 }

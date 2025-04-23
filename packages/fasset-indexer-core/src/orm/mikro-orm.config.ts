@@ -1,6 +1,6 @@
 import { defineConfig, MikroORM } from "@mikro-orm/core"
 import { UntrackedAgentVault, Var } from "./entities/state/var"
-import { EvmAddress } from "./entities/address"
+import { EvmAddress } from "./entities/evm/address"
 import { EvmBlock } from "./entities/evm/block"
 import { EvmTransaction } from "./entities/evm/transaction"
 import { EvmLog } from "./entities/evm/log"
@@ -46,6 +46,7 @@ import {
 import { CoreVaultManagerCustodianAddressUpdated, CoreVaultManagerPaymentConfirmed, CoreVaultManagerSettingsUpdated, CoreVaultManagerTransferRequestCanceled, CoreVaultManagerTransferRequested, EscrowFinished, CoreVaultManagerEscrowInstructions, CoreVaultManagerNotAllEscrowsProcessed, CoreVaultManagerPaymentInstructions } from "./entities/events/core-vault-manager"
 import { AgentVaultInfo, AgentVaultSettings } from "./entities/state/agent"
 import { AgentManager, AgentOwner, AgentVault } from "./entities/agent"
+import { AssetManagerSettings } from "./entities"
 import { FtsoPrice } from "./entities/state/price"
 import { TokenBalance } from "./entities/state/balance"
 import { UnderlyingBlock } from "./entities/underlying/block"
@@ -83,6 +84,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     CoreVaultManagerPaymentConfirmed, CoreVaultManagerPaymentInstructions, CoreVaultManagerEscrowInstructions,
     CoreVaultManagerTransferRequested, CoreVaultManagerTransferRequestCanceled, CoreVaultManagerNotAllEscrowsProcessed,
     EscrowFinished, CoreVaultManagerCustodianAddressUpdated,
+    AssetManagerSettings,
     // underlying
     UnderlyingBlock, UnderlyingVoutReference, UnderlyingAddress
   ],

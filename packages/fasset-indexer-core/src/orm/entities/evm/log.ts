@@ -1,6 +1,6 @@
 import { Entity, PrimaryKey, Property, Unique, ManyToOne } from "@mikro-orm/core"
 import { EvmBlock } from "./block"
-import { EvmAddress } from "../address"
+import { EvmAddress } from "./address"
 import { EvmTransaction } from "./transaction"
 
 

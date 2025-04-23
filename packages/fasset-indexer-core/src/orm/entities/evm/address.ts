@@ -1,6 +1,6 @@
 import { Entity, Enum, PrimaryKey, Property } from "@mikro-orm/core"
-import { AddressType } from "../interface"
-import { ADDRESS_LENGTH } from "../../config/constants"
+import { AddressType } from "../../interface"
+import { ADDRESS_LENGTH } from "../../../config/constants"
 
 
 @Entity()

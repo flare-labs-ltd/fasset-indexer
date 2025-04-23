@@ -2,7 +2,7 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/core'
 import { uint256 } from '../../custom/uint'
 import { FAssetEventBound } from './_bound'
 import { AgentVault } from '../agent'
-import { EvmAddress } from '../address'
+import { EvmAddress } from '../evm/address'
 import type { EvmLog } from '../evm/log'
 import type { FAssetType } from '../../../shared'
 

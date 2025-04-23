@@ -1,5 +1,5 @@
 import { EntityManager } from "@mikro-orm/knex"
-import { EvmAddress } from "../orm/entities/address"
+import { EvmAddress } from "../orm/entities/evm/address"
 import { EvmTransaction } from "../orm/entities/evm/transaction"
 import { EvmBlock } from "../orm/entities/evm/block"
 import { AgentVault } from "../orm/entities/agent"

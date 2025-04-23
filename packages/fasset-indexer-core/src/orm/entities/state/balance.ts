@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Unique } from "@mikro-orm/core"
 import { uint256 } from "../../custom/uint";
-import { EvmAddress } from "../address";
+import { EvmAddress } from "../evm/address";
 
 @Entity()
 @Unique({ properties: ['holder', 'token'] })
