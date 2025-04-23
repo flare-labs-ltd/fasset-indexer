@@ -62,6 +62,6 @@
         "NotAllEscrowsProcessed",
         "EscrowFinished",
         "CustodianAddressUpdated",
-        "SettingsUpdated"
+        "SettingChanged"
       ]
 }
