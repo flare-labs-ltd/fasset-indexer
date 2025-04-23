@@ -42,6 +42,7 @@
         "CurrentUnderlyingBlockUpdated",
         "TransferToCoreVaultStarted",
         "TransferToCoreVaultSuccessful",
+        "TransferToCoreVaultDefaulted",
         "ReturnFromCoreVaultRequested",
         "ReturnFromCoreVaultConfirmed",
         "ReturnFromCoreVaultCancelled",

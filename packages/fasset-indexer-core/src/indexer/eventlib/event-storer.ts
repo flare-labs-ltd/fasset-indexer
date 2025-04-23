@@ -59,7 +59,7 @@ import {
   ReturnFromCoreVaultCancelled,
   ReturnFromCoreVaultConfirmed,
   ReturnFromCoreVaultRequested,
-  TransferToCoreVaultCancelled,
+  TransferToCoreVaultDefaulted,
   TransferToCoreVaultStarted,
   TransferToCoreVaultSuccessful
 } from "../../orm/entities/events/core-vault"
@@ -120,7 +120,8 @@ import type {
   ReturnFromCoreVaultConfirmedEvent,
   ReturnFromCoreVaultRequestedEvent,
   TransferToCoreVaultStartedEvent,
-  TransferToCoreVaultSuccessfulEvent
+  TransferToCoreVaultSuccessfulEvent,
+  TransferToCoreVaultDefaultedEvent
 } from "../../../chain/typechain/IAssetManager"
 import type {
   ClaimedRewardEvent,
@@ -276,6 +277,9 @@ export class EventStorer {
       } case EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_SUCCESSFUL: {
         ent = await this.onTransferToCoreVaultSuccessful(em, evmLog, log.args as TransferToCoreVaultSuccessfulEvent.OutputTuple)
         break
+      } case EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_DEFAULTED: {
+        ent = await this.onTransferToCoreVaultDefaulted(em, evmLog, log.args as TransferToCoreVaultDefaultedEvent.OutputTuple)
+        break
       } case EVENTS.ASSET_MANAGER.RETURN_FROM_CORE_VAULT_REQUESTED: {
         ent = await this.onReturnFromCoreVaultRequested(em, evmLog, log.args as ReturnFromCoreVaultRequestedEvent.OutputTuple)
         break
@@ -336,8 +340,7 @@ export class EventStorer {
       } case EVENTS.CORE_VAULT_MANAGER.SETTINGS_UPDATED: {
         ent = await this.onCoreVaultManagerSettingsUpdated(em, evmLog, log.args as SettingsUpdatedEvent.OutputTuple)
         break
-      }
-       default: {
+      } default: {
         return false
       }
     }
@@ -888,6 +891,16 @@ export class EventStorer {
     const transferToCoreVaultStarted = await em.findOneOrFail(TransferToCoreVaultStarted,
       { transferRedemptionRequestId: Number(transferRedemptionRequestId), fasset })
     return new TransferToCoreVaultSuccessful(evmLog, fasset, transferToCoreVaultStarted, valueUBA)
+  }
+
+  protected async onTransferToCoreVaultDefaulted(em: EntityManager, evmLog: EvmLog, logArgs: TransferToCoreVaultDefaultedEvent.OutputTuple):
+    Promise<TransferToCoreVaultDefaulted>
+  {
+    const fasset = this.lookup.assetManagerAddressToFAssetType(evmLog.address.hex)
+    const [ agentVault, transferRedemptionRequestId, remintedUBA ] = logArgs
+    const transferToCoreVaultStarted = await em.findOneOrFail(TransferToCoreVaultStarted,
+      { transferRedemptionRequestId: Number(transferRedemptionRequestId), fasset })
+    return new TransferToCoreVaultDefaulted(evmLog, fasset, transferToCoreVaultStarted, remintedUBA)
   }
 
   protected async onReturnFromCoreVaultRequested(em: EntityManager, evmLog: EvmLog, logArgs: ReturnFromCoreVaultRequestedEvent.OutputTuple):

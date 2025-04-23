@@ -83,6 +83,7 @@ export const EVENTS = {
     // core vault
     TRANSFER_TO_CORE_VAULT_STARTED: 'TransferToCoreVaultStarted',
     TRANSFER_TO_CORE_VAULT_SUCCESSFUL: 'TransferToCoreVaultSuccessful',
+    TRANSFER_TO_CORE_VAULT_DEFAULTED: 'TransferToCoreVaultDefaulted',
     RETURN_FROM_CORE_VAULT_REQUESTED: 'ReturnFromCoreVaultRequested',
     RETURN_FROM_CORE_VAULT_CONFIRMED: 'ReturnFromCoreVaultConfirmed',
     RETURN_FROM_CORE_VAULT_CANCELLED: 'ReturnFromCoreVaultCancelled',

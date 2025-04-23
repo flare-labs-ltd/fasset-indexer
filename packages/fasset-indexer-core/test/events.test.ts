@@ -31,7 +31,11 @@ import { EVENTS } from "../src/config/constants"
 import { RedemptionTicketCreated, RedemptionTicketDeleted, RedemptionTicketUpdated } from "../src/orm/entities/events/redemption-ticket"
 import { RedemptionTicket } from "../src/orm/entities/state/redemption-ticket"
 import { TestConfigLoader } from "./fixtures/config"
-import { CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested, TransferToCoreVaultCancelled, TransferToCoreVaultStarted, TransferToCoreVaultSuccessful } from "../src/orm/entities/events/core-vault"
+import {
+  CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled, ReturnFromCoreVaultConfirmed,
+  ReturnFromCoreVaultRequested, TransferToCoreVaultDefaulted, TransferToCoreVaultStarted,
+  TransferToCoreVaultSuccessful
+} from "../src/orm/entities/events/core-vault"
 import { CoreVaultManagerSettingsUpdated } from "../src/orm/entities/events/core-vault-manager"
 
 
@@ -622,6 +626,13 @@ describe("FAsset evm events", () => {
       expect(ttcvf.transferToCoreVaultStarted).to.equal(ttcvs)
       expect(ttcvf.valueUBA).to.equal(ettcvf.args[2])
       // TODO: test transfer to core vault defaulted
+      const ettcvd = await fixture.generateEvent(EVENTS.ASSET_MANAGER.TRANSFER_TO_CORE_VAULT_DEFAULTED, assetManagerXrp)
+      await storer.processEventUnsafe(em, ettcvd)
+      const ttcvd = await em.findOneOrFail(TransferToCoreVaultDefaulted,
+        { evmLog: { block: { index: ettcvd.blockNumber }, index: ettcvd.logIndex }})
+      expect(ttcvd.fasset).to.equal(FAssetType.FXRP)
+      expect(ttcvd.transferToCoreVaultStarted).to.equal(ttcvs)
+      expect(ttcvd.remintedUBA).to.equal(ettcvd.args[2])
     })
 
     it("should store return from core vault", async () => {

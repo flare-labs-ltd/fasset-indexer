@@ -31,14 +31,18 @@ export class TransferToCoreVaultStarted extends FAssetEventBound {
 }
 
 @Entity()
-export class TransferToCoreVaultCancelled extends FAssetEventBound {
+export class TransferToCoreVaultDefaulted extends FAssetEventBound {
 
   @OneToOne({ entity: () => TransferToCoreVaultStarted, owner: true })
   transferToCoreVaultStarted: TransferToCoreVaultStarted
 
-  constructor(evmLog: EvmLog, fasset: FAssetType, transferToCoreVaultStarted: TransferToCoreVaultStarted) {
+  @Property({ type: new uint256() })
+  remintedUBA: bigint
+
+  constructor(evmLog: EvmLog, fasset: FAssetType, transferToCoreVaultStarted: TransferToCoreVaultStarted, remintedUBA: bigint) {
     super(evmLog, fasset)
     this.transferToCoreVaultStarted = transferToCoreVaultStarted
+    this.remintedUBA = remintedUBA
   }
 }
 

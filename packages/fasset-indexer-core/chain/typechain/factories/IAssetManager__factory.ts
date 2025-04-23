@@ -1776,6 +1776,12 @@ const _abi = [
         name: "transferRedemptionRequestId",
         type: "uint256",
       },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "remintedUBA",
+        type: "uint256",
+      },
     ],
     name: "TransferToCoreVaultDefaulted",
     type: "event",
@@ -2493,6 +2499,107 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "_collateralReservationId",
+        type: "uint256",
+      },
+    ],
+    name: "collateralReservationInfo",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint64",
+            name: "collateralReservationId",
+            type: "uint64",
+          },
+          {
+            internalType: "address",
+            name: "agentVault",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "minter",
+            type: "address",
+          },
+          {
+            internalType: "string",
+            name: "paymentAddress",
+            type: "string",
+          },
+          {
+            internalType: "bytes32",
+            name: "paymentReference",
+            type: "bytes32",
+          },
+          {
+            internalType: "uint256",
+            name: "valueUBA",
+            type: "uint256",
+          },
+          {
+            internalType: "uint128",
+            name: "mintingFeeUBA",
+            type: "uint128",
+          },
+          {
+            internalType: "uint128",
+            name: "reservationFeeNatWei",
+            type: "uint128",
+          },
+          {
+            internalType: "uint16",
+            name: "poolFeeShareBIPS",
+            type: "uint16",
+          },
+          {
+            internalType: "uint64",
+            name: "firstUnderlyingBlock",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "lastUnderlyingBlock",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "lastUnderlyingTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "address",
+            name: "executor",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "executorFeeNatWei",
+            type: "uint256",
+          },
+          {
+            internalType: "uint64",
+            name: "handshakeStartTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "bytes32",
+            name: "sourceAddressesRoot",
+            type: "bytes32",
+          },
+        ],
+        internalType: "struct CollateralReservationInfo.Data",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         components: [
           {
             internalType: "bytes32[]",
@@ -3098,6 +3205,24 @@ const _abi = [
     name: "convertDustToTicket",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "coreVaultAvailableAmount",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "_immediatelyAvailableUBA",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_totalAvailableUBA",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -5870,6 +5995,122 @@ const _abi = [
         internalType: "uint256",
         name: "_nextRedemptionTicketId",
         type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_redemptionRequestId",
+        type: "uint256",
+      },
+    ],
+    name: "redemptionRequestInfo",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint64",
+            name: "redemptionRequestId",
+            type: "uint64",
+          },
+          {
+            internalType: "enum RedemptionRequestInfo.Status",
+            name: "status",
+            type: "uint8",
+          },
+          {
+            internalType: "address",
+            name: "agentVault",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "redeemer",
+            type: "address",
+          },
+          {
+            internalType: "string",
+            name: "paymentAddress",
+            type: "string",
+          },
+          {
+            internalType: "bytes32",
+            name: "paymentReference",
+            type: "bytes32",
+          },
+          {
+            internalType: "uint128",
+            name: "valueUBA",
+            type: "uint128",
+          },
+          {
+            internalType: "uint128",
+            name: "feeUBA",
+            type: "uint128",
+          },
+          {
+            internalType: "uint16",
+            name: "poolFeeShareBIPS",
+            type: "uint16",
+          },
+          {
+            internalType: "uint64",
+            name: "firstUnderlyingBlock",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "lastUnderlyingBlock",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "lastUnderlyingTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "timestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "bool",
+            name: "poolSelfClose",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "transferToCoreVault",
+            type: "bool",
+          },
+          {
+            internalType: "address",
+            name: "executor",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "executorFeeNatWei",
+            type: "uint256",
+          },
+          {
+            internalType: "uint64",
+            name: "rejectionTimestamp",
+            type: "uint64",
+          },
+          {
+            internalType: "uint64",
+            name: "takeOverTimestamp",
+            type: "uint64",
+          },
+        ],
+        internalType: "struct RedemptionRequestInfo.Data",
+        name: "",
+        type: "tuple",
       },
     ],
     stateMutability: "view",

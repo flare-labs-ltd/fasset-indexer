@@ -40,7 +40,7 @@ import { CurrentUnderlyingBlockUpdated } from "./entities/events/system"
 import {
   CoreVaultRedemptionRequested, ReturnFromCoreVaultCancelled,
   ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultRequested,
-  TransferToCoreVaultCancelled, TransferToCoreVaultStarted,
+  TransferToCoreVaultDefaulted, TransferToCoreVaultStarted,
   TransferToCoreVaultSuccessful
 } from "./entities/events/core-vault"
 import { CoreVaultManagerCustodianAddressUpdated, CoreVaultManagerPaymentConfirmed, CoreVaultManagerSettingsUpdated, CoreVaultManagerTransferRequestCanceled, CoreVaultManagerTransferRequested, EscrowFinished, CoreVaultManagerEscrowInstructions, CoreVaultManagerNotAllEscrowsProcessed, CoreVaultManagerPaymentInstructions } from "./entities/events/core-vault-manager"
@@ -77,7 +77,7 @@ export const ORM_OPTIONS: Options<AbstractSqlDriver> = defineConfig({
     ERC20Transfer, CollateralTypeAdded, AgentPing, AgentPingResponse,
     CurrentUnderlyingBlockUpdated, PricesPublished, PricePublished,
     FtsoPrice, UntrackedAgentVault, TokenBalance,
-    TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultCancelled,
+    TransferToCoreVaultStarted, TransferToCoreVaultSuccessful, TransferToCoreVaultDefaulted,
     ReturnFromCoreVaultRequested, ReturnFromCoreVaultConfirmed, ReturnFromCoreVaultCancelled,
     CoreVaultRedemptionRequested, CoreVaultManagerSettingsUpdated,
     CoreVaultManagerPaymentConfirmed, CoreVaultManagerPaymentInstructions, CoreVaultManagerEscrowInstructions,

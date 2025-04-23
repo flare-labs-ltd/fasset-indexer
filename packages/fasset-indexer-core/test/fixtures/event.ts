@@ -49,7 +49,8 @@ import type {
   ReturnFromCoreVaultConfirmedEvent,
   ReturnFromCoreVaultRequestedEvent,
   TransferToCoreVaultStartedEvent,
-  TransferToCoreVaultSuccessfulEvent
+  TransferToCoreVaultSuccessfulEvent,
+  TransferToCoreVaultDefaultedEvent
 } from "../../chain/typechain/IAssetManager"
 import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollateralPool"
 import type { TransferEvent } from "../../chain/typechain/IERC20"
@@ -443,6 +444,15 @@ export class EventFixture {
   }
 
   protected async generateTransferToCoreVaultSuccessful(): Promise<TransferToCoreVaultSuccessfulEvent.OutputTuple> {
+    const transferToCoreVaultStarted = await this.getRandomTransferToCoreVaultStarted()
+    return [
+      transferToCoreVaultStarted.agentVault.address.hex,
+      BigInt(transferToCoreVaultStarted.transferRedemptionRequestId),
+      BigInt(randomNumber(1e4, 1e12))
+    ]
+  }
+
+  protected async generateTransferToCoreVaultDefaulted(): Promise<TransferToCoreVaultDefaultedEvent.OutputTuple> {
     const transferToCoreVaultStarted = await this.getRandomTransferToCoreVaultStarted()
     return [
       transferToCoreVaultStarted.agentVault.address.hex,
