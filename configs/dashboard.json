@@ -6,10 +6,6 @@
         "AgentAvailable",
         "AgentDestroyed",
         "SelfClose",
-        "VaultCollateralWithdrawalAnnounced",
-        "PoolTokenRedemptionAnnounced",
-        "UnderlyingWithdrawalAnnounced",
-        "UnderlyingWithdrawalConfirmed",
         "CollateralReserved",
         "MintingExecuted",
         "SelfMint",
@@ -21,8 +17,6 @@
         "RedemptionPaymentBlocked",
         "RedemptionPaymentFailed",
         "RedemptionRejected",
-        "RedemptionRequestIncomplete",
-        "RedeemedInCollateral",
         "AgentInCCB",
         "LiquidationStarted",
         "FullLiquidationStarted",
@@ -36,7 +30,6 @@
         "AgentCollateralTypeChanged",
         "AgentPing",
         "AgentPingResponse",
-        "CurrentUnderlyingBlockUpdated",
         "TransferToCoreVaultStarted",
         "TransferToCoreVaultSuccessful",
         "TransferToCoreVaultDefaulted",
@@ -50,8 +43,6 @@
         "ClaimedReward",
         "PaidOut",
         "Transfer",
-        "PricesPublished",
-        "SettingsUpdated",
         "SettingChanged"
       ]
 }

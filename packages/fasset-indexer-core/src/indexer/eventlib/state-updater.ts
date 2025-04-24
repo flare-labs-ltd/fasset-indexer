@@ -9,10 +9,9 @@ import { updateAgentVaultInfo, findOrCreateEvmAddress } from "../utils"
 import { getPriceFromDal } from "../../context/dal"
 import { EventStorer } from "./event-storer"
 import type { EntityManager } from "@mikro-orm/knex"
-import type { AgentVaultCreatedEvent, SettingChangedEvent } from "../../../chain/typechain/IAssetManager"
+import type { AgentVaultCreatedEvent } from "../../../chain/typechain/IAssetManager"
 import type { Context } from "../../context/context"
 import type { EvmLog } from "../../orm/entities/evm/log"
-import { AssetManagerSettings } from "../../orm/entities"
 
 
 // binds chain reading to event storage
