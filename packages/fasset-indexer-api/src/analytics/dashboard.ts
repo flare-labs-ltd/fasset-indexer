@@ -97,7 +97,7 @@ export class DashboardAnalytics extends SharedAnalytics {
     for (const [ fasset, { value }] of Object.entries(tr)) {
       const fassetType = FAssetType[fasset]
       const settings = await em.findOneOrFail(AssetManagerSettings, { fasset: fassetType })
-      ret[fasset] = { amount: value / settings.lotSizeAmg }
+      ret[fasset] = { amount: Number(value / settings.lotSizeAmg) }
     }
     return ret
   }
