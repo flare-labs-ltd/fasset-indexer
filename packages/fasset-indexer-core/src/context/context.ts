@@ -1,8 +1,8 @@
 import { JsonRpcProvider, FetchRequest } from "ethers"
 import { createOrm } from "../orm/mikro-orm.config"
 import { ContractLookup } from "./lookup"
-import { IAssetManager__factory, IERC20__factory, IAgentOwnerRegistry__factory, IPriceReader__factory } from "../../chain/typechain"
-import type { IAssetManager, IERC20, IAgentOwnerRegistry, IPriceReader } from "../../chain/typechain"
+import { IAssetManager__factory, IERC20__factory, IAgentOwnerRegistry__factory, IPriceReader__factory, ICoreVaultManager__factory } from "../../chain/typechain"
+import type { IAssetManager, IERC20, IAgentOwnerRegistry, IPriceReader, ICoreVaultManager } from "../../chain/typechain"
 import type { ORM } from "../orm/interface"
 import type { ConfigLoader } from "../config/config"
 
@@ -30,6 +30,10 @@ export class Context extends ContractLookup {
 
   getAssetManagerContract(address: string): IAssetManager {
     return IAssetManager__factory.connect(address, this.provider)
+  }
+
+  getCoreVaultManagerContract(address: string): ICoreVaultManager {
+    return ICoreVaultManager__factory.connect(address, this.provider)
   }
 
   getERC20(address: string): IERC20 {

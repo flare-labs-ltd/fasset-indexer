@@ -12,6 +12,7 @@ export class ContractLookup extends EventInterface {
   private fAssetTokenToFAsset__cache: Map<string, FAssetType> = new Map()
   private fAssetToFAssetToken__cache: Map<FAssetType, string> = new Map()
   private coreVaultToFAsset__cache: Map<string, FAssetType> = new Map()
+  private fAssetToCoreVault__cache: Map<FAssetType, string> = new Map()
   // public
   public fassetTokens: string[] = []
   public contractInfos!: ContractInfo[]
@@ -86,6 +87,14 @@ export class ContractLookup extends EventInterface {
     }
   }
 
+  fassetTypeToCoreVaultManagerAddress(type: FAssetType): string {
+    if (this.fAssetToCoreVault__cache.get(type)) {
+      return this.fAssetToCoreVault__cache.get(type)!
+    } else {
+      throw new Error(`No core vault manager found for type ${type}`)
+    }
+  }
+
   getContractAddress(name: string): string {
     for (const contract of this.contractInfos) {
       if (contract.name === name)
@@ -108,6 +117,7 @@ export class ContractLookup extends EventInterface {
       const fasset = this.contractNameToFAssetType(contract.name, 'CoreVaultManager_')
       if (fasset == null) continue
       this.coreVaultToFAsset__cache.set(contract.address, fasset)
+      this.fAssetToCoreVault__cache.set(fasset, contract.address)
     }
   }
 

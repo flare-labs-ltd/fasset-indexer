@@ -1,6 +1,6 @@
 import { EventIndexer } from "../indexer/indexer"
 import { ensureConfigIntegrity } from "./integrity"
-import { ensureData } from "./ensure_data"
+import { ensureData } from "./ensure-data"
 import { ConfigLoader } from "../config/config"
 import { Context } from "../context/context"
 import { logger } from "../logger"

@@ -57,14 +57,22 @@ import type { EnteredEvent, ExitedEvent } from "../../chain/typechain/ICollatera
 import type { TransferEvent } from "../../chain/typechain/IERC20"
 import type { Event, EventArgs } from "../../src/indexer/eventlib/event-scraper"
 import { SettingsUpdatedEvent } from "../../chain/typechain/ICoreVaultManager"
+import { CoreVaultManagerSettings } from "../../src/orm/entities/state/settings"
 
 
 export class EventFixture {
 
   constructor(public readonly orm: ORM) {}
 
+  async storeInitialCoreVaultManagerSettings(fasset: FAssetType = FAssetType.FXRP): Promise<void> {
+    await this.orm.em.transactional(async em => {
+      const vaultManager = new CoreVaultManagerSettings(fasset, BigInt(0), BigInt(0), 1, BigInt(0))
+      em.persist(vaultManager)
+    })
+  }
+
   async storeInitialAgents(fasset: FAssetType = FAssetType.FXRP): Promise<void> {
-    await this.orm.em.fork().transactional(async (em) => {
+    await this.orm.em.transactional(async (em) => {
       const managerAddress = new EvmAddress(randomNativeAddress(), 1)
       em.persist(managerAddress)
       const agentManager = new AgentManager(managerAddress, randomString(5), randomString(10), 'http://localhost:3000/awesome/pic.png')

@@ -17,3 +17,30 @@ export class AssetManagerSettings {
   }
 
 }
+
+@Entity()
+export class CoreVaultManagerSettings {
+
+  @Enum({ type: () => FAssetType, primary: true })
+  fasset: FAssetType
+
+  @Property({ type: new uint256() })
+  escrowAmount: bigint
+
+  @Property({ type: new uint256() })
+  minimalAmount: bigint
+
+  @Property({ type: 'integer' })
+  escrowEndTimeSeconds: number
+
+  @Property({ type: new uint256() })
+  chainPaymentFee: bigint
+
+  constructor(fasset: FAssetType, escrowAmount: bigint, minimalAmount: bigint, escrowEndTimeSeconds: number, chainPaymentFee: bigint) {
+    this.fasset = fasset
+    this.escrowAmount = escrowAmount
+    this.minimalAmount = minimalAmount
+    this.escrowEndTimeSeconds = escrowEndTimeSeconds
+    this.chainPaymentFee = chainPaymentFee
+  }
+}

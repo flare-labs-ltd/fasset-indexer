@@ -38,6 +38,7 @@ import {
 } from "../src/orm/entities/events/core-vault"
 import { CoreVaultManagerSettingsUpdated } from "../src/orm/entities/events/core-vault-manager"
 import { AssetManagerSettings } from "../src/orm/entities"
+import { CoreVaultManagerSettings } from "../src/orm/entities/state/settings"
 
 
 const ASSET_MANAGER_FXRP = "AssetManager_FTestXRP"
@@ -708,6 +709,7 @@ describe("FAsset evm events", () => {
   describe("core vault manager", () => {
     it("should store settings updated", async () => {
       const coreVaultManagerXrp = context.getContractAddress(CORE_VAULT_MANAGER_FXRP)
+      await fixture.storeInitialCoreVaultManagerSettings()
       const em = context.orm.em.fork()
       const esu = await fixture.generateEvent(EVENTS.CORE_VAULT_MANAGER.SETTINGS_UPDATED, coreVaultManagerXrp)
       await storer.processEventUnsafe(em, esu)
@@ -715,10 +717,16 @@ describe("FAsset evm events", () => {
         { evmLog: { block: { index: esu.blockNumber }, index: esu.logIndex }}
       )
       expect(su.fasset).to.equal(FAssetType.FXRP)
-      expect(su.escrowEndTimeSeconds).to.equal(esu.args[0])
+      expect(su.escrowEndTimeSeconds).to.equal(Number(esu.args[0]))
       expect(su.escrowAmount).to.equal(esu.args[1])
       expect(su.minimalAmount).to.equal(esu.args[2])
       expect(su.fee).to.equal(esu.args[3])
+      const cvms = await em.findOneOrFail(CoreVaultManagerSettings, { fasset: FAssetType.FXRP })
+      expect(cvms.fasset).to.equal(FAssetType.FXRP)
+      expect(cvms.escrowEndTimeSeconds).to.equal(su.escrowEndTimeSeconds)
+      expect(cvms.escrowAmount).to.equal(su.escrowAmount)
+      expect(cvms.minimalAmount).to.equal(su.minimalAmount)
+      expect(cvms.chainPaymentFee).to.equal(su.fee)
     })
   })
 

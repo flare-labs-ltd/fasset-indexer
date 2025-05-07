@@ -137,6 +137,7 @@ import type { TransferEvent } from "../../../chain/typechain/IERC20"
 import type { CurrentUnderlyingBlockUpdatedEvent, RedeemedInCollateralEvent } from "../../../chain/typechain/IAssetManager"
 import type { PricesPublishedEvent } from "../../../chain/typechain/IPriceChangeEmitter"
 import type { ORM } from "../../orm/interface"
+import { CoreVaultManagerSettings } from "../../orm/entities/state/settings"
 
 
 export class EventStorer {
@@ -969,11 +970,17 @@ export class EventStorer {
   // core vault manager
 
   protected async onCoreVaultManagerSettingsUpdated(em: EntityManager, evmLog: EvmLog, logArgs: SettingsUpdatedEvent.OutputTuple):
-    Promise<CoreVaultManagerSettingsUpdated>
+    Promise<[CoreVaultManagerSettings, CoreVaultManagerSettingsUpdated]>
   {
     const fasset = this.lookup.coreVaultManagerToFAssetType(evmLog.address.hex)
     const [ escrowEndTimeSeconds, escrowAmount, minimalAmount, fee ] = logArgs
-    return new CoreVaultManagerSettingsUpdated(evmLog, fasset, escrowEndTimeSeconds, escrowAmount, minimalAmount, fee)
+    const settings = await em.findOneOrFail(CoreVaultManagerSettings, { fasset })
+    settings.escrowEndTimeSeconds = Number(escrowEndTimeSeconds)
+    settings.escrowAmount = escrowAmount
+    settings.minimalAmount = minimalAmount
+    settings.chainPaymentFee = fee
+    const settingsUpdated = new CoreVaultManagerSettingsUpdated(evmLog, fasset, Number(escrowEndTimeSeconds), escrowAmount, minimalAmount, fee)
+    return [settings, settingsUpdated]
   }
 
   protected async onCustodianAddressUpdated(em: EntityManager, evmLog: EvmLog, logArgs: CustodianAddressUpdatedEvent.OutputTuple):

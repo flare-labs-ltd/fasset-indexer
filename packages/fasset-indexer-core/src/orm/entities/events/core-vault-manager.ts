@@ -10,8 +10,8 @@ import { UnderlyingAddress } from "../underlying/address"
 @Entity()
 export class CoreVaultManagerSettingsUpdated extends FAssetEventBound {
 
-  @Property({ type: new uint256() })
-  escrowEndTimeSeconds: bigint
+  @Property({ type: 'integer' })
+  escrowEndTimeSeconds: number
 
   @Property({ type: new uint256() })
   escrowAmount: bigint
@@ -23,7 +23,7 @@ export class CoreVaultManagerSettingsUpdated extends FAssetEventBound {
   fee: bigint
 
   constructor(evmLog: EvmLog, fasset: FAssetType,
-    escrowEndTimeSeconds: bigint, escrowAmount: bigint,
+    escrowEndTimeSeconds: number, escrowAmount: bigint,
     minimalAmount: bigint, fee: bigint
   ) {
     super(evmLog, fasset)
